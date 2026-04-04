@@ -29,5 +29,5 @@ public:
     armor* get_armor_head();
     armor* get_armor_body();
     armor* get_armor_legs();
-    void get_total_armor();
+    short get_total_armor();
 };
