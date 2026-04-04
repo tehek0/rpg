@@ -9,10 +9,23 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    game/src/inventory.cpp \
+    game/src/item.cpp \
+    game/src/item_requirements.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
+    game/header/data/ammo_types.h \
+    game/header/data/armor_slots.h \
+    game/header/data/char_types.h \
+    game/header/data/damage_types.h \
+    game/header/data/equipment_bonuses.h \
+    game/header/data/skill_types.h \
+    game/header/data/use_effects.h \
+    game/header/inventory.h \
+    game/header/item.h \
+    game/header/item_requirements.h \
     mainwindow.h
 
 FORMS += \
