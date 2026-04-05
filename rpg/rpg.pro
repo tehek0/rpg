@@ -16,16 +16,22 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
+    game/header/battle.h \
+    game/header/character.h \
     game/header/data/ammo_types.h \
     game/header/data/armor_slots.h \
     game/header/data/char_types.h \
     game/header/data/damage_types.h \
     game/header/data/equipment_bonuses.h \
+    game/header/data/quest_triggers.h \
     game/header/data/skill_types.h \
     game/header/data/use_effects.h \
     game/header/inventory.h \
     game/header/item.h \
     game/header/item_requirements.h \
+    game/header/location.h \
+    game/header/quest.h \
+    game/header/save.h \
     mainwindow.h
 
 FORMS += \

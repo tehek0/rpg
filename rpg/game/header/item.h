@@ -10,9 +10,36 @@
 
 #include "item_requirements.h"
 
+/*
+
+Схема именования полей классов:
+
+
+Нижнее подчёркивание в начале названия приватного поля.
+
+В методы, относящиеся к приватным полям, передаём те же названия, но без подчёркивания в начале
+или схожие названия
+
+EX:
+char* _name;
+void set_name(char* name);
+
+Если поле имеет то же название, что и некий объект (пр: on_use _on_use;), то в методах передаём название с нижним подчёркиванием впереди
+
+EX:
+
+on_use _on_use;
+void set_on_use(on_use on_use_);
+
+
+Для публичных полей можно использовать произвольные названия.
+
+*/
 
 
 
+
+// Базовый предмет. Наследуется потребляемыми предметами, боезапасом и предметами с требованиями
 class item {
 protected:
     QString _name;
@@ -75,7 +102,7 @@ public:
 
 
 
-
+// Предмет с требованиями, наследуется оружием и бронёй
 class item_with_requirements : public item {
 protected:
     item_requirements _requirements;
@@ -107,7 +134,7 @@ public:
 
 
 
-
+// Оружие
 class weapon : public item_with_requirements {
 protected:
     int _base_dmg;
@@ -154,7 +181,7 @@ public:
     void set_energy_cost(short energy_cost);
 };
 
-
+// Боезапас
 class ammo : public item {
 protected:
     int _base_dmg;
@@ -190,12 +217,14 @@ public:
 
 
 
-
+// Структура бонуса брони
 struct armor_bonus {
     equipment_bonus bonus;
     int value;
 };
 
+
+// Броня
 class armor : public item_with_requirements {
 protected:
     armor_slot _armor_slot;
@@ -240,12 +269,14 @@ public:
 
 
 
-
+// Структура эффекта при потреблении предмета
 struct on_use {
     use_effect effect;
     int value;
 };
 
+
+// Потребляемый предмет
 class consumable : public item {
 protected:
     on_use _on_use;

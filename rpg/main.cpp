@@ -6,8 +6,6 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    MainWindow w;
-    // w.showFullScreen();
     inventory* player_inventory = new inventory;
     item_requirements test1_req;
     test1_req.min_level = 0;
@@ -44,10 +42,12 @@ int main(int argc, char *argv[])
     player_inventory->add_item(test7_ptr);
     player_inventory->equip_armor_legs(test1_ptr);
     player_inventory->equip_armor_head(test1_ptr);
-    player_inventory->equip_armor_legs(test2_ptr);
+    player_inventory->equip_armor_head(test2_ptr);
     for (size_t i = 0; i < player_inventory->get_items().size(); ++i) {
         qInfo() << player_inventory->get_items()[i]->get_name() << player_inventory->get_items()[i]->get_stack();
     }
     qInfo() << QString("Шлем: ") << player_inventory->get_armor_head()->get_desc();
+    MainWindow w;
+    w.showFullScreen();
     return a.exec();
 }

@@ -1,6 +1,6 @@
 #include "../header/inventory.h"
 
-
+// Избегаем утечку памяти
 inventory::~inventory() {
     for (size_t i = 0; i < _items.size(); ++i) {
         delete _items[i];
@@ -11,13 +11,23 @@ std::vector<item*> inventory::get_items() {
     return _items;
 }
 
+// Добавление предмета
+// TODO: изменение общего веса
 void inventory::add_item(item* item_) {
+    // Пробегаем по вектору в поисках предмета, к которому можно присосаться
     for (size_t i = 0; i < _items.size(); ++i) {
+        // Не имеет смысла искать, если максимальный стак = 1
+        if (item_->get_max_stack_size() == 1) {
+            break;
+        }
         if (_items[i]->can_add(*item_) == true) {
+            // Нашли предмет, к которому можно полностью добавить всё количество без переполнения
             _items[i]->add(item_->get_stack());
+            // Избавляемся от переданного предмета
             delete item_;
             return;
         } else if (_items[i]->can_add(*item_,_items[i]->get_max_stack_size() - _items[i]->get_stack())) {
+            // Может, можно хотя бы кусочек добавить? Можно? Круто.
             item_->set_stack(item_->get_stack() - (_items[i]->get_max_stack_size() - _items[i]->get_stack()));
             _items[i]->set_stack(_items[i]->get_max_stack_size());
             continue;
@@ -34,6 +44,7 @@ item* inventory::get_item(unsigned int slot) {
     return _items[slot];
 }
 
+// TODO: изменение общего веса
 void inventory::remove_item(unsigned int slot) {
     if (slot >= _items.size()) {
         throw std::exception("[inventory::remove_item] reached end of vector");
@@ -43,43 +54,54 @@ void inventory::remove_item(unsigned int slot) {
     _items.shrink_to_fit();
 }
 
+// Пускаем любое оружие, другие предметы идут в функцию ниже
+// TODO: проверка требований
 void inventory::equip_weapon(weapon* weapon_) {
     _weapon = weapon_;
 }
-
+// TODO: предупреждение о неподходящем слоте
 void inventory::equip_weapon(item* not_suitable) {
     return;
 }
 
+// Пускаем любую броню и проверяем, можно ли надеть на голову, другие предметы идут в функцию ниже
+// TODO: проверка требований
+// TODO: бонусы экипировки
 void inventory::equip_armor_head(armor* armor_) {
     if (armor_->get_armor_slot() != armor_slot::head)
         return;
 
     _armor.head = armor_;
 }
-
+// TODO: предупреждение о неподходящем слоте
 void inventory::equip_armor_head(item* not_suitable) {
     return;
 }
 
+// Пускаем любую броню и проверяем, можно ли надеть на тело, другие предметы идут в функцию ниже
+// TODO: проверка требований
+// TODO: бонусы экипировки
 void inventory::equip_armor_body(armor* armor_) {
     if (armor_->get_armor_slot() != armor_slot::body)
         return;
 
     _armor.body = armor_;
 }
-
+// TODO: предупреждение о неподходящем слоте
 void inventory::equip_armor_body(item* not_suitable) {
     return;
 }
 
+// Пускаем любую броню и проверяем, можно ли надеть на ноги, другие предметы идут в функцию ниже
+// TODO: проверка требований
+// TODO: бонусы экипировки
 void inventory::equip_armor_legs(armor* armor_) {
     if (armor_->get_armor_slot() != armor_slot::legs)
         return;
 
     _armor.legs = armor_;
 }
-
+// TODO: предупреждение о неподходящем слоте
 void inventory::equip_armor_legs(item* not_suitable) {
     return;
 }

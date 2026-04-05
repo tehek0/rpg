@@ -1,39 +1,47 @@
 #include "../header/item.h"
 
-
+// Проверка возможности объединить предметы в один. Используется поле _asset как временное решение (расчёт на то, что спрайты у всех предметов будут уникальными)
 bool item::can_add(item &other) {
     if (_asset != other._asset || _stack + other._stack > _max_stack_size)
         return false;
     return true;
 }
 
+// Та же проверка, но ограничиваем количество нового предмета. В классе inventory используется для заполнения до полного стака
 bool item::can_add(item &other, unsigned int count) {
     if (_asset != other._asset || _stack + count > _max_stack_size || other._stack < count)
         return false;
     return true;
 }
 
+// Инкремент стака предмета. Проверки на переполнение не происходит, так что использовать с осторожностью
 void item::add() {
     _stack++;
 }
 
+// Добавление count предметов в стак. Проверки на переполнение не происходит, так что использовать с осторожностью
 void item::add(unsigned int count) {
     _stack += count;
 }
 
+// Красивая проверка наличия count и больше предметов. Можно заменить на (item.get_stack() >= count), но так некрасиво
 bool item::has_amount(unsigned int count) {
     if (_stack >= count)
         return true;
     return false;
 }
 
+// Декремент стака предмета. Проверки на равенство нулю не происходит, так что использовать с осторожностью
 void item::remove() {
     _stack--;
 }
 
+// Удаление count предметов из стака. Проверки не происходит, так что использовать с осторожностью
 void item::remove(unsigned int count) {
     _stack -= count;
 }
+
+// Дальше всё само собой разумеется
 
 QString item::get_name() {
     return _name;
