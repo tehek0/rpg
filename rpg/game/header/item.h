@@ -47,7 +47,7 @@ protected:
     QString _asset;
     unsigned int _stack;
     unsigned int _max_stack_size;
-    unsigned int _base_weight;
+    float _base_weight;
     unsigned int _base_cost;
     bool _sellable;
 public:
@@ -57,7 +57,7 @@ public:
          const QString& asset,
          unsigned int stack,
          unsigned int max_stack_size,
-         unsigned int base_weight,
+         float base_weight,
          unsigned int base_cost,
          bool sellable):
         _name(name), _desc(desc), _asset(asset),
@@ -73,8 +73,8 @@ public:
     {}
     virtual ~item() = default;
 
-    bool can_add(item& other);
-    bool can_add(item& other, unsigned int count);
+    bool can_add(item* other);
+    bool can_add(item* other, unsigned int count);
     void add();
     void add(unsigned int count);
     bool has_amount(unsigned int count);
@@ -85,8 +85,8 @@ public:
     QString get_asset();
     unsigned int get_stack();
     unsigned int get_max_stack_size();
-    unsigned int get_base_weight();
-    unsigned int get_base_weight(unsigned int x);
+    float get_base_weight();
+    float get_base_weight(unsigned int x);
     unsigned int get_total_weight();
     unsigned int get_base_cost();
     bool get_sellable();
@@ -95,9 +95,11 @@ public:
     void set_asset(const QString& asset);
     void set_stack(unsigned int stack);
     void set_max_stack_size(unsigned int max_stack_size);
-    void set_base_weight(unsigned int base_weight);
+    void set_base_weight(float base_weight);
     void set_base_cost(unsigned int base_cost);
     void set_sellable(bool sellable);
+    virtual bool operator==(item* other);
+    virtual bool operator!=(item* other);
 };
 
 
@@ -113,7 +115,7 @@ public:
                            const QString& asset,
                            unsigned int stack,
                            unsigned int max_stack_size,
-                           unsigned int base_weight,
+                           float base_weight,
                            unsigned int base_cost,
                            bool sellable,
                            item_requirements& requirements):
@@ -129,6 +131,11 @@ public:
     virtual ~item_with_requirements() = default;
     item_requirements get_item_requirements();
     void set_item_requirements(item_requirements& requirements);
+
+    // Этот класс сам использоваться вряд-ли будет, так что ему оператор не определяю
+
+    bool operator==(item* other) final;
+    bool operator!=(item* other) final;
 };
 
 
@@ -148,7 +155,7 @@ public:
            const QString& asset,
            unsigned int stack,
            unsigned int max_stack_size,
-           unsigned int base_weight,
+           float base_weight,
            unsigned int base_cost,
            bool sellable,
            item_requirements& requirements,
@@ -179,6 +186,8 @@ public:
     void set_damage_type(damage_type damage_type_);
     void set_ammo_type(ammo_type ammo_type_);
     void set_energy_cost(short energy_cost);
+    bool operator==(weapon* other);
+    bool operator!=(weapon* other);
 };
 
 // Боезапас
@@ -193,7 +202,7 @@ public:
            const QString& asset,
            unsigned int stack,
            unsigned int max_stack_size,
-           unsigned int base_weight,
+           float base_weight,
            unsigned int base_cost,
            bool sellable,
            int base_dmg,
@@ -213,6 +222,11 @@ public:
     ammo_type get_ammo_type();
     void set_base_dmg(int base_dmg);
     void set_ammo_type(ammo_type ammo_type_);
+    // Виртуальные операторы, на случай, если захочется сделать патроны с требованиями
+    virtual bool operator==(ammo* other);
+    virtual bool operator!=(ammo* other);
+    bool operator==(item* other) final;
+    bool operator!=(item* other) final;
 };
 
 
@@ -221,6 +235,8 @@ public:
 struct armor_bonus {
     equipment_bonus bonus;
     int value;
+    bool operator==(armor_bonus& other);
+    bool operator!=(armor_bonus& other);
 };
 
 
@@ -237,7 +253,7 @@ public:
           const QString& asset,
           unsigned int stack,
           unsigned int max_stack_size,
-          unsigned int base_weight,
+          float base_weight,
           unsigned int base_cost,
           bool sellable,
           item_requirements& requirements,
@@ -263,6 +279,8 @@ public:
     void set_armor_slot(armor_slot armor_slot_);
     void set_armor_points(short armor_points);
     void set_armor_bonus(armor_bonus armor_bonus_);
+    bool operator==(armor* other);
+    bool operator!=(armor* other);
 };
 
 
@@ -273,6 +291,8 @@ public:
 struct on_use {
     use_effect effect;
     int value;
+    bool operator==(on_use& other);
+    bool operator!=(on_use& other);
 };
 
 
@@ -289,7 +309,7 @@ public:
                const QString& asset,
                unsigned int stack,
                unsigned int max_stack_size,
-               unsigned int base_weight,
+               float base_weight,
                unsigned int base_cost,
                bool sellable,
                on_use on_use_,
@@ -314,4 +334,9 @@ public:
     void set_on_use(on_use on_use_);
     void set_uses_left(unsigned short uses_left);
     void set_use_energy_cost(unsigned short use_energy_cost);
+    // Виртуальные операторы, на случай, если захочется сделать используемые предметы с требованиями
+    virtual bool operator==(consumable* other);
+    virtual bool operator!=(consumable* other);
+    bool operator==(item* other) final;
+    bool operator!=(item* other) final;
 };

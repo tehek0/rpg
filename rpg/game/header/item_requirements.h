@@ -28,4 +28,6 @@ struct item_requirements {
     unsigned short min_level;
     std::vector<base_requirement*> item_requirements_ptrs;
     ~item_requirements();
+    bool operator==(item_requirements& other);
+    bool operator!=(item_requirements& other);
 };

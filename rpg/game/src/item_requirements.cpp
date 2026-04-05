@@ -7,3 +7,17 @@ item_requirements::~item_requirements() {
     }
 }
 
+bool item_requirements::operator==(item_requirements& other) {
+    if (this->min_level != other.min_level || this->item_requirements_ptrs != other.item_requirements_ptrs)
+        return false;
+
+    return true;
+}
+
+bool item_requirements::operator!=(item_requirements& other) {
+    if (this->min_level != other.min_level || this->item_requirements_ptrs != other.item_requirements_ptrs)
+        return true;
+
+    return false;
+}
+

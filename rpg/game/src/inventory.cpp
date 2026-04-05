@@ -20,13 +20,13 @@ void inventory::add_item(item* item_) {
         if (item_->get_max_stack_size() == 1) {
             break;
         }
-        if (_items[i]->can_add(*item_) == true) {
+        if (_items[i]->can_add(item_) == true) {
             // Нашли предмет, к которому можно полностью добавить всё количество без переполнения
             _items[i]->add(item_->get_stack());
             // Избавляемся от переданного предмета
             delete item_;
             return;
-        } else if (_items[i]->can_add(*item_,_items[i]->get_max_stack_size() - _items[i]->get_stack())) {
+        } else if (_items[i]->can_add(item_,_items[i]->get_max_stack_size() - _items[i]->get_stack())) {
             // Может, можно хотя бы кусочек добавить? Можно? Круто.
             item_->set_stack(item_->get_stack() - (_items[i]->get_max_stack_size() - _items[i]->get_stack()));
             _items[i]->set_stack(_items[i]->get_max_stack_size());
