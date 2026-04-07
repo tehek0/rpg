@@ -1,10 +1,16 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <cstdlib>
+#include <ctime>
 #include "game/header/inventory.h"
 
 
 int main(int argc, char *argv[])
 {
+
+    std::srand(std::time(0));
+
+
     QApplication a(argc, argv);
     inventory* player_inventory = new inventory;
     item_requirements test1_req;

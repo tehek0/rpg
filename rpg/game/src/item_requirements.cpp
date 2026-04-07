@@ -8,16 +8,23 @@ item_requirements::~item_requirements() {
 }
 
 bool item_requirements::operator==(item_requirements& other) {
-    if (this->min_level != other.min_level || this->item_requirements_ptrs != other.item_requirements_ptrs)
+    if (this->min_level != other.min_level || this->item_requirements_ptrs.size() != other.item_requirements_ptrs.size())
         return false;
+    for (size_t i = 0; i < this->item_requirements_ptrs.size(); ++i) {
+        if (*(this->item_requirements_ptrs[i]) != *(other.item_requirements_ptrs[i]))
+            return false;
+    }
 
     return true;
 }
 
-bool item_requirements::operator!=(item_requirements& other) {
-    if (this->min_level != other.min_level || this->item_requirements_ptrs != other.item_requirements_ptrs)
+bool item_requirements::operator==(item_requirements& other) {
+    if (this->min_level != other.min_level || this->item_requirements_ptrs.size() != other.item_requirements_ptrs.size())
         return true;
+    for (size_t i = 0; i < this->item_requirements_ptrs.size(); ++i) {
+        if (*(this->item_requirements_ptrs[i]) != *(other.item_requirements_ptrs[i]))
+            return true;
+    }
 
     return false;
 }
-
