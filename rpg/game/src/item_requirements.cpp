@@ -7,22 +7,67 @@ item_requirements::~item_requirements() {
     }
 }
 
+bool base_requirement::operator==(base_requirement* other) {
+    return false;
+}
+bool base_requirement::operator!=(base_requirement* other) {
+    return false;
+}
+
+bool skill_requirement::operator==(skill_requirement* other) {
+    if (this->required != other->required || this->type != other->type)
+        return false;
+
+    return true;
+}
+bool skill_requirement::operator!=(skill_requirement* other) {
+    if (this->required != other->required || this->type != other->type)
+        return true;
+
+    return false;
+}
+bool skill_requirement::operator==(base_requirement* other) {
+    return false;
+}
+bool skill_requirement::operator!=(base_requirement* other){
+    return true;
+}
+
+bool char_requirement::operator==(char_requirement* other) {
+    if (this->required != other->required || this->type != other->type)
+        return false;
+
+    return true;
+}
+bool char_requirement::operator!=(char_requirement* other) {
+    if (this->required != other->required || this->type != other->type)
+        return true;
+
+    return false;
+}
+bool char_requirement::operator==(base_requirement* other) {
+    return false;
+}
+bool char_requirement::operator!=(base_requirement* other){
+    return true;
+}
+
 bool item_requirements::operator==(item_requirements& other) {
     if (this->min_level != other.min_level || this->item_requirements_ptrs.size() != other.item_requirements_ptrs.size())
         return false;
     for (size_t i = 0; i < this->item_requirements_ptrs.size(); ++i) {
-        if (*(this->item_requirements_ptrs[i]) != *(other.item_requirements_ptrs[i]))
+        if (*(this->item_requirements_ptrs[i]) != other.item_requirements_ptrs[i])
             return false;
     }
 
     return true;
 }
 
-bool item_requirements::operator==(item_requirements& other) {
+bool item_requirements::operator!=(item_requirements& other) {
     if (this->min_level != other.min_level || this->item_requirements_ptrs.size() != other.item_requirements_ptrs.size())
         return true;
     for (size_t i = 0; i < this->item_requirements_ptrs.size(); ++i) {
-        if (*(this->item_requirements_ptrs[i]) != *(other.item_requirements_ptrs[i]))
+        if (*(this->item_requirements_ptrs[i]) != other.item_requirements_ptrs[i])
             return true;
     }
 
