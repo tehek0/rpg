@@ -3,16 +3,14 @@
 #include <cstdlib>
 #include <ctime>
 #include "game/header/inventory.h"
-
+#include "game/header/global.h"
 
 int main(int argc, char *argv[])
 {
 
     std::srand(std::time(0));
 
-
     QApplication a(argc, argv);
-    inventory* player_inventory = new inventory;
     item_requirements test1_req;
     test1_req.min_level = 0;
     armor_bonus test1_bonus;
@@ -39,20 +37,20 @@ int main(int argc, char *argv[])
     *test6_ptr = test6;
     item* test7_ptr = new item;
     *test7_ptr = test7;
-    player_inventory->add_item(test1_ptr);
-    player_inventory->add_item(test2_ptr);
-    player_inventory->add_item(test3_ptr);
-    player_inventory->add_item(test4_ptr);
-    player_inventory->add_item(test5_ptr);
-    player_inventory->add_item(test6_ptr);
-    player_inventory->add_item(test7_ptr);
-    player_inventory->equip_armor_legs(test1_ptr);
-    player_inventory->equip_armor_head(test1_ptr);
-    player_inventory->equip_armor_head(test2_ptr);
-    for (size_t i = 0; i < player_inventory->get_items().size(); ++i) {
-        qInfo() << player_inventory->get_items()[i]->get_name() << player_inventory->get_items()[i]->get_stack();
+    global::global_inventory->add_item(test1_ptr);
+    global::global_inventory->add_item(test2_ptr);
+    global::global_inventory->add_item(test3_ptr);
+    global::global_inventory->add_item(test4_ptr);
+    global::global_inventory->add_item(test5_ptr);
+    global::global_inventory->add_item(test6_ptr);
+    global::global_inventory->add_item(test7_ptr);
+    global::global_inventory->equip_armor_legs(test1_ptr);
+    global::global_inventory->equip_armor_head(test1_ptr);
+    global::global_inventory->equip_armor_head(test2_ptr);
+    for (size_t i = 0; i < global::global_inventory->get_items().size(); ++i) {
+        qInfo() << global::global_inventory->get_items()[i]->get_name() << global::global_inventory->get_items()[i]->get_stack();
     }
-    qInfo() << QString("Шлем: ") << player_inventory->get_armor_head()->get_desc();
+    qInfo() << QString("Шлем: ") << global::global_inventory->get_armor_head()->get_desc();
     MainWindow w;
     w.showFullScreen();
     return a.exec();

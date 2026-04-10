@@ -22,10 +22,14 @@ HEADERS += \
     game/header/data/armor_slots.h \
     game/header/data/char_types.h \
     game/header/data/damage_types.h \
+    game/header/data/enemy_trait_types.h \
     game/header/data/equipment_bonuses.h \
+    game/header/data/interaction_return_value_types.h \
     game/header/data/quest_triggers.h \
     game/header/data/skill_types.h \
+    game/header/data/trait_types.h \
     game/header/data/use_effects.h \
+    game/header/global.h \
     game/header/inventory.h \
     game/header/item.h \
     game/header/item_requirements.h \

@@ -1,6 +1,9 @@
 #pragma once
 #include "inventory.h"
 #include "data/interaction_return_value_types.h"
+#include "data/trait_types.h"
+#include "data/enemy_trait_types.h"
+#include <QObject>
 // TODO: общий класс сущности, наследники - игрок (но можно и не наследовать на самом деле), нпс (с наследниками торговец и враг)
 
 
@@ -107,8 +110,8 @@ int run_tree();
 ~interaction_tree();
 };
 
-// Собственно класс, который будут наследовать сущности
-class interactable {
+// Собственно класс, который будут наследовать сущности. Этот класс в свою очередь наследует QObject, может быть пригодится для сигналов, если нет - уберём
+class interactable : public QObject {
 public:
 std::vector<interaction_tree> interaction_trees;
 unsigned int selected_interaction_tree = 0;
@@ -117,7 +120,7 @@ void execute();
 // interaction_trees[selected_interaction_tree ].run_tree()
 // *обработка в зависимости от зачений в структурах*
 virtual ~interactable() = default;
-}
+};
 
 
 
@@ -156,30 +159,104 @@ protected:
     inventory _inventory;
     QString _name;
     QString _sprite_family;
-    entity_stats _entity_stats;
-    entity_level _entity_level;
-    int _health;
-    int _max_health;
-    int _money;
 public:
     virtual ~entity() = default;
     inventory get_inventory();
     QString get_name();
     QString get_sprite_family();
-    entity_stats get_entity_stats();
-    entity_level get_entity_level();
-    int get_heatlh();
-    int get_max_health();
-    int get_money();
     void set_inventory(inventory& inventory_);
     void set_name(QString& name);
     void set_sprite_family(QString& sprite_family);
+};
+
+class living_entity: public entity {
+protected:
+    entity_stats _entity_stats;
+    entity_level _entity_level;
+    int _max_health;
+    int _health;
+    int _base_armor;
+    int _total_armor;
+    int _money;
+public:
+    virtual ~living_entity() = default;
+    entity_stats get_entity_stats();
+    entity_level get_entity_level();
+    int get_max_health();
+    int get_health();
+    int get_base_armor();
+    int get_total_armor();
+    int get_money();
     void set_entity_stats(entity_stats& entity_stats_);
     void set_entity_level(entity_level& entity_level_);
-    void set_health(int health);
     void set_max_health(int max_health);
+    void set_health(int health);
+    void set_base_armor(int base_armor);
+    void set_total_armor(int total_armor);
+    void regen_health(int amount);
+    void damage_health(int amount);
     void set_money(int money);
+    void add_money(int amount);
+    bool transaction(living_entity* other, int amount);
+};
 
-    void add_experience(unsigned int amount);
 
+class quest;
+class location;
+class player: public living_entity {
+protected:
+    float _max_weight;
+    float _weight;
+    int _max_energy;
+    trait _trait;
+public:
+    std::vector<quest> quests;
+    location* current_location;
+    float get_max_weight();
+    float get_weight();
+    int get_max_energy();
+    trait get_trait();
+    void set_max_weight(float max_weight);
+    void set_weight(float weight);
+    void set_max_energy(int max_energy);
+    void set_trait(trait trait_);
+    void apply_equipment_bonuses();
+    bool add_item(item* item_);
+};
+
+struct enemy_traits {
+    enemy_aggression aggression;
+    enemy_battle_style battle_style;
+    enemy_family family;
+    enemy_social social;
+};
+
+class enemy: public living_entity {
+protected:
+    enemy_traits _enemy_traits;
+    int _base_dmg;
+public:
+    enemy_traits get_enemy_traits();
+    int get_base_dmg();
+    void set_enemy_traits(enemy_traits enemy_traits_);
+    void set_base_dmg(int base_dmg);
+};
+
+struct offer {
+    item* item_;
+    int base_price;
+    int stock;
+    ~offer();
+};
+
+class trader: public living_entity {
+protected:
+    std::vector<offer> _offers;
+    float _price_coefficient;
+public:
+    std::vector<offer> get_offers();
+    float get_price_coefficient();
+    bool buy(unsigned int id, unsigned int amount);
+    bool sell(item* item_);
+    bool sell(item* item_, unsigned int amount);
 };
