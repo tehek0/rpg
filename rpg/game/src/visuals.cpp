@@ -14,4 +14,5 @@ clickable::clickable(MainWindow* w, QRect coord_and_size, QString sprite_family,
     clk->setStyleSheet(QString("background-image: url(:/%1.jpg);").arg(sprite_family));
     clk->setGeometry(coord_and_size);
     clk->setObjectName(name);
+    clk->show();
 }
