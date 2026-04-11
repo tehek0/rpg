@@ -13,6 +13,7 @@ SOURCES += \
     game/src/inventory.cpp \
     game/src/item.cpp \
     game/src/item_requirements.cpp \
+    game/src/visuals.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -37,6 +38,7 @@ HEADERS += \
     game/header/location.h \
     game/header/quest.h \
     game/header/save.h \
+    game/header/visuals.h \
     mainwindow.h
 
 FORMS += \

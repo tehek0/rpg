@@ -4,6 +4,7 @@
 #include "data/trait_types.h"
 #include "data/enemy_trait_types.h"
 #include <QObject>
+#include "../header/visuals.h"
 
 #include <mainwindow.h>
 
@@ -116,8 +117,7 @@ int run_tree();
 // Собственно класс, который будут наследовать сущности. Этот класс в свою очередь наследует QObject, может быть пригодится для сигналов, если нет - уберём
 class interactable : public QObject {
 public:
-    interactable() = default;
-interactable(MainWindow* w);
+interactable() = default;
 std::vector<interaction_tree> interaction_trees;
 unsigned int selected_interaction_tree = 0;
 void execute();
@@ -157,16 +157,13 @@ struct entity_level {
 
 };
 
-
-
-class entity: public interactable {
+class entity: public interactable, clickable {
 protected:
     inventory _inventory;
-    QString _name;
-    QString _sprite_family;
+    // name и sprite family поля придут с clickable
 public:
     entity() = default;
-    entity(MainWindow* w, QString sprite_family);
+    entity(MainWindow* w, QRect coord_and_size, QString sprite_family, QString name);
     virtual ~entity() = default;
 
     inventory get_inventory();

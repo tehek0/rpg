@@ -1,13 +1,12 @@
 #include "../header/character.h"
-#include <QPushButton>
+#include "../header/visuals.h"
 
-entity::entity(MainWindow* w, QString sprite_family){
+entity::entity(MainWindow* w, QRect coord_and_size, QString sprite_family, QString name){ //через делегирующий конструктор 2 он запускать не может, поэтому так
+
     //создание технического объекта
     entity();
     // создание визуального компонента
-    QPushButton* ent = new QPushButton(w);
-    ent->setStyleSheet(QString("background-image: url(:/sprite/%1.jpg);").arg(sprite_family));
-    ent->setGeometry(100,100,100,100);
-    ent->setObjectName(_name);
+    clickable(w, coord_and_size, sprite_family, name);
+
     qInfo() << "[entity] constr";
 }

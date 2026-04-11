@@ -27,14 +27,14 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
-    <string notr="true">background: url(:/bckg/map.jpg);
+    <string notr="true">background: url(:/map.jpg);
 background-position: center;</string>
    </property>
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>570</x>
-      <y>410</y>
+      <x>540</x>
+      <y>330</y>
       <width>71</width>
       <height>31</height>
      </rect>
