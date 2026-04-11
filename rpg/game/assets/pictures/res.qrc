@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/bckg">
+        <file>map.jpg</file>
+        <file>testbkg.jpg</file>
+    </qresource>
+    <qresource prefix="/sprite">
+        <file>testbox.jpg</file>
+        <file>testbox_walk.jpg</file>
+    </qresource>
+</RCC>

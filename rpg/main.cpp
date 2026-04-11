@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
     }
     qInfo() << QString("Шлем: ") << global::global_inventory->get_armor_head()->get_desc();
     MainWindow w;
-    w.showFullScreen();
+    //w.showFullScreen();
+    w.show();
     return a.exec();
 }

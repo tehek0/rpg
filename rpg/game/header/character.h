@@ -4,6 +4,9 @@
 #include "data/trait_types.h"
 #include "data/enemy_trait_types.h"
 #include <QObject>
+
+#include <mainwindow.h>
+
 // TODO: общий класс сущности, наследники - игрок (но можно и не наследовать на самом деле), нпс (с наследниками торговец и враг)
 
 
@@ -39,7 +42,7 @@ void set_on_use(on_use on_use_);
 // Базовый наследуемый класс для запихивания в вектор
 struct interaction_type {
 virtual ~interaction_type() = default;
-virtual interaction_return_value_type expected_return_value;
+    virtual interaction_return_value_type expected_return_value();
 virtual int run();
 };
 
@@ -107,12 +110,14 @@ int run_tree();
 // В реализации run_tree() что-то типа 
 // returned_value = this->interactions[progress]->run();
 // ++progress;
-~interaction_tree();
+//~interaction_tree();
 };
 
 // Собственно класс, который будут наследовать сущности. Этот класс в свою очередь наследует QObject, может быть пригодится для сигналов, если нет - уберём
 class interactable : public QObject {
 public:
+    interactable() = default;
+interactable(MainWindow* w);
 std::vector<interaction_tree> interaction_trees;
 unsigned int selected_interaction_tree = 0;
 void execute();
@@ -160,7 +165,10 @@ protected:
     QString _name;
     QString _sprite_family;
 public:
+    entity() = default;
+    entity(MainWindow* w, QString sprite_family);
     virtual ~entity() = default;
+
     inventory get_inventory();
     QString get_name();
     QString get_sprite_family();
