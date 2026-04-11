@@ -7,6 +7,7 @@ displayable::displayable(MainWindow* w, QRect coord_and_size, QString sprite_fam
     disp->setStyleSheet(QString("background-image: url(:/%1.jpg);").arg(sprite_family));
     disp->setGeometry(coord_and_size);
     disp->setObjectName(name);
+    disp->show();
 };
 
 clickable::clickable(MainWindow* w, QRect coord_and_size, QString sprite_family, QString name) {

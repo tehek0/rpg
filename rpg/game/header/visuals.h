@@ -21,3 +21,5 @@ public:
     clickable() = default;
     clickable(MainWindow* w, QRect coord_and_size, QString sprite_family, QString name);
 };
+
+//TO DO - blink; move_interpolation

@@ -5,7 +5,7 @@ entity::entity(MainWindow* w, QRect coord_and_size, QString sprite_family, QStri
 
     //создание технического объекта
     entity();
-    // создание визуального компонента
+    // создание визуальной компоненты
     clickable(w, coord_and_size, sprite_family, name);
 
     qInfo() << "[entity] constr";
