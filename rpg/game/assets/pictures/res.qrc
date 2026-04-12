@@ -2,7 +2,7 @@
     <qresource prefix="/">
         <file>map.jpg</file>
         <file>testbkg.jpg</file>
-        <file>testbox.jpg</file>
-        <file>testbox_walk.jpg</file>
+        <file>testbox.png</file>
+        <file>gif_testbox.gif</file>
     </qresource>
 </RCC>
