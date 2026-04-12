@@ -39,6 +39,7 @@ HEADERS += \
     game/header/quest.h \
     game/header/save.h \
     game/header/visuals.h \
+    game/inc/json.hpp \
     mainwindow.h
 
 FORMS += \

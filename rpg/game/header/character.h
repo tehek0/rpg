@@ -43,7 +43,7 @@ void set_on_use(on_use on_use_);
 // Базовый наследуемый класс для запихивания в вектор
 struct interaction_type {
 virtual ~interaction_type() = default;
-    virtual interaction_return_value_type expected_return_value();
+interaction_return_value_type expected_return_value;
 virtual int run();
 };
 
