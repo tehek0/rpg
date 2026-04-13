@@ -44,11 +44,13 @@ void set_on_use(on_use on_use_);
 struct interaction_type {
 virtual ~interaction_type() = default;
 interaction_return_value_type expected_return_value;
-virtual int run();
+virtual int run() = 0;
 };
 
 // Персонаж говорит в диалоговом окне
 struct tell_line: public interaction_type {
+tell_line(const QString& line_): line(line_)
+{}
 QString line;
 interaction_return_value_type expected_return_value = interaction_return_value_type::tell_line;
 int run();
@@ -56,6 +58,8 @@ int run();
 
 // Базовый выбор без проверок. Виртуальная функция всегда возвращает true
 struct dialogue_choice {
+dialogue_choice(const QString& choice_, int jump_to_tree_): choice(choice_), jump_to_tree(jump_to_tree_)
+{}
 QString choice;
 int jump_to_tree;
 virtual bool check();
@@ -63,12 +67,16 @@ virtual bool check();
 
 // Каким-то образом надо придумать, как запихнуть в эти проверки статы игрока. Возможно, сработает глобальный неймспейс
 struct char_check_choice : public dialogue_choice {
+char_check_choice(const QString& choice_, int jump_to_tree_, char_type type_, int required_): dialogue_choice(choice_, jump_to_tree_), type(type_), required(required_)
+{}
 char_type type;
 int required;
 bool check();
 };
 
 struct skill_check_choice : public dialogue_choice {
+skill_check_choice(const QString& choice_, int jump_to_tree_, skill_type type_, int required_): dialogue_choice(choice_, jump_to_tree_), type(type_), required(required_)
+{}
 skill_type type;
 int required;
 bool check();
@@ -79,6 +87,11 @@ struct give_choice: public interaction_type {
 std::vector<dialogue_choice*> choices;
 interaction_return_value_type expected_return_value = interaction_return_value_type::give_choice;
 int run();
+template<typename... Args>
+give_choice(Args&&... args) {
+    static_assert((std::is_constructible_v<dialogue_choice*, Args&&> && ...));
+    (choices.push_back(std::forward<Args>(args)), ...);
+}
 ~give_choice();
 };
 
@@ -90,6 +103,18 @@ struct start_battle: public interaction_type {
 std::vector<enemy*> enemies;
 interaction_return_value_type expected_return_value = interaction_return_value_type::start_battle;
 int run();
+start_battle(enemy* single_enemy) {
+    enemies.reserve(1);
+    enemies.emplace_back(single_enemy);
+}
+start_battle(enemy* first_enemy, enemy* second_enemy) {
+    enemies.reserve(2);
+    enemies.emplace_back(first_enemy, second_enemy);
+}
+start_battle(enemy* first_enemy, enemy* secodn_enemy, enemy* third_enemy) {
+    enemies.reserve(3);
+    enemies.emplace_back(first_enemy, second_enemy, third_enemy);
+}
 };
 
 // Обманываем не только компилятор, но и себя
@@ -100,6 +125,8 @@ struct start_trade: public interaction_type {
 trader* trade_with;
 interaction_return_value_type expected_return_value = interaction_return_value_type::start_trade;
 int run();
+start_trade(trader* trader_): trade_with(trader_)
+{}
 };
 
 // Несмотря на название, это не дерево, а веточка
@@ -240,11 +267,14 @@ class enemy: public living_entity {
 protected:
     enemy_traits _enemy_traits;
     int _base_dmg;
+    bool _delete_after_battle = true;
 public:
     enemy_traits get_enemy_traits();
     int get_base_dmg();
+    bool get_delete_after_battle();
     void set_enemy_traits(enemy_traits enemy_traits_);
     void set_base_dmg(int base_dmg);
+    void set_delete_after_battle(bool delete_after_battle);
 };
 
 struct offer {

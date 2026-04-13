@@ -1,8 +1,8 @@
 #pragma once
-#include "inventory.h"
+#include "character.h"
 // Тест глобального пространства имён
 namespace global {
 
-    inline inventory* global_inventory = new inventory;
+    inline player* player_ = new player;
 
 }
