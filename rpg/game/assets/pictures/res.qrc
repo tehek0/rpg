@@ -4,7 +4,6 @@
         <file>testbkg.jpg</file>
         <file>testbox.png</file>
         <file>gif_testbox.gif</file>
-        <file>icon_inv_shrimp.png</file>
         <file>icon_inv_armor_ironPlate.png</file>
         <file>icon_inv_armor_pot.png</file>
         <file>icon_inv_armor_sandals.png</file>
@@ -20,5 +19,6 @@
         <file>icon_inv_weapon_gun.png</file>
         <file>icon_inv_weapon_revolver.png</file>
         <file>icon_inv_weapon_riffle.png</file>
+        <file>icon_inv_collect_shrimp.png</file>
     </qresource>
 </RCC>

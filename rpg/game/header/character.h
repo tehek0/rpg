@@ -4,8 +4,9 @@
 #include "data/trait_types.h"
 #include "data/enemy_trait_types.h"
 #include <QObject>
-#include "../header/visuals.h"
-
+#include "visuals.h"
+#include "quest.h"
+#include "location.h"
 #include <mainwindow.h>
 
 // TODO: общий класс сущности, наследники - игрок (но можно и не наследовать на самом деле), нпс (с наследниками торговец и враг)
@@ -42,57 +43,58 @@ void set_on_use(on_use on_use_);
 
 // Базовый наследуемый класс для запихивания в вектор
 struct interaction_type {
-virtual ~interaction_type() = default;
-interaction_return_value_type expected_return_value;
-virtual int run() = 0;
+    virtual ~interaction_type() = default;
+    interaction_return_value_type expected_return_value;
+    virtual int run() = 0;
 };
 
 // Персонаж говорит в диалоговом окне
 struct tell_line: public interaction_type {
-tell_line(const QString& line_): line(line_)
-{}
-QString line;
-interaction_return_value_type expected_return_value = interaction_return_value_type::tell_line;
-int run();
+    tell_line(const QString& line_): line(line_)
+    {}
+    QString line;
+    interaction_return_value_type expected_return_value = interaction_return_value_type::tell_line;
+    int run();
 };
 
 // Базовый выбор без проверок. Виртуальная функция всегда возвращает true
 struct dialogue_choice {
-dialogue_choice(const QString& choice_, int jump_to_tree_): choice(choice_), jump_to_tree(jump_to_tree_)
-{}
-QString choice;
-int jump_to_tree;
-virtual bool check();
+    dialogue_choice(const QString& choice_, int jump_to_tree_): choice(choice_), jump_to_tree(jump_to_tree_)
+    {}
+    QString choice;
+    int jump_to_tree;
+    virtual bool check();
 };
 
 // Каким-то образом надо придумать, как запихнуть в эти проверки статы игрока. Возможно, сработает глобальный неймспейс
 struct char_check_choice : public dialogue_choice {
-char_check_choice(const QString& choice_, int jump_to_tree_, char_type type_, int required_): dialogue_choice(choice_, jump_to_tree_), type(type_), required(required_)
-{}
-char_type type;
-int required;
-bool check();
+    char_check_choice(const QString& choice_, int jump_to_tree_, char_type type_, int required_): dialogue_choice(choice_, jump_to_tree_), type(type_), required(required_)
+    {}
+    char_type type;
+    int required;
+    bool check();
 };
 
 struct skill_check_choice : public dialogue_choice {
-skill_check_choice(const QString& choice_, int jump_to_tree_, skill_type type_, int required_): dialogue_choice(choice_, jump_to_tree_), type(type_), required(required_)
-{}
-skill_type type;
-int required;
-bool check();
+    skill_check_choice(const QString& choice_, int jump_to_tree_, skill_type type_, int required_): dialogue_choice(choice_, jump_to_tree_), type(type_), required(required_)
+    {}
+    skill_type type;
+    int required;
+    bool check();
 };
 
 // Возвращаемое значение здесь - переход на другую ветвь дерева в классе interactable
+
 struct give_choice: public interaction_type {
-std::vector<dialogue_choice*> choices;
-interaction_return_value_type expected_return_value = interaction_return_value_type::give_choice;
-int run();
-template<typename... Args>
-give_choice(Args&&... args) {
-    static_assert((std::is_constructible_v<dialogue_choice*, Args&&> && ...));
-    (choices.push_back(std::forward<Args>(args)), ...);
-}
-~give_choice();
+    std::vector<dialogue_choice*> choices;
+    interaction_return_value_type expected_return_value = interaction_return_value_type::give_choice;
+    int run();
+    template<typename... Args>
+    give_choice(Args&&... args) {
+        static_assert((std::is_constructible_v<dialogue_choice*, Args&&> && ...));
+        (choices.push_back(std::forward<Args>(args)), ...);
+    }
+    ~give_choice();
 };
 
 // Обманываем компилятор
@@ -100,21 +102,24 @@ class enemy;
 
 // Здесь о возврашемом значении можно не париться
 struct start_battle: public interaction_type {
-std::vector<enemy*> enemies;
-interaction_return_value_type expected_return_value = interaction_return_value_type::start_battle;
-int run();
-start_battle(enemy* single_enemy) {
-    enemies.reserve(1);
-    enemies.emplace_back(single_enemy);
-}
-start_battle(enemy* first_enemy, enemy* second_enemy) {
-    enemies.reserve(2);
-    enemies.emplace_back(first_enemy, second_enemy);
-}
-start_battle(enemy* first_enemy, enemy* secodn_enemy, enemy* third_enemy) {
-    enemies.reserve(3);
-    enemies.emplace_back(first_enemy, second_enemy, third_enemy);
-}
+    std::vector<enemy*> enemies;
+    interaction_return_value_type expected_return_value = interaction_return_value_type::start_battle;
+    int run();
+    start_battle(enemy* single_enemy) {
+        enemies.reserve(1);
+        enemies.emplace_back(single_enemy);
+    }
+    start_battle(enemy* first_enemy, enemy* second_enemy) {
+        enemies.reserve(2);
+        enemies.emplace_back(first_enemy);
+        enemies.emplace_back(second_enemy);
+    }
+    start_battle(enemy* first_enemy, enemy* second_enemy, enemy* third_enemy) {
+        enemies.reserve(3);
+        enemies.emplace_back(first_enemy);
+        enemies.emplace_back(second_enemy);
+        enemies.emplace_back(third_enemy);
+    }
 };
 
 // Обманываем не только компилятор, но и себя
@@ -122,36 +127,36 @@ class trader;
 
 // Используем указатель на торговца, чтобы в функции run вызыать у него что-то
 struct start_trade: public interaction_type {
-trader* trade_with;
-interaction_return_value_type expected_return_value = interaction_return_value_type::start_trade;
-int run();
-start_trade(trader* trader_): trade_with(trader_)
-{}
+    trader* trade_with;
+    interaction_return_value_type expected_return_value = interaction_return_value_type::start_trade;
+    int run();
+    start_trade(trader* trader_): trade_with(trader_)
+    {}
 };
 
 // Несмотря на название, это не дерево, а веточка
 struct interaction_tree {
-std::vector<interaction_type*> interactions;
-int returned_value;
-unsigned int progress = 0;
-int run_tree();
-// В реализации run_tree() что-то типа 
-// returned_value = this->interactions[progress]->run();
-// ++progress;
-//~interaction_tree();
+    std::vector<interaction_type*> interactions;
+    int returned_value;
+    unsigned int progress = 0;
+    int run_tree();
+    // В реализации run_tree() что-то типа
+    // returned_value = this->interactions[progress]->run();
+    // ++progress;
+    //~interaction_tree();
 };
 
 // Собственно класс, который будут наследовать сущности. Этот класс в свою очередь наследует QObject, может быть пригодится для сигналов, если нет - уберём
 class interactable : public QObject {
 public:
-interactable() = default;
-std::vector<interaction_tree> interaction_trees;
-unsigned int selected_interaction_tree = 0;
-void execute();
-// В реализации execute():
-// interaction_trees[selected_interaction_tree ].run_tree()
-// *обработка в зависимости от зачений в структурах*
-virtual ~interactable() = default;
+    interactable() = default;
+    std::vector<interaction_tree> interaction_trees;
+    unsigned int selected_interaction_tree = 0;
+    void execute();
+    // В реализации execute():
+    // interaction_trees[selected_interaction_tree ].run_tree()
+    // *обработка в зависимости от зачений в структурах*
+    virtual ~interactable() = default;
 };
 
 
@@ -233,8 +238,6 @@ public:
 };
 
 
-class quest;
-class location;
 class player: public living_entity {
 protected:
     float _max_weight;
