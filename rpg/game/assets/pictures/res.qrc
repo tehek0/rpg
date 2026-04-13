@@ -4,5 +4,21 @@
         <file>testbkg.jpg</file>
         <file>testbox.png</file>
         <file>gif_testbox.gif</file>
+        <file>icon_inv_shrimp.png</file>
+        <file>icon_inv_armor_ironPlate.png</file>
+        <file>icon_inv_armor_pot.png</file>
+        <file>icon_inv_armor_sandals.png</file>
+        <file>icon_inv_armor_scrapBoots.png</file>
+        <file>icon_inv_armor_scrapHelmet.png</file>
+        <file>icon_inv_armor_scrapJacket.png</file>
+        <file>icon_inv_combat_axe.png</file>
+        <file>icon_inv_combat_crowbar.png</file>
+        <file>icon_inv_combat_knife.png</file>
+        <file>icon_inv_consumable_bleedBandage.png</file>
+        <file>icon_inv_consumable_healingInjection.png</file>
+        <file>icon_inv_consumable_poisonMeds.png</file>
+        <file>icon_inv_weapon_gun.png</file>
+        <file>icon_inv_weapon_revolver.png</file>
+        <file>icon_inv_weapon_riffle.png</file>
     </qresource>
 </RCC>

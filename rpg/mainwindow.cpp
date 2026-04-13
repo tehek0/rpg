@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     QPushButton* ent = new QPushButton(this);
-    ent->setStyleSheet(QString("border-image: url(:/testbox.png);"));
+    ent->setStyleSheet(QString("border-image: url(:/icon_inv_shrimp.png);"));
     ent->setGeometry(1000,100,100,100);
     ent->connect(ent, &QPushButton::clicked, this, &MainWindow::OnEntClicked);
 
