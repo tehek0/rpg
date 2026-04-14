@@ -189,13 +189,15 @@ struct entity_level {
 
 };
 
-class entity: public interactable, clickable {
+class entity: public interactable, displayable {
 protected:
     inventory _inventory;
-    // name и sprite family поля придут с clickable
+    displayable* _disp;
+    // name и sprite family поля придут с displayable
 public:
     entity() = default;
-    entity(MainWindow* w, QRect coord_and_size, QString sprite_family, QString name);
+    entity(MainWindow* w, QRect& coord_and_size, QString& sprite_family, QString& name)
+        : displayable(w,true,coord_and_size,sprite_family,name) {};
     virtual ~entity() = default;
 
     inventory get_inventory();

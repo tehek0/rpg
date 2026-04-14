@@ -6,29 +6,34 @@
 
 //визуальные компоненты игровых объектов
 
-//некликабельные картинки
-class displayable {
+class displayable : QPushButton {
+    Q_OBJECT;
 protected:
     QString _name;
     QString _sprite_family;
-    QLabel* _disp;
 public:
     displayable() = default;
-    displayable(MainWindow* w, QRect coord_and_size, QString sprite_family, QString name);
-    virtual ~displayable() {delete _disp;}
+    displayable(MainWindow* w, bool clickable, QRect& coord_and_size, QString& sprite_family, QString& name) : QPushButton(w) {
+            this->setStyleSheet(QString("border-image: url(:/%1.png);").arg(sprite_family));
+            this->setGeometry(coord_and_size);
+            this->setObjectName(name);
+            if (!clickable) {
+                this->setDisabled(true);
+            }
+            this->show();
+    };
 
-    void blink();
-
+    virtual ~displayable() = default;
 };
 
 //кликабельные картинки
-class clickable : displayable{
-protected:
-    QPushButton* _clk;
-public:
-    clickable() = default;
-    clickable(MainWindow* w, QRect coord_and_size, QString sprite_family, QString name);
-    ~clickable() {delete _clk;}
-};
+// class clickable : displayable{
+// protected:
+//     QPushButton* _clk;
+// public:
+//     clickable() = default;
+//     clickable(MainWindow* w, QRect coord_and_size, QString sprite_family, QString name);
+//     ~clickable() {delete _clk;}
+// };
 
 //TO DO - blink; move_interpolation
