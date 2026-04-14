@@ -61,14 +61,19 @@ struct tell_line: public interaction_type {
 struct dialogue_choice {
     dialogue_choice(const QString& choice_, int jump_to_tree_): choice(choice_), jump_to_tree(jump_to_tree_)
     {}
+    dialogue_choice(const QString& choice_, int jump_to_tree_, int jump_to_if_fail_): choice(choice_), jump_to_tree(jump_to_tree_), jump_to_if_fail(jump_to_if_fail_)
+    {}
+    virtual ~dialogue_choice() = default;
     QString choice;
     int jump_to_tree;
+    // Это поле не используется здесь, но используется в наследниках
+    int jump_to_if_fail = 0;
     virtual bool check();
 };
 
 // Каким-то образом надо придумать, как запихнуть в эти проверки статы игрока. Возможно, сработает глобальный неймспейс
 struct char_check_choice : public dialogue_choice {
-    char_check_choice(const QString& choice_, int jump_to_tree_, char_type type_, int required_): dialogue_choice(choice_, jump_to_tree_), type(type_), required(required_)
+    char_check_choice(const QString& choice_, int jump_to_tree_, int jump_to_if_fail_, char_type type_, int required_): dialogue_choice(choice_, jump_to_tree_, jump_to_if_fail_), type(type_), required(required_)
     {}
     char_type type;
     int required;
@@ -76,7 +81,7 @@ struct char_check_choice : public dialogue_choice {
 };
 
 struct skill_check_choice : public dialogue_choice {
-    skill_check_choice(const QString& choice_, int jump_to_tree_, skill_type type_, int required_): dialogue_choice(choice_, jump_to_tree_), type(type_), required(required_)
+    skill_check_choice(const QString& choice_, int jump_to_tree_, int jump_to_if_fail_, skill_type type_, int required_): dialogue_choice(choice_, jump_to_tree_, jump_to_if_fail_), type(type_), required(required_)
     {}
     skill_type type;
     int required;
@@ -140,10 +145,12 @@ struct interaction_tree {
     int returned_value;
     unsigned int progress = 0;
     int run_tree();
-    // В реализации run_tree() что-то типа
-    // returned_value = this->interactions[progress]->run();
-    // ++progress;
-    //~interaction_tree();
+    template<typename... Args>
+    interaction_tree(Args... args) {
+        static_assert((std::is_constructible_v<interaction_type*, Args> && ...));
+        (interactions.emplace_back(std::forward<Args>(args)), ...);
+    }
+    ~interaction_tree();
 };
 
 // Собственно класс, который будут наследовать сущности. Этот класс в свою очередь наследует QObject, может быть пригодится для сигналов, если нет - уберём
@@ -220,6 +227,8 @@ protected:
 public:
     virtual ~living_entity() = default;
     entity_stats get_entity_stats();
+    short get_entity_stat(char_type type_);
+    short get_entity_stat(skill_type type_);
     entity_level get_entity_level();
     int get_max_health();
     int get_health();
