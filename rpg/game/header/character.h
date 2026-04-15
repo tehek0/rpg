@@ -159,11 +159,12 @@ public:
     interactable() = default;
     std::vector<interaction_tree> interaction_trees;
     unsigned int selected_interaction_tree = 0;
+    virtual ~interactable() = default;
     void execute();
     // В реализации execute():
     // interaction_trees[selected_interaction_tree ].run_tree()
     // *обработка в зависимости от зачений в структурах*
-    virtual ~interactable() = default;
+
 };
 
 
@@ -196,15 +197,15 @@ struct entity_level {
 
 };
 
-class entity: public interactable, displayable {
+class entity: public interactable, public displayable {
 protected:
     inventory _inventory;
-    displayable* _disp;
     // name и sprite family поля придут с displayable
 public:
     entity() = default;
     entity(MainWindow* w, QRect& coord_and_size, QString& sprite_family, QString& name)
-        : displayable(w,true,coord_and_size,sprite_family,name) {};
+        : displayable(w,true,coord_and_size,sprite_family,name) {
+    };
     virtual ~entity() = default;
 
     inventory get_inventory();

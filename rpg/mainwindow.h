@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
 #include <QMainWindow>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -16,10 +16,17 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-Ui::MainWindow *ui;
-private slots:
+
+    std::vector<QWidget*> on_screen;
+
+    Ui::MainWindow *ui;
+public slots:
     void on_pushButton_clicked();
     void OnEntClicked();
+private slots:
+    void on_inventory_b_clicked();
+    void on_map_b_clicked();
+
 private:
 
 };
