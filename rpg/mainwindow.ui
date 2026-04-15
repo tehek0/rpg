@@ -43,6 +43,54 @@ background-position: center;</string>
      <string>PushButton</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="map_b">
+    <property name="geometry">
+     <rect>
+      <x>1550</x>
+      <y>920</y>
+      <width>51</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background:url(:/icon_inv_armor_sandals.png)</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="inventory_b">
+    <property name="geometry">
+     <rect>
+      <x>1470</x>
+      <y>900</y>
+      <width>51</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background:url(:/icon_inv_combat_axe.png)</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="stats_b">
+    <property name="geometry">
+     <rect>
+      <x>1390</x>
+      <y>930</y>
+      <width>51</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background:url(:/icon_inv_weapon_gun.png)</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -50,7 +98,7 @@ background-position: center;</string>
      <x>0</x>
      <y>0</y>
      <width>1920</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
