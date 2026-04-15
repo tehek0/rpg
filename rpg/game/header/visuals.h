@@ -6,26 +6,30 @@
 
 //визуальные компоненты игровых объектов
 
-class displayable : QPushButton {
-    Q_OBJECT;
+class displayable {
 protected:
     QString _name;
     QString _sprite_family;
+
 public:
+    QPushButton* _disp;
+
     displayable() = default;
-    displayable(MainWindow* w, bool clickable, QRect& coord_and_size, QString& sprite_family, QString& name) : QPushButton(w) {
-            this->setStyleSheet(QString("border-image: url(:/%1.png);").arg(sprite_family));
-            this->setGeometry(coord_and_size);
-            this->setObjectName(name);
+    displayable(MainWindow* w, bool clickable, QRect& coord_and_size, QString& sprite_family, QString& name) : displayable(){
+        QPushButton* disp = new QPushButton();
+            disp->setStyleSheet(QString("border-image: url(:/%1.png);").arg(sprite_family));
+            disp->setGeometry(coord_and_size);
+            disp->setObjectName(name);
+            disp->setParent(w);
             if (!clickable) {
-                this->setDisabled(true);
+                disp->setDisabled(true);
             }
-            this->show();
-    };
+            disp->show();
+            _disp = disp;
+    }
 
     virtual ~displayable() = default;
 };
-
 //кликабельные картинки
 // class clickable : displayable{
 // protected:
