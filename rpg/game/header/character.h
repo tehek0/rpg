@@ -146,20 +146,20 @@ struct interaction_tree {
     unsigned int progress = 0;
     int run_tree();
     template<typename... Args>
-    interaction_tree(Args... args) {
-        static_assert((std::is_constructible_v<interaction_type*, Args> && ...));
+    interaction_tree(Args&&... args) {
+        static_assert((std::is_constructible_v<interaction_type*, Args&&> && ...));
         (interactions.emplace_back(std::forward<Args>(args)), ...);
     }
     ~interaction_tree();
 };
 
 // Собственно класс, который будут наследовать сущности. Этот класс в свою очередь наследует QObject, может быть пригодится для сигналов, если нет - уберём
-class interactable : public QObject {
+class interactable {
 public:
     interactable() = default;
-    std::vector<interaction_tree> interaction_trees;
+    std::vector<interaction_tree*> interaction_trees;
     unsigned int selected_interaction_tree = 0;
-    virtual ~interactable() = default;
+    virtual ~interactable();
     void execute();
     // В реализации execute():
     // interaction_trees[selected_interaction_tree ].run_tree()
