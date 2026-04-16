@@ -203,8 +203,8 @@ protected:
     // name и sprite family поля придут с displayable
 public:
     entity() = default;
-    entity(MainWindow* w, QRect& coord_and_size, QString& sprite_family, QString& name)
-        : displayable(w,true,coord_and_size,sprite_family,name) {
+    entity(MainWindow* w, QPoint& coord, QSize& size, QString& sprite_family, QString& name)
+        : displayable(w,true,coord,size,sprite_family,name) {
     };
     virtual ~entity() = default;
 

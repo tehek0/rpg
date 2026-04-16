@@ -20,5 +20,9 @@
         <file>icon_inv_weapon_revolver.png</file>
         <file>icon_inv_weapon_riffle.png</file>
         <file>icon_inv_collect_shrimp.png</file>
+        <file>testbkg_city.jpg</file>
+        <file>testbkg_fight.jpg</file>
+        <file>testbkg_menu.jpg</file>
+        <file>testbkg_stats.jpg</file>
     </qresource>
 </RCC>

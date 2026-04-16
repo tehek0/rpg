@@ -4,6 +4,7 @@
 //#include <cstdlib>
 //#include <ctime>
 //#include "game/header/global.h"
+//#include <QPushButton>
 
 int main(int argc, char *argv[])
 {
@@ -27,6 +28,10 @@ int main(int argc, char *argv[])
     // inter.execute();
     // inter.execute();
     // inter.execute();
+
+
     w.show();
+    w.on_menu_b_clicked();
+
     return a.exec();
 }

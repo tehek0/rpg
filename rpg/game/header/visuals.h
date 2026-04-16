@@ -15,20 +15,20 @@ public:
     QPushButton* _disp;
 
     displayable() = default;
-    displayable(MainWindow* w, bool clickable, QRect& coord_and_size, QString& sprite_family, QString& name) : displayable(){
+    displayable(MainWindow* w, bool clickable, QPoint& coord, QSize& size, QString& sprite_family, QString& name) : displayable(){
         QPushButton* disp = new QPushButton();
             disp->setStyleSheet(QString("border-image: url(:/%1.png);").arg(sprite_family));
-            disp->setGeometry(coord_and_size);
+            disp->setGeometry(coord.x(),coord.y(), size.width(), size.height());
             disp->setObjectName(name);
             disp->setParent(w);
             if (!clickable) {
                 disp->setDisabled(true);
             }
-            disp->show();
+            //disp->show();
             _disp = disp;
     }
 
-    virtual ~displayable() = default;
+    virtual ~displayable() { delete _disp;};
 };
 //кликабельные картинки
 // class clickable : displayable{
