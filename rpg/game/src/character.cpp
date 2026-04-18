@@ -138,12 +138,6 @@ interactable::~interactable() {
     }
 }
 
-QString get_line_from_tell_line(tell_line* l) {
-    return l->line;
-}
-QString get_line_from_tell_line(interaction_type* unstbl) {
-    return "";
-}
 
 void interactable::execute() {
     size_t int_trees_size = interaction_trees.size();
@@ -154,7 +148,6 @@ void interactable::execute() {
     int catcher = interaction_trees[selected_interaction_tree]->run_tree();
     if (catcher == -1)
         return;
-    qInfo() << get_line_from_tell_line(interaction_trees[selected_interaction_tree]->interactions[interaction_trees[selected_interaction_tree]->progress]);
     ++interaction_trees[selected_interaction_tree]->progress;
 }
 

@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 #include <QMainWindow>
 
+class animated_displayable;
+
 enum class screens {
     map,
     inventory,
@@ -34,6 +36,7 @@ public:
 public slots:
     void on_pushButton_clicked();
     void OnEntClicked();
+    void OnEntClicked(animated_displayable* ent_);
     void on_menu_b_clicked();
 private slots:
     void on_inventory_b_clicked();
