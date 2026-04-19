@@ -63,12 +63,18 @@ void MainWindow::OnEntClicked() {
 }
 
 void MainWindow::OnEntClicked(animated_displayable* ent_) {
+    QPoint new_destination = ent_->_disp->pos();
+    new_destination.setX(new_destination.x() + (rand() % 101) - 50);
+    new_destination.setY(new_destination.y() + (rand() % 101) - 50);
+    ent_->begin_smooth_step(new_destination, 67);
+    /*
     ent_->switch_paused();
     if (ent_->get_paused()) {
         qInfo() << QString("Остановлена анимация объекта %1 на кадре %2").arg(ent_->get_name()).arg(ent_->get_current_frame());
         return;
     }
     qInfo() << QString("Анимация объекта %1 возобновлена").arg(ent_->get_name());
+    */
 }
 
 void debug_screen(const std::vector<QWidget*> &screen) {

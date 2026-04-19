@@ -8,20 +8,19 @@
 
 int main()
 {
-    global::a.arguments();
     global::player_ = new player;
 
     std::srand(std::time(0));
 
     //MainWindow w;
-    QPoint p(150,150);
+    QPoint p(960 - 150,540 - 150);
     QSize z(150,150);
     QString s = "shrimp";
     QString n = "test_entity";
     entity* entt = new entity(&global::w, p, z, s, n, 0, animation("test_anim", 3, 6));
     global::w.on_map.emplace_back(entt->_disp);
     entt->_disp->hide();
-    global::w.connect(entt->_disp, &QPushButton::clicked, &global::w, [] {(&global::w)->OnEntClicked();});
+    global::w.connect(entt->_disp, &QPushButton::clicked, &global::w, [=]() {(&global::w)->OnEntClicked(entt);});
     give_choice x(new dialogue_choice("Выбор 1", 1), new char_check_choice("Выбор с проверкой удачи", 0, 1, char_type::luck, 8), new dialogue_choice("Выбор 2", 2), new dialogue_choice("Выбор 3", 3));
     entity_stats st;
     st.luck = 7;

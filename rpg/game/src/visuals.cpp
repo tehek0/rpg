@@ -80,3 +80,30 @@ void animated_displayable::set_paused(bool paused) {
 void animated_displayable::switch_paused() {
     _paused = (_paused ? false : true);
 }
+void animated_displayable::move_to(QPoint &coord) {
+    QSize size = _disp->size();
+    QRect new_pos = QRect(coord, size);
+    _disp->setGeometry(new_pos);
+}
+
+float animated_displayable::smoothstep_algorythm(float steps, float required_steps) {
+    float process = steps / required_steps;
+    if (process > 1.0f) {
+        process = 1.0f;
+    }
+    else if (process < 0.0f) {
+        process = 0.0f;
+    }
+    return process * process * (3.0f - 2.0f * process);
+}
+void animated_displayable::begin_smooth_step(QPoint& destination, unsigned int steps) {
+    _step = 0;
+    _required_steps = steps;
+    _start_destination = _disp->pos();
+    _final_destination = destination;
+    if (_has_reached_destination == true) {
+        connect(global::timer, &QTimer::timeout, this, &animated_displayable::smooth_step);
+    }
+    _has_reached_destination = false;
+
+}

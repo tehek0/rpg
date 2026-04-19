@@ -59,12 +59,21 @@ class animated_displayable: public displayable {
 
     Q_OBJECT
 
+
+private:
+    static float smoothstep_algorythm(float steps, float required_steps);
 protected:
     std::vector<animation> _animations;
     unsigned int _ticks_passed = 0;
     unsigned int _current_animation_id = 0;
     unsigned int _current_frame = 0;
     bool _paused = false;
+
+    QPoint _final_destination;
+    QPoint _start_destination;
+    unsigned int _step;
+    unsigned int _required_steps;
+    bool _has_reached_destination = true;
 public slots:
     void next_frame() {
         if (_disp->isHidden() || _paused || _animations.size() == 0) {
@@ -89,6 +98,20 @@ public slots:
             _disp->setStyleSheet(QString("border-image: url(:/animated/%1/%2/frame%3.png);").arg(_sprite_family).arg(_animations[_current_animation_id].name).arg(_current_frame));
         }
     }
+
+    void smooth_step() {
+        ++_step;
+        if (_step > _required_steps) {
+            disconnect(global::timer, &QTimer::timeout, this, &animated_displayable::smooth_step);
+            _has_reached_destination = true;
+        }
+        int set_x = _final_destination.x() - _start_destination.x();
+        int set_y = _final_destination.y() - _start_destination.y();
+        float coef = smoothstep_algorythm(_step, _required_steps);
+        QPoint new_point = QPoint(_start_destination.x() + (set_x * coef), _start_destination.y() + (set_y * coef));
+        qInfo() << new_point;
+        this->move_to(new_point);
+    }
 public:
     animated_displayable() = default;
     template<typename... Args>
@@ -112,6 +135,9 @@ public:
     void set_current_frame(unsigned int current_frame);
     void set_paused(bool paused);
     void switch_paused();
+
+    void move_to(QPoint& coord);
+    void begin_smooth_step(QPoint& destination, unsigned int steps);
 };
 
 //кликабельные картинки
