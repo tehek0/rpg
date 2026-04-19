@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     QSize z(100,100);
     QString s = "shrimp";
     QString n = "test";
-    animated_displayable* ent = new animated_displayable(this,true,p,z,s,n, 0, animation("test_anim", 20, 6));
+    animated_displayable* ent = new animated_displayable(this,true,p,z,s,n, 0, animation("test_anim", 3, 6, false, true));
     connect(ent->_disp, &QPushButton::clicked, this, [=]() {this->OnEntClicked(ent);});
     on_map.emplace_back(ent->_disp);
     ent->_disp->hide();
@@ -68,9 +68,8 @@ void MainWindow::OnEntClicked(animated_displayable* ent_) {
         qInfo() << QString("Остановлена анимация объекта %1 на кадре %2").arg(ent_->get_name()).arg(ent_->get_current_frame());
         return;
     }
-    qInfo() << QString("Анимаци объекта %1 возобновлена").arg(ent_->get_name());
+    qInfo() << QString("Анимация объекта %1 возобновлена").arg(ent_->get_name());
 }
-//
 
 void debug_screen(const std::vector<QWidget*> &screen) {
     for (int i = 0; i< screen.size(); ++i){

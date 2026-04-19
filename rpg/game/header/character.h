@@ -197,15 +197,16 @@ struct entity_level {
 
 };
 
-class entity: public interactable, public displayable {
+class entity: public interactable, public animated_displayable {
 protected:
     inventory _inventory;
     // name и sprite family поля придут с displayable
 public:
     entity() = default;
-    entity(MainWindow* w, QPoint& coord, QSize& size, QString& sprite_family, QString& name)
-        : displayable(w,true,coord,size,sprite_family,name) {
-    };
+    template<typename... Args>
+    entity(MainWindow* w, QPoint& coord, QSize& size, QString& sprite_family, QString& name, unsigned int start_from_animation, Args&&... args)
+        : animated_displayable(w,true,coord,size,sprite_family,name, start_from_animation, args...)
+    {}
     virtual ~entity() = default;
 
     inventory get_inventory();
@@ -257,6 +258,7 @@ protected:
     int _max_energy;
     trait _trait;
 public:
+    player() = default;
     std::vector<quest> quests;
     location* current_location;
     float get_max_weight();

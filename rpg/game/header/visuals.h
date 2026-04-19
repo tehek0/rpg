@@ -47,7 +47,11 @@ struct animation {
     QString name;
     unsigned int ticks_to_move;
     unsigned int last_frame;
+    bool is_looping = true;
+    bool restart_after_pause = false;
     animation(QString name_, unsigned int ticks_to_move_, unsigned int last_frame_): name(name_), ticks_to_move(ticks_to_move_), last_frame(last_frame_)
+    {}
+    animation(QString name_, unsigned int ticks_to_move_, unsigned int last_frame_, bool is_looping_, bool restart_after_pause_): name(name_), ticks_to_move(ticks_to_move_), last_frame(last_frame_), is_looping(is_looping_), restart_after_pause(restart_after_pause_)
     {}
 };
 
@@ -63,19 +67,30 @@ protected:
     bool _paused = false;
 public slots:
     void next_frame() {
-        if (_disp->isHidden() || _paused || _animations.size() == 0)
+        if (_disp->isHidden() || _paused || _animations.size() == 0) {
+            if (_animations[_current_animation_id].restart_after_pause == true && _current_frame != 0) {
+                _current_frame = 0;
+                _ticks_passed = 0;
+            }
             return;
+        }
         ++_ticks_passed;
         if (_ticks_passed > _animations[_current_animation_id].ticks_to_move) {
             _ticks_passed = 0;
             ++_current_frame;
-            if (_current_frame > _animations[_current_animation_id].last_frame)
+            if (_current_frame > _animations[_current_animation_id].last_frame) {
+                if (_animations[_current_animation_id].is_looping == false) {
+                    this->set_paused(true);
+                    _current_frame = 0;
+                    return;
+                }
                 _current_frame = 0;
-
+            }
             _disp->setStyleSheet(QString("border-image: url(:/animated/%1/%2/frame%3.png);").arg(_sprite_family).arg(_animations[_current_animation_id].name).arg(_current_frame));
         }
     }
 public:
+    animated_displayable() = default;
     template<typename... Args>
     animated_displayable(MainWindow* w, bool clickable, QPoint& coord, QSize& size, QString& sprite_family, QString& name, unsigned int start_from_animation, Args&&... args): displayable(w, clickable, coord, size, sprite_family, name) {
         static_assert((std::is_constructible_v<animation, Args&&> && ...));
