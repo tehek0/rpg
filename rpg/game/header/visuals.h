@@ -55,6 +55,33 @@ struct animation {
     {}
 };
 
+struct transposition {
+    QPoint final_destination;
+    QPoint start_destination;
+    unsigned int step;
+    unsigned int required_steps;
+    bool has_reached_destination;
+};
+
+struct animation_sequencer {
+    std::vector<animation> animations;
+    unsigned int ticks_passed;
+    unsigned int current_animation_id;
+    unsigned int current_frame;
+    bool paused;
+    animation_sequencer(): ticks_passed(0), current_animation_id(0), current_frame(0), paused(false)
+    {}
+    template<typename... Args>
+    animation_sequencer(Args&&... args): ticks_passed(0), current_animation_id(0), current_frame(0), paused(false)
+    {
+        static_assert((std::is_constructible_v<animation, Args&&> && ...));
+        (animations.push_back(std::forward<Args>(args)), ...);
+    }
+    template<typename... Args>
+    animation_sequencer(int current_animation_id_, Args&&... args): animation_sequencer(args), ticks_passed(0), current_animation_id(current_animation_id_), current_frame(0)
+    {}
+};
+
 class animated_displayable: public displayable {
 
     Q_OBJECT
@@ -63,6 +90,7 @@ class animated_displayable: public displayable {
 private:
     static float smoothstep_algorythm(float steps, float required_steps);
 protected:
+    // animation_sequencer _animation_sequencer;
     std::vector<animation> _animations;
     unsigned int _ticks_passed = 0;
     unsigned int _current_animation_id = 0;
@@ -109,7 +137,6 @@ public slots:
         int set_y = _final_destination.y() - _start_destination.y();
         float coef = smoothstep_algorythm(_step, _required_steps);
         QPoint new_point = QPoint(_start_destination.x() + (set_x * coef), _start_destination.y() + (set_y * coef));
-        qInfo() << new_point;
         this->move_to(new_point);
     }
 public:
@@ -139,15 +166,3 @@ public:
     void move_to(QPoint& coord);
     void begin_smooth_step(QPoint& destination, unsigned int steps);
 };
-
-//кликабельные картинки
-// class clickable : displayable{
-// protected:
-//     QPushButton* _clk;
-// public:
-//     clickable() = default;
-//     clickable(MainWindow* w, QRect coord_and_size, QString sprite_family, QString name);
-//     ~clickable() {delete _clk;}
-// };
-
-//TO DO - blink; move_interpolation
