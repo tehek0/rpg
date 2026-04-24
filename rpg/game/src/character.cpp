@@ -126,21 +126,18 @@ int interaction_tree::run_tree() {
 }
 
 
-// Почему-то деструктор вызывается два раза. Без понятия, почему это может происходить
 interaction_tree::~interaction_tree() {
     for (size_t i = 0; i < interactions.size(); ++i) {
-        if (interactions[i] != nullptr) {
             delete interactions[i];
-        }
     }
 }
 
-QString get_line_from_tell_line(tell_line* l) {
-    return l->line;
+interactable::~interactable() {
+    for (size_t i = 0; i < interaction_trees.size(); ++i) {
+            delete interaction_trees[i];
+    }
 }
-QString get_line_from_tell_line(interaction_type* unstbl) {
-    return "";
-}
+
 
 void interactable::execute() {
     size_t int_trees_size = interaction_trees.size();
@@ -148,10 +145,9 @@ void interactable::execute() {
         return;
     if (int_trees_size <= selected_interaction_tree)
         return;
-    int catcher = interaction_trees[selected_interaction_tree].run_tree();
+    int catcher = interaction_trees[selected_interaction_tree]->run_tree();
     if (catcher == -1)
         return;
-    qInfo() << get_line_from_tell_line(interaction_trees[selected_interaction_tree].interactions[interaction_trees[selected_interaction_tree].progress]);
-    ++interaction_trees[selected_interaction_tree].progress;
+    ++interaction_trees[selected_interaction_tree]->progress;
 }
 

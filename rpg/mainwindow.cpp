@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "game/header/character.h"
+#include "game/header/global.h"
 #include <QPushButton>
 
 /*struct sprite_size {
@@ -11,14 +12,14 @@ const unsigned int amount_of_sprite_sizes = 10;
 const sprite_size sprite_size[amount_of_sprite_sizes] {
     {"ui_button", QSize(50,50)},
     {"map_city", QSize(100,100)}
-}*/;
+};*/
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    global::timer->start(global::tick_timeout);
     on_inventory.emplace_back(ui->pushButton);
     ui->pushButton->hide();
 
@@ -29,10 +30,10 @@ MainWindow::MainWindow(QWidget *parent)
     //test
     QPoint p(1000,100);
     QSize z(100,100);
-    QString s = "icon_inv_collect_shrimp";
+    QString s = "shrimp";
     QString n = "test";
-    displayable* ent = new displayable(this,true,p,z,s,n);
-    connect(ent->_disp, &QPushButton::clicked, this, [this]{OnEntClicked();});
+    animated_displayable* ent = new animated_displayable(this,true,p,z,s,n, 0, animation("test_anim", 3, 6, false, true));
+    connect(ent->_disp, &QPushButton::clicked, this, [=]() {this->OnEntClicked(ent);});
     on_map.emplace_back(ent->_disp);
     ent->_disp->hide();
     //
@@ -49,18 +50,32 @@ void MainWindow::on_pushButton_clicked()
 {
     QPoint p(100+ii,100);
     QSize z(100,100);
-    QString s = "icon_inv_collect_shrimp";
+    QString s = "shrimp";
     QString n = "test";
-    ii += 20;
-    displayable* ent = new displayable(this,true,p,z,s,n);
-    connect(ent->_disp, &QPushButton::clicked, this, [this]{OnEntClicked();});
+    ii += 50;
+    animated_displayable* ent = new animated_displayable(this,true,p,z,s,n, 0, animation("test_anim", (std::rand() % (20 - 10 + 1)) + 10, 6));
+    connect(ent->_disp, &QPushButton::clicked, this, [=]() {this->OnEntClicked(ent);});
     on_stats.emplace_back(ent->_disp);
 }
 
 void MainWindow::OnEntClicked() {
     qInfo() << "Кнопка нажимается";
 }
-//
+
+void MainWindow::OnEntClicked(animated_displayable* ent_) {
+    QPoint new_destination = ent_->_disp->pos();
+    new_destination.setX(new_destination.x() + (rand() % 1001) - 500);
+    new_destination.setY(new_destination.y() + (rand() % 1001) - 500);
+    ent_->begin_smooth_step(new_destination, 1000);
+    /*
+    ent_->switch_paused();
+    if (ent_->get_paused()) {
+        qInfo() << QString("Остановлена анимация объекта %1 на кадре %2").arg(ent_->get_name()).arg(ent_->get_current_frame());
+        return;
+    }
+    qInfo() << QString("Анимация объекта %1 возобновлена").arg(ent_->get_name());
+    */
+}
 
 void debug_screen(const std::vector<QWidget*> &screen) {
     for (int i = 0; i< screen.size(); ++i){
