@@ -38,47 +38,40 @@ void displayable::set_sprite_family(QString sprite_family) {
 }
 
 
-std::vector<animation> animated_displayable::get_animations() {
-    return _animations;
+anim_sequence animated_displayable::get_anim_sequence() {
+    return _anim_sequence;
 }
-unsigned int animated_displayable::get_ticks_passed() {
-    return _ticks_passed;
+transpos animated_displayable::get_transpos() {
+    return _transpos;
 }
-unsigned int animated_displayable::get_current_animation_id() {
-    return _current_animation_id;
+anim animated_displayable::get_current_anim() {
+    return _anim_sequence.anims[_anim_sequence.current_anim_id];
 }
-animation animated_displayable::get_current_animation() {
-    return _animations[_current_animation_id];
+
+void animated_displayable::set_anim_sequence(anim_sequence& anim_sequence_) {
+    _anim_sequence = anim_sequence_;
 }
-unsigned int animated_displayable::get_current_frame() {
-    return _current_frame;
-}
-bool animated_displayable::get_paused() {
-    return _paused;
-}
-void animated_displayable::set_animations(std::vector<animation>& animations) {
-    _animations = animations;
-}
-void animated_displayable::set_ticks_passed(unsigned int ticks_passed) {
-    _ticks_passed = ticks_passed;
-}
-void animated_displayable::set_current_animation_id(unsigned int current_animation_id) {
-    _current_animation_id = current_animation_id;
-}
-void animated_displayable::set_current_animation(animation& anim) {
-    _ticks_passed = 0;
-    _current_frame = 0;
-    _animations[_current_animation_id] = anim;
+
+void animated_displayable::set_current_anim(anim& anim_) {
+    _anim_sequence.ticks_passed = 0;
+    _anim_sequence.current_frame = 0;
+    _anim_sequence.anims[_anim_sequence.current_anim_id] = anim_;
 }
 void animated_displayable::set_current_frame(unsigned int current_frame) {
-    _current_frame = current_frame;
-    _ticks_passed = 0;
-}
-void animated_displayable::set_paused(bool paused) {
-    _paused = paused;
+    _anim_sequence.current_frame = current_frame;
+    _anim_sequence.ticks_passed = 0;
 }
 void animated_displayable::switch_paused() {
-    _paused = (_paused ? false : true);
+    _anim_sequence.paused = (_anim_sequence.paused ? false : true);
+}
+void animated_displayable::set_transpos(transpos &transpos_) {
+    _transpos = transpos_;
+}
+void animated_displayable::set_swap_destinations(unsigned int amount) {
+    _transpos.times_to_swap_destinations = amount;
+}
+void animated_displayable::add_swap_destinations() {
+    ++_transpos.times_to_swap_destinations;
 }
 void animated_displayable::move_to(QPoint &coord) {
     QSize size = _disp->size();
@@ -96,14 +89,59 @@ float animated_displayable::smoothstep_algorythm(float steps, float required_ste
     }
     return process * process * (3.0f - 2.0f * process);
 }
-void animated_displayable::begin_smooth_step(QPoint& destination, unsigned int steps) {
-    _step = 0;
-    _required_steps = steps;
-    _start_destination = _disp->pos();
-    _final_destination = destination;
-    if (_has_reached_destination == true) {
-        connect(global::timer, &QTimer::timeout, this, &animated_displayable::smooth_step);
+
+float animated_displayable::linear_algorythm(float steps, float required_steps) {
+    float process = steps / required_steps;
+    return process;
+}
+
+float animated_displayable::bounce_in_algorythm(float steps, float required_steps) {
+    float process = steps / required_steps;
+    process = 1.0f - process;
+    if (process < 1.0f / 2.75f) {
+        return 1.0f - (7.5625f * process * process);
+    } else if (process < 2.0f / 2.75f) {
+        process -= 1.5f / 2.75f;
+        return 1.0f - (7.5625f * process * process + 0.75f);
+    } else if (process < 2.5f / 2.75f) {
+        process -= 2.25f / 2.75f;
+        return 1.0f - (7.5625f * process * process + 0.9375f);
+    } else {
+        process -= 2.625f / 2.75f;
+        return 1.0f - (7.5625f * process * process + 0.984375f);
     }
-    _has_reached_destination = false;
+}
+
+float animated_displayable::bounce_out_algorythm(float steps, float required_steps) {
+    float process = steps / required_steps;
+    if (process < (1.0f / 2.75f)) {
+        return 7.5625f * process * process;
+    } else if (process < (2.0f / 2.75f)) {
+        return 7.5625f * (process -= (1.5f / 2.75f)) * process + 0.75f;
+    } else if (process < (2.5f / 2.75f)) {
+        return 7.5625f * (process -= (2.25f / 2.75f)) * process + 0.9375f;
+    }
+    else {
+        return 7.5625f * (process -= (2.625f / 2.75f)) * process + 0.984375f;
+    }
+}
+
+float animated_displayable::instant_algorythm(float steps, float required_steps) {
+    if (steps < required_steps)
+        return 0.0f;
+
+    return 1.0f;
+}
+
+void animated_displayable::begin_step(QPoint& destination, unsigned int steps, transpos_algs alg) {
+    _transpos.step = 0;
+    _transpos.required_steps = steps;
+    _transpos.start_destination = _disp->pos();
+    _transpos.final_destination = destination;
+    _transpos.algorithm = alg;
+    if (_transpos.has_reached_destination == true) {
+        connect(global::timer, &QTimer::timeout, this, &animated_displayable::next_step);
+    }
+    _transpos.has_reached_destination = false;
 
 }

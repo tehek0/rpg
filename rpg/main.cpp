@@ -17,7 +17,7 @@ int main()
     QSize z(150,150);
     QString s = "shrimp";
     QString n = "test_entity";
-    entity* entt = new entity(&global::w, p, z, s, n, 0, animation("test_anim", 3, 6));
+    entity* entt = new entity(&global::w, p, z, s, n, anim_sequence(1, anim("test_anim", 3, 6), anim("test_anim2", 10, 6)));
     global::w.on_map.emplace_back(entt->_disp);
     entt->_disp->hide();
     global::w.connect(entt->_disp, &QPushButton::clicked, &global::w, [=]() {(&global::w)->OnEntClicked(entt);});

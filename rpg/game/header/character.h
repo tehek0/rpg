@@ -203,9 +203,8 @@ protected:
     // name и sprite family поля придут с displayable
 public:
     entity() = default;
-    template<typename... Args>
-    entity(MainWindow* w, QPoint& coord, QSize& size, QString& sprite_family, QString& name, unsigned int start_from_animation, Args&&... args)
-        : animated_displayable(w,true,coord,size,sprite_family,name, start_from_animation, args...)
+    entity(MainWindow* w, QPoint& coord, QSize& size, QString& sprite_family, QString& name, anim_sequence anim_sequence_)
+        : animated_displayable(w,true,coord,size,sprite_family,name, anim_sequence_)
     {}
     virtual ~entity() = default;
 
