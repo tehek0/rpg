@@ -16,8 +16,8 @@ int main()
     QPoint p(960 - 150,540 - 150);
     QSize z(150,150);
     QString s = "shrimp";
-    QString n = "test_entity";
-    entity* entt = new entity(&global::w, p, z, s, n, anim_sequence(1, anim("test_anim", 3, 6), anim("test_anim2", 10, 6)));
+    QString n = "КРЕВЕТКА КРЕВЕТКА КРЕВЕТКА КРЕВЕТКА";
+    entity* entt = new entity(&global::w, p, z, s, anim_sequence(1, anim("test_anim", 3, 6), anim("test_anim2", 10, 6)), n);
     global::w.on_map.emplace_back(entt->_disp);
     entt->_disp->hide();
     global::w.connect(entt->_disp, &QPushButton::clicked, &global::w, [=]() {(&global::w)->OnEntClicked(entt);});

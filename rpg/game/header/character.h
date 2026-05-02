@@ -198,14 +198,25 @@ struct entity_level {
 };
 
 class entity: public interactable, public animated_displayable {
+public slots:
+    void markdown_entity() {
+        if (_disp->linked_tooltip == nullptr)
+            return;
+
+
+        _disp->linked_tooltip->setText(QString("<center><font size=\"4\">%1</font></center>").arg(_name));
+    }
 protected:
     inventory _inventory;
-    // name и sprite family поля придут с displayable
+    QString _name;
 public:
     entity() = default;
-    entity(MainWindow* w, QPoint& coord, QSize& size, QString& sprite_family, QString& name, anim_sequence anim_sequence_)
-        : animated_displayable(w,true,coord,size,sprite_family,name, anim_sequence_)
-    {}
+    entity(MainWindow* w, QPoint& coord, QSize& size, QString& sprite_family, anim_sequence anim_sequence_, QString& name)
+        : animated_displayable(w, true, coord, size, sprite_family, anim_sequence_), _name(name)
+    {
+        _disp->tooltip = tooltip_types::name_display;
+        connect(_disp, &tracked_button::request_tooltip, this, &entity::markdown_entity);
+    }
     virtual ~entity() = default;
 
     inventory get_inventory();

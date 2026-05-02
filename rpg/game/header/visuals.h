@@ -4,29 +4,48 @@
 #include <QPushButton>
 #include <QLabel>
 #include <vector>
+#include <QTextBrowser>
 #include "global.h"
+#include "data/tooltip_types.h"
 
 //визуальные компоненты игровых объектов
+
+class tracked_button : public QPushButton {
+
+    Q_OBJECT
+
+signals:
+    void request_tooltip();
+
+protected:
+    void enterEvent(QEnterEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void leaveEvent(QEvent *event);
+public:
+    QTextBrowser* linked_tooltip = nullptr;
+    tooltip_types tooltip = tooltip_types::disabled;
+    tracked_button(): QPushButton()
+    {
+        this->setMouseTracking(true);
+    }
+};
 
 class displayable: public QObject {
 
     Q_OBJECT
 
 protected:
-    QString _name;
     QString _sprite_family;
 
 public:
-    QPushButton* _disp;
+    tracked_button* _disp;
 
     displayable() = default;
-    displayable(MainWindow* w, bool clickable, QPoint& coord, QSize& size, QString& sprite_family, QString& name) : displayable() {
-        _name = name;
+    displayable(MainWindow* w, bool clickable, QPoint& coord, QSize& size, QString& sprite_family) : displayable() {
         _sprite_family = sprite_family;
-        _disp = new QPushButton();
+        _disp = new tracked_button();
         _disp->setStyleSheet(QString("border-image: url(:/%1.png);").arg(_sprite_family));
         _disp->setGeometry(coord.x(),coord.y(), size.width(), size.height());
-        _disp->setObjectName(name);
         _disp->setParent(w);
         if (!clickable) {
             _disp->setDisabled(true);
@@ -37,9 +56,7 @@ public:
         delete _disp;
     }
 
-    QString get_name();
     QString get_sprite_family();
-    void set_name(QString name);
     void set_sprite_family(QString sprite_family);
 };
 
@@ -110,75 +127,11 @@ protected:
     anim_sequence _anim_sequence;
     transpos _transpos;
 public slots:
-    void next_frame() {
-        if (_disp->isHidden() || _anim_sequence.paused || _anim_sequence.anims.size() == 0) {
-            if (_anim_sequence.anims[_anim_sequence.current_anim_id].restart_after_pause == true && _anim_sequence.current_frame != 0) {
-                _anim_sequence.current_frame = 0;
-                _anim_sequence.ticks_passed = 0;
-            }
-            return;
-        }
-        ++_anim_sequence.ticks_passed;
-        if (_anim_sequence.ticks_passed > _anim_sequence.anims[_anim_sequence.current_anim_id].ticks_to_move) {
-            _anim_sequence.ticks_passed = 0;
-            ++_anim_sequence.current_frame;
-            if (_anim_sequence.current_frame > _anim_sequence.anims[_anim_sequence.current_anim_id].last_frame) {
-                if (_anim_sequence.anims[_anim_sequence.current_anim_id].is_looping == false) {
-                    _anim_sequence.paused = true;
-                    _anim_sequence.current_frame = 0;
-                    return;
-                }
-                _anim_sequence.current_frame = 0;
-            }
-            _disp->setStyleSheet(QString("border-image: url(:/animated/%1/%2/frame%3.png);").arg(_sprite_family).arg(_anim_sequence.anims[_anim_sequence.current_anim_id].name).arg(_anim_sequence.current_frame));
-        }
-    }
-
-    void next_step() {
-        ++_transpos.step;
-        if (_transpos.step > _transpos.required_steps) {
-            if (_transpos.times_to_swap_destinations > 0) {
-                --_transpos.times_to_swap_destinations;
-                _transpos.step = 1;
-                QPoint temp_destination = _transpos.final_destination;
-                _transpos.final_destination = _transpos.start_destination;
-                _transpos.start_destination = temp_destination;
-            } else {
-            disconnect(global::timer, &QTimer::timeout, this, &animated_displayable::next_step);
-            _transpos.has_reached_destination = true;
-            }
-        }
-        int set_x = _transpos.final_destination.x() - _transpos.start_destination.x();
-        int set_y = _transpos.final_destination.y() - _transpos.start_destination.y();
-        float coef;
-        switch(_transpos.algorithm)
-        {
-            case transpos_algs::smoothstep: {
-                coef = smoothstep_algorythm(_transpos.step, _transpos.required_steps);
-                break;
-            }
-            case transpos_algs::bounce_in: {
-                coef = bounce_in_algorythm(_transpos.step,_transpos.required_steps);
-                break;
-            }
-            case transpos_algs::bounce_out: {
-                coef = bounce_out_algorythm(_transpos.step,_transpos.required_steps);
-                break;
-            }
-            case transpos_algs::instant: {
-                coef = instant_algorythm(_transpos.step,_transpos.required_steps);
-                break;
-            }
-            default: {
-                coef = linear_algorythm(_transpos.step,_transpos.required_steps);
-            }
-        }
-        QPoint new_point = QPoint(_transpos.start_destination.x() + (set_x * coef), _transpos.start_destination.y() + (set_y * coef));
-        this->move_to(new_point);
-    }
+    void next_frame();
+    void next_step();
 public:
     animated_displayable() = default;
-    animated_displayable(MainWindow* w, bool clickable, QPoint& coord, QSize& size, QString& sprite_family, QString& name, anim_sequence anim_sequence_): displayable(w, clickable, coord, size, sprite_family, name) {
+    animated_displayable(MainWindow* w, bool clickable, QPoint& coord, QSize& size, QString& sprite_family, anim_sequence anim_sequence_): displayable(w, clickable, coord, size, sprite_family) {
         _anim_sequence = anim_sequence_;
         _disp->setStyleSheet(QString("border-image: url(:animated/%1/base_sprite.png);").arg(_sprite_family));
         connect(global::timer, &QTimer::timeout, this, &animated_displayable::next_frame);

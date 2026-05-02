@@ -1,6 +1,8 @@
 #include "../header/visuals.h"
 #include <QLabel>
 #include <QPushButton>
+#include <QEnterEvent>
+#include <QTextBrowser>
 
 // displayable* displayable::create(MainWindow* w, bool clickable, QRect& coord_and_size, QString& sprite_family, QString& name){
 //     displayable* disp = new displayable();
@@ -24,15 +26,11 @@
 //     clk->show();
 // }
 
-QString displayable::get_name() {
-    return _name;
-}
+
 QString displayable::get_sprite_family() {
     return _sprite_family;
 }
-void displayable::set_name(QString name) {
-    _name = name;
-}
+
 void displayable::set_sprite_family(QString sprite_family) {
     _sprite_family = sprite_family;
 }
@@ -77,6 +75,77 @@ void animated_displayable::move_to(QPoint &coord) {
     QSize size = _disp->size();
     QRect new_pos = QRect(coord, size);
     _disp->setGeometry(new_pos);
+}
+
+void animated_displayable::next_frame() {
+    if (_disp->isHidden() || _anim_sequence.paused || _anim_sequence.anims.size() == 0) {
+        if (_anim_sequence.anims[_anim_sequence.current_anim_id].restart_after_pause == true && _anim_sequence.current_frame != 0) {
+            _anim_sequence.current_frame = 0;
+            _anim_sequence.ticks_passed = 0;
+        }
+        return;
+    }
+    ++_anim_sequence.ticks_passed;
+    if (_anim_sequence.ticks_passed > _anim_sequence.anims[_anim_sequence.current_anim_id].ticks_to_move) {
+        _anim_sequence.ticks_passed = 0;
+        ++_anim_sequence.current_frame;
+        if (_anim_sequence.current_frame > _anim_sequence.anims[_anim_sequence.current_anim_id].last_frame) {
+            if (_anim_sequence.anims[_anim_sequence.current_anim_id].is_looping == false) {
+                _anim_sequence.paused = true;
+                _anim_sequence.current_frame = 0;
+                return;
+            }
+            _anim_sequence.current_frame = 0;
+        }
+        _disp->setStyleSheet(QString("border-image: url(:/animated/%1/%2/frame%3.png);").arg(_sprite_family).arg(_anim_sequence.anims[_anim_sequence.current_anim_id].name).arg(_anim_sequence.current_frame));
+    }
+}
+
+void animated_displayable::next_step() {
+    if (_disp->linked_tooltip != nullptr) {
+        _disp->linked_tooltip->deleteLater();
+        _disp->linked_tooltip = nullptr;
+    }
+    ++_transpos.step;
+    if (_transpos.step > _transpos.required_steps) {
+        if (_transpos.times_to_swap_destinations > 0) {
+            --_transpos.times_to_swap_destinations;
+            _transpos.step = 1;
+            QPoint temp_destination = _transpos.final_destination;
+            _transpos.final_destination = _transpos.start_destination;
+            _transpos.start_destination = temp_destination;
+        } else {
+            disconnect(global::timer, &QTimer::timeout, this, &animated_displayable::next_step);
+            _transpos.has_reached_destination = true;
+        }
+    }
+    int set_x = _transpos.final_destination.x() - _transpos.start_destination.x();
+    int set_y = _transpos.final_destination.y() - _transpos.start_destination.y();
+    float coef;
+    switch(_transpos.algorithm)
+    {
+    case transpos_algs::smoothstep: {
+        coef = smoothstep_algorythm(_transpos.step, _transpos.required_steps);
+        break;
+    }
+    case transpos_algs::bounce_in: {
+        coef = bounce_in_algorythm(_transpos.step,_transpos.required_steps);
+        break;
+    }
+    case transpos_algs::bounce_out: {
+        coef = bounce_out_algorythm(_transpos.step,_transpos.required_steps);
+        break;
+    }
+    case transpos_algs::instant: {
+        coef = instant_algorythm(_transpos.step,_transpos.required_steps);
+        break;
+    }
+    default: {
+        coef = linear_algorythm(_transpos.step,_transpos.required_steps);
+    }
+    }
+    QPoint new_point = QPoint(_transpos.start_destination.x() + (set_x * coef), _transpos.start_destination.y() + (set_y * coef));
+    this->move_to(new_point);
 }
 
 float animated_displayable::smoothstep_algorythm(float steps, float required_steps) {
@@ -144,4 +213,43 @@ void animated_displayable::begin_step(QPoint& destination, unsigned int steps, t
     }
     _transpos.has_reached_destination = false;
 
+}
+
+void tracked_button::enterEvent(QEnterEvent *event) {
+    if (this->tooltip == tooltip_types::disabled)
+        return;
+
+
+    if (linked_tooltip != nullptr) {
+        delete linked_tooltip;
+        linked_tooltip = nullptr;
+    }
+
+    QTextBrowser* tooltip = new QTextBrowser(&global::w);
+    tooltip->setGeometry(QRect(this->pos().x() + this->width() + 1, this->pos().y(), 150, 192));
+    tooltip->setTextInteractionFlags(Qt::TextInteractionFlag::NoTextInteraction);
+    tooltip->show();
+    linked_tooltip = tooltip;
+    emit request_tooltip();
+    int height = tooltip->document()->size().height();
+    int frame_margin = tooltip->frameWidth() * 1.5f;
+    int document_margin = tooltip->document()->documentMargin() * 1.5f;
+    tooltip->setFixedHeight(height + frame_margin + document_margin);
+    tooltip->document()->setTextWidth(tooltip->viewport()->width());
+    if (tooltip->pos().x() + tooltip->size().width() >= 1920)
+        tooltip->setGeometry(this->pos().x() - tooltip->size().width(), tooltip->pos().y(), tooltip->size().width(), tooltip->size().height());
+}
+
+void tracked_button::mouseMoveEvent(QMouseEvent *event) {
+}
+
+void tracked_button::leaveEvent(QEvent *event) {
+    if (this->tooltip == tooltip_types::disabled)
+        return;
+
+
+    if (linked_tooltip != nullptr) {
+        linked_tooltip->deleteLater();
+        linked_tooltip = nullptr;
+    }
 }

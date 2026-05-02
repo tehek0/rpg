@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     QSize z(100,100);
     QString s = "shrimp";
     QString n = "test";
-    animated_displayable* ent = new animated_displayable(this,true,p,z,s,n, anim_sequence(0, anim("test_anim", 3, 6, false, true)));
+    animated_displayable* ent = new animated_displayable(this,true,p,z,s, anim_sequence(0, anim("test_anim", 3, 6, false, true)));
     connect(ent->_disp, &QPushButton::clicked, this, [=]() {this->OnEntClicked(ent);});
     on_map.emplace_back(ent->_disp);
     ent->_disp->hide();
@@ -53,7 +53,7 @@ void MainWindow::on_pushButton_clicked()
     QString s = "shrimp";
     QString n = "test";
     ii += 50;
-    animated_displayable* ent = new animated_displayable(this,true,p,z,s,n, anim_sequence(0, anim("test_anim", (std::rand() % (20 - 10 + 1)) + 10, 6)));
+    animated_displayable* ent = new animated_displayable(this,true,p,z,s, anim_sequence(0, anim("test_anim", (std::rand() % (20 - 10 + 1)) + 10, 6)));
     connect(ent->_disp, &QPushButton::clicked, this, [=]() {this->OnEntClicked(ent);});
     on_stats.emplace_back(ent->_disp);
 }
@@ -72,14 +72,13 @@ void MainWindow::OnEntClicked(animated_displayable* ent_) {
     new_destination.setX(new_destination.x() + dx);
     new_destination.setY(new_destination.y() + dy);
     ent_->begin_step(new_destination, 80, transpos_algs::bounce_out);
-    ent_->set_swap_destinations(1);
 
     ent_->switch_paused();
     if (ent_->get_anim_sequence().paused) {
-        qInfo() << QString("Остановлена анимация объекта %1 на кадре %2").arg(ent_->get_name()).arg(ent_->get_anim_sequence().current_frame);
+        qInfo() << QString("Остановлена анимация объекта на кадре %1").arg(ent_->get_anim_sequence().current_frame);
         return;
     }
-    qInfo() << QString("Анимация объекта %1 возобновлена").arg(ent_->get_name());
+    qInfo() << QString("Анимация объекта возобновлена");
 
 }
 
