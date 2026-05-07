@@ -32,5 +32,12 @@
         <file>animated/shrimp/test_anim/frame5.png</file>
         <file>animated/shrimp/test_anim/frame6.png</file>
         <file>animated/shrimp/base_sprite.png</file>
+        <file>animated/shrimp/test_anim2/frame0.png</file>
+        <file>animated/shrimp/test_anim2/frame1.png</file>
+        <file>animated/shrimp/test_anim2/frame2.png</file>
+        <file>animated/shrimp/test_anim2/frame3.png</file>
+        <file>animated/shrimp/test_anim2/frame4.png</file>
+        <file>animated/shrimp/test_anim2/frame5.png</file>
+        <file>animated/shrimp/test_anim2/frame6.png</file>
     </qresource>
 </RCC>

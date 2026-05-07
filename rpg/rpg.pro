@@ -29,6 +29,7 @@ HEADERS += \
     game/header/data/interaction_return_value_types.h \
     game/header/data/quest_triggers.h \
     game/header/data/skill_types.h \
+    game/header/data/tooltip_types.h \
     game/header/data/trait_types.h \
     game/header/data/use_effects.h \
     game/header/global.h \
