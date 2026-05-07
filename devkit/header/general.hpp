@@ -1,9 +1,11 @@
 #pragma once
-
+#include <QString>
 namespace dev {
 //Величина отступов в json
-short js_indent = 2;
+inline short js_indent = 2;
 //Разделитель, используемый в txt файлах
-char txt_separator = '/';
-
+inline char txt_separator = '/';
+//Паттерны для сборки и чтения ids.json
+inline QString q_dangling_ptrn = "dangling_%1_ids";
+inline QString q_last_ptrn = "last_%1_id";
 }
