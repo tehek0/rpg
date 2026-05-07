@@ -15,6 +15,8 @@ SOURCES += \
 
 HEADERS += \
     devkitwindow.h \
+    header/datatypes.hpp \
+    header/general.hpp \
     header/id_support.hpp
 
 FORMS += \
@@ -26,5 +28,21 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
+    data/anim_disp.json \
+    data/anim_disp_ids.txt \
+    data/disp.json \
+    data/disp_ids.txt \
     data/enemy.json \
-    data/last_id.json
+    data/enemy_ids.txt \
+    data/item.json \
+    data/item_ids.txt \
+    data/location.json \
+    data/location_ids.txt \
+    data/npc.json \
+    data/npc_ids.txt \
+    data/quest.json \
+    data/quest_ids.txt \
+    data/sublocation.json \
+    data/sublocation_ids.txt \
+    data/trader.json \
+    data/trader_ids.txt
