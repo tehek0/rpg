@@ -77,9 +77,9 @@ struct animation_sequencer {
         static_assert((std::is_constructible_v<animation, Args&&> && ...));
         (animations.push_back(std::forward<Args>(args)), ...);
     }
-    template<typename... Args>
-    animation_sequencer(int current_animation_id_, Args&&... args): animation_sequencer(args), ticks_passed(0), current_animation_id(current_animation_id_), current_frame(0)
-    {}
+    //template<typename... Args>
+    //animation_sequencer(int current_animation_id_, Args&&... args): animation_sequencer(args), ticks_passed(0), current_animation_id(current_animation_id_), current_frame(0)
+    //{}
 };
 
 class animated_displayable: public displayable {

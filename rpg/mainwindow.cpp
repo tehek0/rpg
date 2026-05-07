@@ -77,12 +77,15 @@ void MainWindow::OnEntClicked(animated_displayable* ent_) {
     */
 }
 
+// Дебаг: выносит все объекты, находящиеся на активном экране
 void debug_screen(const std::vector<QWidget*> &screen) {
     for (int i = 0; i< screen.size(); ++i){
         qInfo() << screen[i];
     }
     qInfo() << '\n';
 }
+// Вспомогательные функции смены экрана
+// Показать/убрать всё, привязанное к ui через форму (требует ручного дополнения)
 void show_ui(MainWindow* w) {
     w->ui->menu_b->show();
     w->ui->map_b->show();
@@ -95,7 +98,7 @@ void hide_ui(MainWindow* w) {
     w->ui->stats_b->hide();
     w->ui->inventory_b->hide();
 }
-
+//Показать/убрать все привязанные к данному экрану элементы
 void hide_widgets(const std::vector<QWidget*> &screen) {
     for(size_t i = 0; i < screen.size(); ++i) {
         screen[i]->hide();
@@ -107,7 +110,7 @@ void show_widgets(const std::vector<QWidget*> &screen) {
         screen[i]->show();
     }
 }
-
+// Функционал ui кнопок
 void MainWindow::on_map_b_clicked()
 {
     if (!(current_screen == screens::map)) {

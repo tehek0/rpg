@@ -6,6 +6,8 @@
 #include "game/header/character.h"
 #include "game/header/global.h"
 
+#include "../devkit/header/id_support.hpp"
+
 int main()
 {
     global::player_ = new player;
@@ -40,6 +42,8 @@ int main()
 
     global::w.show();
     global::w.on_menu_b_clicked();
+
+    dev::add_to_total("enemy");
 
     return global::a.exec();
 }
