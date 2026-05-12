@@ -2,5 +2,6 @@
 
 enum class tooltip_types {
     disabled,
-    name_display
+    name_display,
+    item_display
 };

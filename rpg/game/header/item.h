@@ -82,7 +82,7 @@ public:
     void remove(unsigned int count);
     QString get_name();
     QString get_desc();
-    QString get_asset();
+    QString& get_asset();
     unsigned int get_stack();
     unsigned int get_max_stack_size();
     float get_base_weight();

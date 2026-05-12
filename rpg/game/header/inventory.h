@@ -40,9 +40,10 @@ class inventory {
 protected:
     std::vector<item*> _items;
     full_armor _armor;
-    weapon* _weapon;
+    weapon* _weapon = nullptr;
 public:
     ~inventory();
+    inventory() = default;
     std::vector<item*> get_items();
     void add_item(item* item_);
     item* get_item(unsigned int slot);

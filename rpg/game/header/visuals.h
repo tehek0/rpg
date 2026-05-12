@@ -6,6 +6,7 @@
 #include <vector>
 #include <QTextBrowser>
 #include "global.h"
+#include "inventory.h"
 #include "data/tooltip_types.h"
 
 //визуальные компоненты игровых объектов
@@ -41,15 +42,13 @@ public:
     tracked_button* _disp;
 
     displayable() = default;
-    displayable(MainWindow* w, bool clickable, QPoint& coord, QSize& size, QString& sprite_family) : displayable() {
+    displayable(QString& sprite_family, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true) : displayable() {
         _sprite_family = sprite_family;
         _disp = new tracked_button();
         _disp->setStyleSheet(QString("border-image: url(:/%1.png);").arg(_sprite_family));
         _disp->setGeometry(coord.x(),coord.y(), size.width(), size.height());
-        _disp->setParent(w);
-        if (!clickable) {
-            _disp->setDisabled(true);
-        }
+        _disp->setParent(&global::w);
+        _disp->setEnabled(clickable);
     }
 
     virtual ~displayable() {
@@ -57,7 +56,7 @@ public:
     }
 
     QString get_sprite_family();
-    void set_sprite_family(QString sprite_family);
+    void set_sprite_family(QString& sprite_family);
 };
 
 struct anim {
@@ -116,7 +115,6 @@ class animated_displayable: public displayable {
 
     Q_OBJECT
 
-
 private:
     static float smoothstep_algorythm(float steps, float required_steps);
     static float linear_algorythm(float steps, float required_steps);
@@ -131,7 +129,7 @@ public slots:
     void next_step();
 public:
     animated_displayable() = default;
-    animated_displayable(MainWindow* w, bool clickable, QPoint& coord, QSize& size, QString& sprite_family, anim_sequence anim_sequence_): displayable(w, clickable, coord, size, sprite_family) {
+    animated_displayable(QString& sprite_family, const anim_sequence& anim_sequence_ = anim_sequence(), const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable(sprite_family, coord, size, clickable) {
         _anim_sequence = anim_sequence_;
         _disp->setStyleSheet(QString("border-image: url(:animated/%1/base_sprite.png);").arg(_sprite_family));
         connect(global::timer, &QTimer::timeout, this, &animated_displayable::next_frame);
@@ -149,4 +147,26 @@ public:
 
     void move_to(QPoint& coord);
     void begin_step(QPoint& destination, unsigned int steps, transpos_algs alg);
+};
+
+class item_object: public displayable {
+
+    Q_OBJECT
+
+public slots:
+    void markdown_item() {
+        if (_disp->linked_tooltip == nullptr)
+            return;
+
+        _disp->linked_tooltip->setText(QString("<center><font size=\"5\">%1</font></center>\n<center><font size=\"4\">%2</font></center>").arg(linked_item->get_name()).arg(linked_item->get_desc()));
+    }
+signals:
+    void click_send_to_parent(); // нужно запрашивать контекст инвентаря у списка предметов, чтобы вызывать правильный попап
+public:
+    item* linked_item;
+    item_object(item* linked_item_, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable(linked_item_->get_asset(), coord, size, clickable), linked_item(linked_item_)
+    {
+        _disp->tooltip = tooltip_types::item_display;
+        connect(_disp, &tracked_button::request_tooltip, this, &item_object::markdown_item);
+    }
 };

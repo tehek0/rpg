@@ -28,11 +28,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     //test
-    QPoint p(1000,100);
-    QSize z(100,100);
     QString s = "shrimp";
-    QString n = "test";
-    animated_displayable* ent = new animated_displayable(this,true,p,z,s, anim_sequence(0, anim("test_anim", 3, 6, false, true)));
+    animated_displayable* ent = new animated_displayable(s, anim_sequence(0, anim("test_anim", 3, 6, false, true)));
     connect(ent->_disp, &QPushButton::clicked, this, [=]() {this->OnEntClicked(ent);});
     on_map.emplace_back(ent->_disp);
     ent->_disp->hide();
@@ -53,7 +50,7 @@ void MainWindow::on_pushButton_clicked()
     QString s = "shrimp";
     QString n = "test";
     ii += 50;
-    animated_displayable* ent = new animated_displayable(this,true,p,z,s, anim_sequence(0, anim("test_anim", (std::rand() % (20 - 10 + 1)) + 10, 6)));
+    animated_displayable* ent = new animated_displayable(s, anim_sequence(0, anim("test_anim", (std::rand() % (20 - 10 + 1)) + 10, 6)));
     connect(ent->_disp, &QPushButton::clicked, this, [=]() {this->OnEntClicked(ent);});
     on_stats.emplace_back(ent->_disp);
 }

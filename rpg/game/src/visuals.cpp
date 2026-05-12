@@ -8,7 +8,7 @@ QString displayable::get_sprite_family() {
     return _sprite_family;
 }
 
-void displayable::set_sprite_family(QString sprite_family) {
+void displayable::set_sprite_family(QString& sprite_family) {
     _sprite_family = sprite_family;
 }
 
@@ -49,9 +49,7 @@ void animated_displayable::add_swap_destinations() {
     ++_transpos.times_to_swap_destinations;
 }
 void animated_displayable::move_to(QPoint &coord) {
-    QSize size = _disp->size();
-    QRect new_pos = QRect(coord, size);
-    _disp->setGeometry(new_pos);
+    _disp->move(coord);
 }
 
 void animated_displayable::next_frame() {
@@ -203,7 +201,8 @@ void tracked_button::enterEvent(QEnterEvent *event) {
     }
 
     QTextBrowser* tooltip = new QTextBrowser(&global::w);
-    tooltip->setGeometry(QRect(this->pos().x() + this->width() + 1, this->pos().y(), 150, 192));
+    QPoint global_pos = this->mapToGlobal(QPoint(0, 0));
+    tooltip->setGeometry(QRect(global_pos.x() + this->width() + 1, global_pos.y(), 150, 192));
     tooltip->setTextInteractionFlags(Qt::TextInteractionFlag::NoTextInteraction);
     tooltip->show();
     linked_tooltip = tooltip;
@@ -214,7 +213,7 @@ void tracked_button::enterEvent(QEnterEvent *event) {
     tooltip->setFixedHeight(height + frame_margin + document_margin);
     tooltip->document()->setTextWidth(tooltip->viewport()->width());
     if (tooltip->pos().x() + tooltip->size().width() >= 1920)
-        tooltip->setGeometry(this->pos().x() - tooltip->size().width(), tooltip->pos().y(), tooltip->size().width(), tooltip->size().height());
+        tooltip->setGeometry(global_pos.x() - tooltip->size().width(), tooltip->pos().y(), tooltip->size().width(), tooltip->size().height());
 }
 
 void tracked_button::mouseMoveEvent(QMouseEvent *event) {

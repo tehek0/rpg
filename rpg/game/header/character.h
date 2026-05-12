@@ -211,8 +211,8 @@ protected:
     QString _name;
 public:
     entity() = default;
-    entity(MainWindow* w, QPoint& coord, QSize& size, QString& sprite_family, anim_sequence anim_sequence_, QString& name)
-        : animated_displayable(w, true, coord, size, sprite_family, anim_sequence_), _name(name)
+    entity(QString& name, QString& sprite_family, const inventory& inventory_ = inventory(), const anim_sequence& anim_sequence_ = anim_sequence(), const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100))
+        : animated_displayable(sprite_family, anim_sequence_, coord, size), _name(name), _inventory(inventory_)
     {
         _disp->tooltip = tooltip_types::name_display;
         connect(_disp, &tracked_button::request_tooltip, this, &entity::markdown_entity);

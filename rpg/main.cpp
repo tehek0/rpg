@@ -6,7 +6,8 @@
 #include "game/header/character.h"
 #include "game/header/global.h"
 
-#include "../devkit/header/id_support.hpp"
+#include <QGridLayout>
+#include <QSizePolicy>
 
 int main()
 {
@@ -18,8 +19,8 @@ int main()
     QPoint p(960 - 150,540 - 150);
     QSize z(150,150);
     QString s = "shrimp";
-    QString n = "КРЕВЕТКА КРЕВЕТКА КРЕВЕТКА КРЕВЕТКА";
-    entity* entt = new entity(&global::w, p, z, s, anim_sequence(1, anim("test_anim", 3, 6), anim("test_anim2", 10, 6)), n);
+    QString n = "Креветка на клетке ";
+    entity* entt = new entity(n, s, inventory(), anim_sequence(1, anim("test_anim", 3, 6), anim("test_anim2", 10, 6)), p, z);
     global::w.on_map.emplace_back(entt->_disp);
     entt->_disp->hide();
     global::w.connect(entt->_disp, &QPushButton::clicked, &global::w, [=]() {(&global::w)->OnEntClicked(entt);});
@@ -39,11 +40,30 @@ int main()
     inter.execute();
     inter.execute();
 
+    item_object* item_obj = new item_object(new item(QString("Тапки"),QString("Это тапки."), QString("icon_inv_armor_sandals"), 55, 56, 0.0f, 10, true), QPoint(100, 100));
+    global::w.on_inventory.emplace_back(item_obj->_disp);
+    item_obj->_disp->hide();
+    QWidget* lyt_w = new QWidget(&global::w);
+
+    QGridLayout* lyt = new QGridLayout(lyt_w);
+    int rows = 4;
+    int columns = 4;
+    lyt_w->setGeometry(QRect(QPoint(1200,200),QSize(columns*z.width(), rows*z.height())));
+    for (int x = 0; x < rows; ++x) {
+        for (int y = 0; y < columns; ++y) {
+            QString namee = QString("Креветка на клетке %1, %2").arg(x).arg(y);
+            entity* enttt = new entity(namee, s, inventory(), anim_sequence(1, anim("test_anim", 3, 6), anim("test_anim2", 10, 6)));
+            global::w.connect(enttt->_disp, &QPushButton::clicked, &global::w, [=]() {(&global::w)->OnEntClicked(enttt);});
+            enttt->_disp->setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
+            lyt->addWidget(enttt->_disp, x, y);
+        }
+    }
+
+    lyt_w->hide();
+    global::w.on_map.emplace_back(lyt_w);
 
     global::w.show();
     global::w.on_menu_b_clicked();
-
-    dev::add_to_total("enemy");
 
     return global::a.exec();
 }
