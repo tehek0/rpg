@@ -1,7 +1,7 @@
 #include "item_dialog.h"
 #include "ui_item_dialog.h"
 #include "header/id_support.hpp"
-#include <fstream>
+#include "header/create_object.hpp"
 
 enum class item_type {
     none,
@@ -10,22 +10,6 @@ enum class item_type {
     armor,
     consumable
 } type;
-enum class ammo_type {
-    none,
-    pistol,
-    shotgun,
-    rifle,
-    energy,
-    energy_shotgun,
-    rocket
-};
-enum class damage_type {
-    bullet,
-    energy,
-    melee,
-    unarmed,
-    explosive
-};
 
 item_dialog::item_dialog(QWidget *parent)
     : QWidget(parent)
@@ -44,38 +28,36 @@ item_dialog::~item_dialog()
 
 void item_dialog::on_save_clicked()
 {
-    unsigned long long id = dev::throw_id(dev::datatype::enemy);
+
     QString name = ui->name->text();
     QString desc = ui->desc->text();
     QString asset = ui->asset->text();
-    unsigned int max_stack_size = ui->max_stack_size->text().toUInt();
-    float base_weight = ui->base_weight->text().toFloat();
-    unsigned int base_cost = ui->base_cost->text().toUInt();
-    bool sellable;
+    QString max_stack_size = ui->max_stack_size->text();
+    QString base_weight = ui->base_weight->text();
+    QString base_cost = ui->base_cost->text();
+    QString sellable;
     if (ui->sellable_yes->isChecked()) {
-        sellable = true;
+        sellable = "1";
     }
     else {
-        sellable = false;
+        sellable = "0";
     }
-    js item;
-    item["name"] = name.toStdString();
-    item["desc"] = desc.toStdString();
-    item["asset"] = asset.toStdString();
-    item["stack"] = max_stack_size;
-    item["base_weight"] = base_weight;
-    item["base_cost"] = base_cost;
-    item["sellable"] = sellable;
+    dev::object_data item = {
+        {"name","desc","asset","max_stack_size","base_weight","base_cost","sellabele"},
+        {name, desc, asset, max_stack_size, base_weight, base_cost, sellable},
+        {dev::default_types::qstring, dev::default_types::qstring, dev::default_types::qstring, dev::default_types::u_integer, dev::default_types::u_integer, dev::default_types::boolean},
+    };
     if (type == item_type::weapon) {
-        item["base_dmg"] = ui->add_info1->text().toInt();
-        item["damage_type"] = ui->add_info2->text().toStdString();
-        item["ammo_type"] = ui->add_info3->text().toStdString();
-        item["energy_cost"] = ui->add_info4->text().toShort();
-        item["requirements"] = ui->add_info5->text().toStdString();
+        for(QString key : {"base_dmg", "damage_type", "ammo_type", "energy_cost", "requirements"}) {
+            item.keys.append(key);
+        }
+        for(QString value : {ui->add_info1->text(), ui->add_info2->text(), ui->add_info3->text(), ui->add_info4->text(), ui->add_info5->text()}) {
+            item.keys.append(value);
+        }
+        for(dev::default_types type : {dev::default_types::integer, dev::default_types::damage_type, dev::default_types::ammo_type, dev::default_types::integer, dev::})
+
     }
 
-    QString filename = QString("objects/items/item_%1").arg(id);
-    std::ofstream file(filename.toStdString());
 }
 
 

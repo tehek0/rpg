@@ -1,12 +1,9 @@
 #include "devkitwindow.h"
-<<<<<<< Updated upstream
-
-=======
 #include "header/id_support.hpp"
-#include "header/general.hpp"
 #include <QString>
->>>>>>> Stashed changes
 #include <QApplication>
+#include <filesystem>
+#include <cassert>
 
 int main(int argc, char *argv[])
 {
@@ -14,8 +11,6 @@ int main(int argc, char *argv[])
     DevkitWindow w;
     w.show();
 
-<<<<<<< Updated upstream
-=======
     // id debug
     // auto x = dev::throw_id(dev::datatype::enemy);
     // qInfo() << x;
@@ -26,7 +21,5 @@ int main(int argc, char *argv[])
     // dev::remove_id(dev::datatype::enemy, x - 12);
     // dev::remove_id(dev::datatype::enemy, x);
     // qInfo() << x;
-
->>>>>>> Stashed changes
     return a.exec();
 }
