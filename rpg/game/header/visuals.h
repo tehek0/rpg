@@ -3,11 +3,13 @@
 #include <mainwindow.h>
 #include <QPushButton>
 #include <QLabel>
+#include <QGridLayout>
 #include <vector>
 #include <QTextBrowser>
 #include "global.h"
 #include "inventory.h"
 #include "data/tooltip_types.h"
+#include "data/inventory_contexts.h"
 
 //визуальные компоненты игровых объектов
 
@@ -168,5 +170,31 @@ public:
     {
         _disp->tooltip = tooltip_types::item_display;
         connect(_disp, &tracked_button::request_tooltip, this, &item_object::markdown_item);
+    }
+};
+
+class inventory_object : public QObject {
+
+    Q_OBJECT
+
+public:
+    inventory_context context;
+    inventory* linked_inventory;
+    QWidget* layout_widget;
+    QGridLayout* layout;
+    std::vector<item_object*> item_objects;
+    inventory_object() = default;
+    inventory_object(inventory* link_inventory, unsigned int columns = 3, unsigned int rows = 10, unsigned int item_size = 100, const QPoint& coord = QPoint(0,0)) {
+        linked_inventory = link_inventory;
+        layout_widget = new QWidget(&global::w);
+        layout_widget->setGeometry(QRect(coord, QSize(columns*item_size, rows*item_size)));
+        layout = new QGridLayout(layout_widget);
+        for (unsigned int i = 0; i < columns * rows && i < linked_inventory->get_items().size(); ++i) {
+            item_object* itm_obj = new item_object(linked_inventory->get_item(i), QPoint(0,0), QSize(item_size, item_size));
+            itm_obj->_disp->setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
+            layout->addWidget(itm_obj->_disp);
+            item_objects.emplace_back(itm_obj);
+
+        }
     }
 };

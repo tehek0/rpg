@@ -63,11 +63,11 @@ unsigned int item::get_max_stack_size() {
     return _max_stack_size;
 }
 
-float item::get_base_weight() {
+double item::get_base_weight() {
     return _base_weight;
 }
 
-float item::get_base_weight(unsigned int x) {
+double item::get_base_weight(unsigned int x) {
     return x * _base_weight;
 }
 
@@ -103,7 +103,7 @@ void item::set_max_stack_size(unsigned int max_stack_size) {
     _max_stack_size = max_stack_size;
 }
 
-void item::set_base_weight(float base_weight) {
+void item::set_base_weight(double base_weight) {
     _base_weight = base_weight;
 }
 

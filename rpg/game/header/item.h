@@ -47,7 +47,7 @@ protected:
     QString _asset;
     unsigned int _stack;
     unsigned int _max_stack_size;
-    float _base_weight;
+    double _base_weight;
     unsigned int _base_cost;
     bool _sellable;
 public:
@@ -57,7 +57,7 @@ public:
          const QString& asset,
          unsigned int stack,
          unsigned int max_stack_size,
-         float base_weight,
+         double base_weight,
          unsigned int base_cost,
          bool sellable):
         _name(name), _desc(desc), _asset(asset),
@@ -85,8 +85,8 @@ public:
     QString& get_asset();
     unsigned int get_stack();
     unsigned int get_max_stack_size();
-    float get_base_weight();
-    float get_base_weight(unsigned int x);
+    double get_base_weight();
+    double get_base_weight(unsigned int x);
     unsigned int get_total_weight();
     unsigned int get_base_cost();
     bool get_sellable();
@@ -95,7 +95,7 @@ public:
     void set_asset(const QString& asset);
     void set_stack(unsigned int stack);
     void set_max_stack_size(unsigned int max_stack_size);
-    void set_base_weight(float base_weight);
+    void set_base_weight(double base_weight);
     void set_base_cost(unsigned int base_cost);
     void set_sellable(bool sellable);
     virtual bool operator==(item* other);
@@ -115,7 +115,7 @@ public:
                            const QString& asset,
                            unsigned int stack,
                            unsigned int max_stack_size,
-                           float base_weight,
+                           double base_weight,
                            unsigned int base_cost,
                            bool sellable,
                            item_requirements& requirements):
@@ -155,7 +155,7 @@ public:
            const QString& asset,
            unsigned int stack,
            unsigned int max_stack_size,
-           float base_weight,
+           double base_weight,
            unsigned int base_cost,
            bool sellable,
            item_requirements& requirements,
@@ -202,7 +202,7 @@ public:
            const QString& asset,
            unsigned int stack,
            unsigned int max_stack_size,
-           float base_weight,
+           double base_weight,
            unsigned int base_cost,
            bool sellable,
            int base_dmg,
@@ -253,7 +253,7 @@ public:
           const QString& asset,
           unsigned int stack,
           unsigned int max_stack_size,
-          float base_weight,
+          double base_weight,
           unsigned int base_cost,
           bool sellable,
           item_requirements& requirements,
@@ -309,7 +309,7 @@ public:
                const QString& asset,
                unsigned int stack,
                unsigned int max_stack_size,
-               float base_weight,
+               double base_weight,
                unsigned int base_cost,
                bool sellable,
                on_use on_use_,
