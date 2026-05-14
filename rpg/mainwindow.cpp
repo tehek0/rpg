@@ -1,18 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "game/header/character.h"
-#include "game/header/global.h"
+#include "game/header/visuals.h"
 #include <QPushButton>
-
-/*struct sprite_size {
-    QString label;
-    QSize parameters;
-};
-const unsigned int amount_of_sprite_sizes = 10;
-const sprite_size sprite_size[amount_of_sprite_sizes] {
-    {"ui_button", QSize(50,50)},
-    {"map_city", QSize(100,100)}
-};*/
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

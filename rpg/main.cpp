@@ -3,8 +3,7 @@
 #include "mainwindow.h"
 #include <cstdlib>
 #include <ctime>
-#include "game/header/character.h"
-#include "game/header/global.h"
+#include "game/header/visuals.h"
 
 #include <QGridLayout>
 #include <QSizePolicy>
@@ -20,7 +19,7 @@ int main()
     QSize z(150,150);
     QString s = "shrimp";
     QString n = "Креветка на клетке ";
-    entity* entt = new entity(n, s, inventory(), anim_sequence(1, anim("test_anim", 3, 6), anim("test_anim2", 10, 6)), p, z);
+    entity_object* entt = new entity_object(new entity(n, s), anim_sequence(1, anim("test_anim", 3, 6), anim("test_anim2", 10, 6)), p, z);
     global::w.on_map.emplace_back(entt->_disp);
     entt->_disp->hide();
     global::w.connect(entt->_disp, &QPushButton::clicked, &global::w, [=]() {(&global::w)->OnEntClicked(entt);});
@@ -33,7 +32,7 @@ int main()
     inter.interaction_trees.emplace_back(new interaction_tree(new tell_line("Привет"), new tell_line("Мир"), new give_choice(new dialogue_choice("Выбор 1", 1), new char_check_choice("Выбор с проверкой удачи", 0, 1, char_type::luck, 8), new dialogue_choice("Выбор 2", 2), new dialogue_choice("Выбор 3", 3)), new tell_line("Конец")));
     qInfo() << inter.interaction_trees[0]->interactions.size();
     qInfo() << inter.interaction_trees[0]->interactions[0]->run();
-    //w.showFullScreen();
+    //global::w.showFullScreen();
     inter.selected_interaction_tree = 0;
     inter.execute();
     inter.execute();
@@ -52,16 +51,24 @@ int main()
     for (int x = 0; x < rows; ++x) {
         for (int y = 0; y < columns; ++y) {
             QString namee = QString("Креветка на клетке %1, %2").arg(x).arg(y);
-            entity* enttt = new entity(namee, s, inventory(), anim_sequence(1, anim("test_anim", 3, 6), anim("test_anim2", 10, 6)));
+            entity_object* enttt = new entity_object(new entity(namee, s), anim_sequence(1, anim("test_anim", 3, 6), anim("test_anim2", 10, 6)));
             global::w.connect(enttt->_disp, &QPushButton::clicked, &global::w, [=]() {(&global::w)->OnEntClicked(enttt);});
             enttt->_disp->setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
             lyt->addWidget(enttt->_disp, x, y);
         }
     }
 
-    lyt_w->hide();
-    global::w.on_map.emplace_back(lyt_w);
-
+    // global::w.on_map.emplace_back(lyt_w);
+    //delete lyt;
+    lyt_w->deleteLater();
+    inventory* inv = new inventory();
+    int generate_items = 90;
+    for (int i = 0; i < generate_items; ++i) {
+        inv->add_item(new item(QString("Предмет %1").arg(i), QString("Тест инвентаря"), QString("icon_inv_combat_knife"), 1, 1, 1.0f, 100, true));
+    }
+    inventory_object* inv_o = new inventory_object(inv, inventory_context::container_self, 12, 12, 70, QPoint(250, 250));
+    global::w.on_inventory.emplace_back(inv_o->base);
+    inv_o->base->hide();
     global::w.show();
     global::w.on_menu_b_clicked();
 

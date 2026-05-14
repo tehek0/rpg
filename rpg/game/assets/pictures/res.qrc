@@ -39,5 +39,6 @@
         <file>animated/shrimp/test_anim2/frame4.png</file>
         <file>animated/shrimp/test_anim2/frame5.png</file>
         <file>animated/shrimp/test_anim2/frame6.png</file>
+        <file>inventory_background_tile.png</file>
     </qresource>
 </RCC>

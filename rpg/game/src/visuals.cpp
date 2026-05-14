@@ -201,9 +201,10 @@ void tracked_button::enterEvent(QEnterEvent *event) {
     }
 
     QTextBrowser* tooltip = new QTextBrowser(&global::w);
-    QPoint global_pos = this->mapToGlobal(QPoint(0, 0));
+    QPoint global_pos = this->mapTo(&global::w, QPoint(0,0));
     tooltip->setGeometry(QRect(global_pos.x() + this->width() + 1, global_pos.y(), 150, 192));
     tooltip->setTextInteractionFlags(Qt::TextInteractionFlag::NoTextInteraction);
+    tooltip->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     tooltip->show();
     linked_tooltip = tooltip;
     emit request_tooltip();

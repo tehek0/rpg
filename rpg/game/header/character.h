@@ -4,7 +4,6 @@
 #include "data/trait_types.h"
 #include "data/enemy_trait_types.h"
 #include <QObject>
-#include "visuals.h"
 #include "quest.h"
 #include "location.h"
 #include <mainwindow.h>
@@ -197,34 +196,23 @@ struct entity_level {
 
 };
 
-class entity: public interactable, public animated_displayable {
-public slots:
-    void markdown_entity() {
-        if (_disp->linked_tooltip == nullptr)
-            return;
-
-
-        _disp->linked_tooltip->setText(QString("<center><font size=\"4\">%1</font></center>").arg(_name));
-    }
+class entity: public interactable {
 protected:
     inventory _inventory;
     QString _name;
+    QString _asset;
 public:
     entity() = default;
-    entity(QString& name, QString& sprite_family, const inventory& inventory_ = inventory(), const anim_sequence& anim_sequence_ = anim_sequence(), const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100))
-        : animated_displayable(sprite_family, anim_sequence_, coord, size), _name(name), _inventory(inventory_)
-    {
-        _disp->tooltip = tooltip_types::name_display;
-        connect(_disp, &tracked_button::request_tooltip, this, &entity::markdown_entity);
-    }
+    entity(const QString& name, const QString& asset, const inventory& inventory_ = inventory()): _name(name), _asset(asset), _inventory(inventory_)
+    {}
     virtual ~entity() = default;
 
     inventory get_inventory();
     QString get_name();
-    QString get_sprite_family();
-    void set_inventory(inventory& inventory_);
-    void set_name(QString& name);
-    void set_sprite_family(QString& sprite_family);
+    QString get_asset();
+    void set_inventory(const inventory& inventory_);
+    void set_name(const QString& name);
+    void set_asset(const QString& asset);
 };
 
 class living_entity: public entity {

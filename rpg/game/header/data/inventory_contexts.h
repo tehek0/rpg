@@ -1,7 +1,9 @@
 #pragma once
 
 enum class inventory_context {
-    use_container,
+    container_self,
+    container_other,
     player_inventory,
-    trade
+    trade_self,
+    trade_other
 };

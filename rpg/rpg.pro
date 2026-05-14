@@ -60,3 +60,5 @@ DISTFILES += \
     assets/pictures/map.jpg \
     game/assets/pictures/backg_map.jpg.kra \
     game/assets/pictures/map.jpg
+
+QMAKE_CXXFLAGS += -clazy-disable=qstring-arg

@@ -51,7 +51,7 @@ QString item::get_desc() {
     return _desc;
 }
 
-QString& item::get_asset() {
+QString item::get_asset() {
     return _asset;
 }
 
