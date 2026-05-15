@@ -12,7 +12,7 @@ public:
     QLabel* label_;
     QWidget* field_;
 
-    info_field(QLabel* label, QWidget* field, QPoint location, QWidget* w = nullptr);
+    info_field(QLabel* label, QWidget* field, QPoint location);
     virtual ~info_field();
 };
 QWidget* build_dialog(dev::datatype object_type);

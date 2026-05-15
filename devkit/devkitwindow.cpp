@@ -21,8 +21,8 @@ DevkitWindow::~DevkitWindow()
 
 void DevkitWindow::on_createItem_pb_clicked()
 {
-    // item_dialog* item = new item_dialog();
-    // item->show();
+    item_dialog* item = new item_dialog();
+    item->show();
 
     //object dialog test
     dev::build_dialog(dev::datatype::item);

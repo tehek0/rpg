@@ -28,6 +28,9 @@
    <property name="checked">
     <bool>false</bool>
    </property>
+   <attribute name="buttonGroup">
+    <string notr="true">buttonGroup</string>
+   </attribute>
   </widget>
   <widget class="QLineEdit" name="asset">
    <property name="geometry">
@@ -77,6 +80,9 @@
    <property name="text">
     <string>Нет</string>
    </property>
+   <attribute name="buttonGroup">
+    <string notr="true">buttonGroup</string>
+   </attribute>
   </widget>
   <widget class="QLineEdit" name="max_stack_size">
    <property name="geometry">
@@ -175,6 +181,9 @@
    <property name="text">
     <string>Консюмэбл</string>
    </property>
+   <attribute name="buttonGroup">
+    <string notr="true">buttonGroup_2</string>
+   </attribute>
   </widget>
   <widget class="QLabel" name="label_7">
    <property name="geometry">
@@ -318,6 +327,9 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <attribute name="buttonGroup">
+    <string notr="true">buttonGroup_2</string>
+   </attribute>
   </widget>
   <widget class="QLineEdit" name="desc">
    <property name="geometry">
@@ -416,6 +428,9 @@
    <property name="text">
     <string>Оружие</string>
    </property>
+   <attribute name="buttonGroup">
+    <string notr="true">buttonGroup_2</string>
+   </attribute>
   </widget>
   <widget class="QRadioButton" name="type_armor">
    <property name="geometry">
@@ -429,6 +444,9 @@
    <property name="text">
     <string>Броня</string>
    </property>
+   <attribute name="buttonGroup">
+    <string notr="true">buttonGroup_2</string>
+   </attribute>
   </widget>
   <widget class="QLineEdit" name="base_cost">
    <property name="geometry">
@@ -475,6 +493,9 @@
    <property name="text">
     <string>Патрон</string>
    </property>
+   <attribute name="buttonGroup">
+    <string notr="true">buttonGroup_2</string>
+   </attribute>
   </widget>
   <widget class="QLineEdit" name="name">
    <property name="geometry">
@@ -499,4 +520,8 @@
  </widget>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_2"/>
+ </buttongroups>
 </ui>
