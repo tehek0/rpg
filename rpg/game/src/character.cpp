@@ -2,17 +2,27 @@
 #include "../header/visuals.h"
 #include "../header/global.h"
 
-/*
-entity::entity(MainWindow* w, QRect coord_and_size, QString sprite_family, QString name){ //через делегирующий конструктор 2 он запускать не может, поэтому так
-
-    //создание технического объекта
-    entity();
-    // создание визуальной компоненты
-    clickable(w, coord_and_size, sprite_family, name);
-
-    qInfo() << "[entity] constr";
+inventory* entity::get_inventory() {
+    return _inventory;
 }
-*/
+QString entity::get_name() {
+    return _name;
+}
+QString entity::get_asset() {
+    return _asset;
+}
+void entity::set_inventory(inventory* inventory_) {
+    if (_inventory != nullptr)
+        delete _inventory;
+    _inventory = inventory_;
+}
+void entity::set_name(const QString& name) {
+    _name = name;
+}
+void entity::set_asset(const QString& asset) {
+    _asset = asset;
+}
+
 short living_entity::get_entity_stat(char_type type) {
     switch(type) {
     case char_type::agility: {

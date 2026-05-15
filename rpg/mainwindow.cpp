@@ -1,18 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "game/header/character.h"
-#include "game/header/global.h"
+#include "game/header/visuals.h"
 #include <QPushButton>
-
-/*struct sprite_size {
-    QString label;
-    QSize parameters;
-};
-const unsigned int amount_of_sprite_sizes = 10;
-const sprite_size sprite_size[amount_of_sprite_sizes] {
-    {"ui_button", QSize(50,50)},
-    {"map_city", QSize(100,100)}
-};*/
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -22,17 +11,13 @@ MainWindow::MainWindow(QWidget *parent)
     global::timer->start(global::tick_timeout);
     on_inventory.emplace_back(ui->pushButton);
     ui->pushButton->hide();
-
     on_menu.emplace_back(ui->menu_exit);
     on_menu.emplace_back(ui->menu_toGame);
 
 
     //test
-    QPoint p(1000,100);
-    QSize z(100,100);
     QString s = "shrimp";
-    QString n = "test";
-    animated_displayable* ent = new animated_displayable(this,true,p,z,s, anim_sequence(0, anim("test_anim", 3, 6, false, true)));
+    animated_displayable* ent = new animated_displayable(s, anim_sequence(0, anim("test_anim", 3, 6, false, true)));
     connect(ent->_disp, &QPushButton::clicked, this, [=]() {this->OnEntClicked(ent);});
     on_map.emplace_back(ent->_disp);
     ent->_disp->hide();
@@ -53,7 +38,7 @@ void MainWindow::on_pushButton_clicked()
     QString s = "shrimp";
     QString n = "test";
     ii += 50;
-    animated_displayable* ent = new animated_displayable(this,true,p,z,s, anim_sequence(0, anim("test_anim", (std::rand() % (20 - 10 + 1)) + 10, 6)));
+    animated_displayable* ent = new animated_displayable(s, anim_sequence(0, anim("test_anim", (std::rand() % (20 - 10 + 1)) + 10, 6)));
     connect(ent->_disp, &QPushButton::clicked, this, [=]() {this->OnEntClicked(ent);});
     on_stats.emplace_back(ent->_disp);
 }

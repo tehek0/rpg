@@ -3,10 +3,16 @@
 #include <mainwindow.h>
 #include <QPushButton>
 #include <QLabel>
+#include <QGridLayout>
 #include <vector>
 #include <QTextBrowser>
+#include <QPixmap>
+#include <QPainter>
 #include "global.h"
+#include "inventory.h"
+#include "character.h"
 #include "data/tooltip_types.h"
+#include "data/inventory_contexts.h"
 
 //визуальные компоненты игровых объектов
 
@@ -16,6 +22,7 @@ class tracked_button : public QPushButton {
 
 signals:
     void request_tooltip();
+    void called_detor();
 
 protected:
     void enterEvent(QEnterEvent *event);
@@ -27,6 +34,13 @@ public:
     tracked_button(): QPushButton()
     {
         this->setMouseTracking(true);
+        this->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+    }
+
+    ~tracked_button() {
+        if (linked_tooltip != nullptr)
+            linked_tooltip->deleteLater();
+        emit called_detor();
     }
 };
 
@@ -37,27 +51,33 @@ class displayable: public QObject {
 protected:
     QString _sprite_family;
 
+public slots:
+    virtual void catch_disp_delete() {
+        _disp = nullptr;
+        this->deleteLater();
+    }
+
 public:
     tracked_button* _disp;
 
     displayable() = default;
-    displayable(MainWindow* w, bool clickable, QPoint& coord, QSize& size, QString& sprite_family) : displayable() {
+    displayable(QString sprite_family, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true) : displayable() {
         _sprite_family = sprite_family;
         _disp = new tracked_button();
         _disp->setStyleSheet(QString("border-image: url(:/%1.png);").arg(_sprite_family));
         _disp->setGeometry(coord.x(),coord.y(), size.width(), size.height());
-        _disp->setParent(w);
-        if (!clickable) {
-            _disp->setDisabled(true);
-        }
+        _disp->setParent(&global::w);
+        _disp->setEnabled(clickable);
+        connect(_disp, &tracked_button::called_detor, this, &displayable::catch_disp_delete);
     }
 
     virtual ~displayable() {
-        delete _disp;
+        if (_disp != nullptr)
+            _disp->deleteLater();
     }
 
     QString get_sprite_family();
-    void set_sprite_family(QString sprite_family);
+    void set_sprite_family(QString& sprite_family);
 };
 
 struct anim {
@@ -116,7 +136,6 @@ class animated_displayable: public displayable {
 
     Q_OBJECT
 
-
 private:
     static float smoothstep_algorythm(float steps, float required_steps);
     static float linear_algorythm(float steps, float required_steps);
@@ -129,9 +148,15 @@ protected:
 public slots:
     void next_frame();
     void next_step();
+    virtual void catch_disp_delete() {
+        _disp = nullptr;
+        this->disconnect(global::timer, &QTimer::timeout, this, &animated_displayable::next_frame);
+        this->disconnect(global::timer, &QTimer::timeout, this, &animated_displayable::next_step);
+        this->deleteLater();
+    }
 public:
     animated_displayable() = default;
-    animated_displayable(MainWindow* w, bool clickable, QPoint& coord, QSize& size, QString& sprite_family, anim_sequence anim_sequence_): displayable(w, clickable, coord, size, sprite_family) {
+    animated_displayable(QString sprite_family, const anim_sequence& anim_sequence_ = anim_sequence(), const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable(sprite_family, coord, size, clickable) {
         _anim_sequence = anim_sequence_;
         _disp->setStyleSheet(QString("border-image: url(:animated/%1/base_sprite.png);").arg(_sprite_family));
         connect(global::timer, &QTimer::timeout, this, &animated_displayable::next_frame);
@@ -149,4 +174,177 @@ public:
 
     void move_to(QPoint& coord);
     void begin_step(QPoint& destination, unsigned int steps, transpos_algs alg);
+
+    virtual ~animated_displayable() {
+        if (_disp != nullptr)
+            _disp->deleteLater();
+    }
+};
+
+class item_object: public displayable {
+
+    Q_OBJECT
+
+public slots:
+    void markdown_item() {
+        if (_disp->linked_tooltip == nullptr)
+            return;
+
+        _disp->linked_tooltip->setText(QString("<center><font size=\"5\">%1</font></center>\n<center><font size=\"4\">%2</font></center>").arg(linked_item->get_name()).arg(linked_item->get_desc()));
+    }
+    virtual void clicked() {
+        emit click_send_to_parent();
+    }
+signals:
+    void click_send_to_parent(); // нужно запрашивать контекст инвентаря у списка предметов, чтобы вызывать правильный попап
+public:
+    item* linked_item;
+    item_object(item* linked_item_, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable(linked_item_->get_asset(), coord, size, clickable), linked_item(linked_item_)
+    {
+        _disp->tooltip = tooltip_types::item_display;
+        connect(_disp, &tracked_button::request_tooltip, this, &item_object::markdown_item);
+        connect(_disp, &tracked_button::clicked, this, &item_object::clicked);
+    }
+};
+
+class inventory_background : public QWidget {
+
+    Q_OBJECT
+
+public:
+    QPixmap sprite;
+    inventory_background(const QString& asset, QWidget* parent = nullptr): QWidget(parent) {
+        sprite.load(QString(":/%1.png").arg(asset));
+    }
+    void paintEvent(QPaintEvent *event) {
+        QPainter paint(this);
+        if (sprite.isNull())
+            return;
+
+        paint.drawTiledPixmap(this->rect(), sprite);
+    }
+};
+
+class inventory_object : public QObject {
+
+    Q_OBJECT
+
+public slots:
+    void process_item_click(item_object* item_obj) {
+        linked_inventory->remove_item(linked_inventory->get_slot(item_obj->linked_item));
+    }
+    void update(unsigned int slot, inv_update_context context_) {
+        unsigned int lower_boundry = _scrolled_cols * _cols;
+        unsigned int upper_boundry = lower_boundry + (_cols * _displayed_rows) - 1;
+        if (context_ == inv_update_context::removed_item) {
+            if (slot > upper_boundry)
+                return;
+            if (slot < lower_boundry) {
+                for (size_t i = 1; i < item_objects.size(); ++i) {
+                    layout->removeWidget(item_objects[i]->_disp);
+                    layout->replaceWidget(item_objects[0]->_disp, item_objects[i]->_disp);
+                    layout->addWidget(item_objects[0]->_disp, i / _cols, i % _cols);
+                }
+                delete item_objects[0];
+                item_objects.erase(item_objects.begin());
+                if (linked_inventory->get_items().size() > upper_boundry) {
+                    append_object(upper_boundry);
+                }
+                this->shrink_widget_to_contents(lower_boundry);
+                return;
+            }
+            if (slot >= lower_boundry && slot <= upper_boundry) {
+                for (size_t i = slot + 1; i < item_objects.size(); ++i) {
+                    layout->removeWidget(item_objects[i]->_disp);
+                    layout->replaceWidget(item_objects[slot]->_disp, item_objects[i]->_disp);
+                    layout->addWidget(item_objects[slot]->_disp, i / _cols, i % _cols);
+                }
+                delete item_objects[slot - lower_boundry];
+                item_objects.erase(item_objects.begin() + slot - lower_boundry);
+                if (linked_inventory->get_items().size() > upper_boundry) {
+                    append_object(upper_boundry);
+                }
+                this->shrink_widget_to_contents(lower_boundry);
+                return;
+            }
+        }
+    }
+protected:
+    unsigned short _cols;
+    unsigned short _displayed_rows;
+    unsigned short _scrolled_cols = 0;
+    unsigned short _item_size;
+    void shrink_widget_to_contents(unsigned int lower_boundry) {
+        unsigned int inventory_size = linked_inventory->get_items().size() - lower_boundry;
+        unsigned int widget_size_x = _item_size * (inventory_size < _cols ? inventory_size : _cols);
+        if (inventory_size % _cols == 0) {
+            --inventory_size;
+        }
+        unsigned int inventory_size_div_col = (inventory_size / _cols) + 1;
+        unsigned int widget_size_y = ((inventory_size_div_col > _displayed_rows ? _displayed_rows : inventory_size_div_col)) * _item_size;
+        layout_widget->setGeometry(QRect(QPoint(0,0), QSize(widget_size_x, widget_size_y)));
+    }
+    void append_object(unsigned int index) {
+        item_object* itm_obj = new item_object(linked_inventory->get_item(index), QPoint(0,0), QSize(_item_size, _item_size));
+        itm_obj->_disp->setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
+        connect(itm_obj, &item_object::click_send_to_parent, this, [=]() {this->process_item_click(itm_obj);});
+        item_objects.emplace_back(itm_obj);
+        layout->addWidget(item_objects[index]->_disp, index / _cols, index % _cols);
+    }
+
+public:
+    inventory_context context;
+    inventory* linked_inventory;
+    inventory_background* base;
+    QWidget* layout_widget;
+    QGridLayout* layout;
+    std::vector<item_object*> item_objects;
+    inventory_object() = default;
+    inventory_object(inventory* link_inventory, inventory_context inventory_context_ = inventory_context::container_self, unsigned short columns = 3, unsigned short rows = 10, unsigned int item_size = 150, const QPoint& coord = QPoint(0,0)) {
+        _cols = columns;
+        _displayed_rows = rows;
+        _item_size = item_size;
+        context = inventory_context_;
+        linked_inventory = link_inventory;
+        base = new inventory_background("inventory_background_tile",&global::w);
+        base->setGeometry(QRect(coord, QSize(_cols*_item_size, _displayed_rows*_item_size)));
+        base->sprite = base->sprite.scaled(_item_size, _item_size);
+        base->repaint();
+        layout_widget = new QWidget(base);
+        this->shrink_widget_to_contents(0);
+        layout = new QGridLayout(layout_widget);
+        layout->setContentsMargins(0,0,0,0);
+        layout->setSpacing(0);
+        for (unsigned int i = 0; i < _cols * _displayed_rows && i < linked_inventory->get_items().size(); ++i) {
+            append_object(i);
+        }
+        connect(linked_inventory, &inventory::trigger_update, this, &inventory_object::update);
+    }
+    ~inventory_object() {
+        base->deleteLater();
+    }
+};
+
+
+class entity_object: public animated_displayable {
+
+    Q_OBJECT
+
+public slots:
+    void markdown_entity() {
+        if (_disp->linked_tooltip == nullptr)
+            return;
+
+
+        _disp->linked_tooltip->setText(QString("<center><font size=\"4\">%1</font></center>").arg(linked_entity->get_name()));
+    }
+public:
+    entity* linked_entity;
+    entity_object(entity* linked_entity_, const anim_sequence& anim_sequence_ = anim_sequence(), const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100))
+        : linked_entity(linked_entity_), animated_displayable(linked_entity_->get_asset(), anim_sequence_, coord, size)
+    {
+        _disp->tooltip = tooltip_types::name_display;
+        connect(_disp, &tracked_button::request_tooltip, this, &entity_object::markdown_entity);
+    }
+
 };

@@ -25,6 +25,7 @@ void inventory::add_item(item* item_) {
             _items[i]->add(item_->get_stack());
             // Избавляемся от переданного предмета
             delete item_;
+            emit trigger_update(i, inv_update_context::refresh_stack);
             return;
         } else if (_items[i]->can_add(item_,_items[i]->get_max_stack_size() - _items[i]->get_stack())) {
             // Может, можно хотя бы кусочек добавить? Можно? Круто.
@@ -35,6 +36,7 @@ void inventory::add_item(item* item_) {
     }
     _items.reserve(_items.size() + 1);
     _items.emplace_back(item_);
+    emit trigger_update(_items.size() - 1, inv_update_context::added_item);
 }
 
 item* inventory::get_item(unsigned int slot) {
@@ -42,6 +44,15 @@ item* inventory::get_item(unsigned int slot) {
         throw std::exception("[inventory::get_item] reached end of vector");
     }
     return _items[slot];
+}
+
+unsigned int inventory::get_slot(item* item_) {
+    unsigned int slot = 0;
+    for (auto const itm : _items) {
+        if (itm == item_)
+            return slot;
+        ++slot;
+    }
 }
 
 // TODO: изменение общего веса
@@ -52,6 +63,7 @@ void inventory::remove_item(unsigned int slot) {
     delete _items[slot];
     _items.erase(_items.begin() + slot);
     _items.shrink_to_fit();
+    emit trigger_update(slot, inv_update_context::removed_item);
 }
 
 // Пускаем любое оружие, другие предметы идут в функцию ниже

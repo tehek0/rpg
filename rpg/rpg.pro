@@ -27,6 +27,7 @@ HEADERS += \
     game/header/data/enemy_trait_types.h \
     game/header/data/equipment_bonuses.h \
     game/header/data/interaction_return_value_types.h \
+    game/header/data/inventory_contexts.h \
     game/header/data/quest_triggers.h \
     game/header/data/skill_types.h \
     game/header/data/tooltip_types.h \
@@ -59,3 +60,5 @@ DISTFILES += \
     assets/pictures/map.jpg \
     game/assets/pictures/backg_map.jpg.kra \
     game/assets/pictures/map.jpg
+
+QMAKE_CXXFLAGS += -clazy-disable=qstring-arg
