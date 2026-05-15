@@ -18,7 +18,8 @@ public:
     ~DevkitWindow();
 
 private slots:
-    void on_pushButton_2_clicked();
+
+    void on_createItem_pb_clicked();
 
 private:
     Ui::DevkitWindow *ui;

@@ -14,7 +14,7 @@
    <string>DevkitWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="createLocation_pb">
+   <widget class="QPushButton" name="createItem_pb">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Создать локацию</string>
+     <string>Создать предмет</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_2">
