@@ -34,6 +34,7 @@ public:
     tracked_button(): QPushButton()
     {
         this->setMouseTracking(true);
+        this->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     }
 
     ~tracked_button() {
@@ -230,7 +231,65 @@ class inventory_object : public QObject {
 
 public slots:
     void process_item_click(item_object* item_obj) {
-        qInfo() << item_obj->linked_item->get_name();
+        linked_inventory->remove_item(linked_inventory->get_slot(item_obj->linked_item));
+    }
+    void update(unsigned int slot, inv_update_context context_) {
+        unsigned int lower_boundry = _scrolled_cols * _cols;
+        unsigned int upper_boundry = lower_boundry + (_cols * _displayed_rows) - 1;
+        if (context_ == inv_update_context::removed_item) {
+            if (slot > upper_boundry)
+                return;
+            if (slot < lower_boundry) {
+                for (size_t i = 1; i < item_objects.size(); ++i) {
+                    layout->removeWidget(item_objects[i]->_disp);
+                    layout->replaceWidget(item_objects[0]->_disp, item_objects[i]->_disp);
+                    layout->addWidget(item_objects[0]->_disp, i / _cols, i % _cols);
+                }
+                delete item_objects[0];
+                item_objects.erase(item_objects.begin());
+                if (linked_inventory->get_items().size() > upper_boundry) {
+                    append_object(upper_boundry);
+                }
+                this->shrink_widget_to_contents(lower_boundry);
+                return;
+            }
+            if (slot >= lower_boundry && slot <= upper_boundry) {
+                for (size_t i = slot + 1; i < item_objects.size(); ++i) {
+                    layout->removeWidget(item_objects[i]->_disp);
+                    layout->replaceWidget(item_objects[slot]->_disp, item_objects[i]->_disp);
+                    layout->addWidget(item_objects[slot]->_disp, i / _cols, i % _cols);
+                }
+                delete item_objects[slot - lower_boundry];
+                item_objects.erase(item_objects.begin() + slot - lower_boundry);
+                if (linked_inventory->get_items().size() > upper_boundry) {
+                    append_object(upper_boundry);
+                }
+                this->shrink_widget_to_contents(lower_boundry);
+                return;
+            }
+        }
+    }
+protected:
+    unsigned short _cols;
+    unsigned short _displayed_rows;
+    unsigned short _scrolled_cols = 0;
+    unsigned short _item_size;
+    void shrink_widget_to_contents(unsigned int lower_boundry) {
+        unsigned int inventory_size = linked_inventory->get_items().size() - lower_boundry;
+        unsigned int widget_size_x = _item_size * (inventory_size < _cols ? inventory_size : _cols);
+        if (inventory_size % _cols == 0) {
+            --inventory_size;
+        }
+        unsigned int inventory_size_div_col = (inventory_size / _cols) + 1;
+        unsigned int widget_size_y = ((inventory_size_div_col > _displayed_rows ? _displayed_rows : inventory_size_div_col)) * _item_size;
+        layout_widget->setGeometry(QRect(QPoint(0,0), QSize(widget_size_x, widget_size_y)));
+    }
+    void append_object(unsigned int index) {
+        item_object* itm_obj = new item_object(linked_inventory->get_item(index), QPoint(0,0), QSize(_item_size, _item_size));
+        itm_obj->_disp->setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
+        connect(itm_obj, &item_object::click_send_to_parent, this, [=]() {this->process_item_click(itm_obj);});
+        item_objects.emplace_back(itm_obj);
+        layout->addWidget(item_objects[index]->_disp, index / _cols, index % _cols);
     }
 
 public:
@@ -241,34 +300,25 @@ public:
     QGridLayout* layout;
     std::vector<item_object*> item_objects;
     inventory_object() = default;
-    inventory_object(inventory* link_inventory, inventory_context inventory_context_ = inventory_context::container_self, unsigned int columns = 3, unsigned int rows = 10, unsigned int item_size = 150, const QPoint& coord = QPoint(0,0)) {
+    inventory_object(inventory* link_inventory, inventory_context inventory_context_ = inventory_context::container_self, unsigned short columns = 3, unsigned short rows = 10, unsigned int item_size = 150, const QPoint& coord = QPoint(0,0)) {
+        _cols = columns;
+        _displayed_rows = rows;
+        _item_size = item_size;
         context = inventory_context_;
         linked_inventory = link_inventory;
         base = new inventory_background("inventory_background_tile",&global::w);
-        base->setGeometry(QRect(coord, QSize(columns*item_size, rows*item_size)));
-        base->sprite = base->sprite.scaled(item_size, item_size);
+        base->setGeometry(QRect(coord, QSize(_cols*_item_size, _displayed_rows*_item_size)));
+        base->sprite = base->sprite.scaled(_item_size, _item_size);
         base->repaint();
         layout_widget = new QWidget(base);
-        size_t inventory_size = link_inventory->get_items().size();
-        unsigned int inventory_size_div_col = (inventory_size / columns) + 1;
-        unsigned int widget_size_y = ((inventory_size_div_col > rows ? rows : inventory_size_div_col)) * item_size;
-        unsigned int widget_size_x = item_size * (inventory_size < columns ? inventory_size : columns);
-        qInfo() << widget_size_x << widget_size_y;
-        layout_widget->setGeometry(QRect(QPoint(0,0), QSize(widget_size_x, widget_size_y)));
+        this->shrink_widget_to_contents(0);
         layout = new QGridLayout(layout_widget);
         layout->setContentsMargins(0,0,0,0);
         layout->setSpacing(0);
-        unsigned int item_pos_x = 0;
-        unsigned int item_pos_y = 0;
-        for (unsigned int i = 0; i < columns * rows && i < inventory_size; ++i) {
-            item_pos_y = i % columns;
-            item_pos_x = i / columns;
-            item_object* itm_obj = new item_object(linked_inventory->get_item(i), QPoint(0,0), QSize(item_size, item_size));
-            itm_obj->_disp->setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
-            layout->addWidget(itm_obj->_disp, item_pos_x, item_pos_y);
-            item_objects.emplace_back(itm_obj);
-            connect(itm_obj, &item_object::click_send_to_parent, this, [=]() {this->process_item_click(itm_obj);});
+        for (unsigned int i = 0; i < _cols * _displayed_rows && i < linked_inventory->get_items().size(); ++i) {
+            append_object(i);
         }
+        connect(linked_inventory, &inventory::trigger_update, this, &inventory_object::update);
     }
     ~inventory_object() {
         base->deleteLater();

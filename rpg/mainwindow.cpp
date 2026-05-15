@@ -11,7 +11,6 @@ MainWindow::MainWindow(QWidget *parent)
     global::timer->start(global::tick_timeout);
     on_inventory.emplace_back(ui->pushButton);
     ui->pushButton->hide();
-
     on_menu.emplace_back(ui->menu_exit);
     on_menu.emplace_back(ui->menu_toGame);
 

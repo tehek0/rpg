@@ -2,7 +2,7 @@
 #include "../header/visuals.h"
 #include "../header/global.h"
 
-inventory entity::get_inventory() {
+inventory* entity::get_inventory() {
     return _inventory;
 }
 QString entity::get_name() {
@@ -11,7 +11,9 @@ QString entity::get_name() {
 QString entity::get_asset() {
     return _asset;
 }
-void entity::set_inventory(const inventory& inventory_) {
+void entity::set_inventory(inventory* inventory_) {
+    if (_inventory != nullptr)
+        delete _inventory;
     _inventory = inventory_;
 }
 void entity::set_name(const QString& name) {

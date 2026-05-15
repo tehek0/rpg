@@ -62,11 +62,12 @@ int main()
     //delete lyt;
     lyt_w->deleteLater();
     inventory* inv = new inventory();
-    int generate_items = 90;
+    int generate_items = 20;
     for (int i = 0; i < generate_items; ++i) {
         inv->add_item(new item(QString("Предмет %1").arg(i), QString("Тест инвентаря"), QString("icon_inv_combat_knife"), 1, 1, 1.0f, 100, true));
     }
-    inventory_object* inv_o = new inventory_object(inv, inventory_context::container_self, 12, 12, 70, QPoint(250, 250));
+    inventory_object* inv_o = new inventory_object(inv, inventory_context::container_self, 4, 6, 100, QPoint(250, 250));
+    qInfo() << inv_o->layout->columnCount() << inv_o->layout->rowCount();
     global::w.on_inventory.emplace_back(inv_o->base);
     inv_o->base->hide();
     global::w.show();

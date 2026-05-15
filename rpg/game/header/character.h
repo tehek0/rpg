@@ -198,19 +198,22 @@ struct entity_level {
 
 class entity: public interactable {
 protected:
-    inventory _inventory;
+    inventory* _inventory = nullptr;
     QString _name;
     QString _asset;
 public:
     entity() = default;
-    entity(const QString& name, const QString& asset, const inventory& inventory_ = inventory()): _name(name), _asset(asset), _inventory(inventory_)
+    entity(const QString& name, const QString& asset, inventory* inventory_ = new inventory()): _name(name), _asset(asset), _inventory(inventory_)
     {}
-    virtual ~entity() = default;
+    virtual ~entity() {
+        if (_inventory != nullptr)
+            delete _inventory;
+    }
 
-    inventory get_inventory();
+    inventory* get_inventory();
     QString get_name();
     QString get_asset();
-    void set_inventory(const inventory& inventory_);
+    void set_inventory(inventory* inventory_);
     void set_name(const QString& name);
     void set_asset(const QString& asset);
 };

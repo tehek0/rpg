@@ -1,5 +1,6 @@
 #pragma once
 #include "item.h"
+#include <QObject>
 
 /*
 
@@ -36,7 +37,18 @@ struct full_armor {
     armor* legs = nullptr;
 };
 
-class inventory {
+enum class inv_update_context {
+    removed_item,
+    added_item,
+    refresh_stack
+};
+
+class inventory : public QObject {
+
+    Q_OBJECT
+
+signals:
+    void trigger_update(unsigned int slot, inv_update_context context_);
 protected:
     std::vector<item*> _items;
     full_armor _armor;
@@ -47,6 +59,7 @@ public:
     std::vector<item*> get_items();
     void add_item(item* item_);
     item* get_item(unsigned int slot);
+    unsigned int get_slot(item* item_);
     void remove_item(unsigned int slot);
     void equip_weapon(weapon* weapon_);
     void equip_weapon(item* not_suitable);
