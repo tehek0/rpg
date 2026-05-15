@@ -13,7 +13,8 @@ SOURCES += \
     main.cpp \
     devkitwindow.cpp \
     src/create_object.cpp \
-    src/id_support.cpp
+    src/id_support.cpp \
+    src/object_dialogs.cpp
 
 HEADERS += \
     devkitwindow.h \
@@ -21,6 +22,7 @@ HEADERS += \
     header/datatypes.hpp \
     header/general.hpp \
     header/id_support.hpp \
+    header/object_dialogs.hpp \
     item_dialog.h
 
 FORMS += \

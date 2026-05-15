@@ -15,27 +15,11 @@ enum class default_types {
     ammo_type,
     damage_type,
 };
-enum class ammo_type {
-    none,
-    pistol,
-    shotgun,
-    rifle,
-    energy,
-    energy_shotgun,
-    rocket
-};
-enum class damage_type {
-    bullet,
-    energy,
-    melee,
-    unarmed,
-    explosive
-};
 struct object_data{
     QStringList keys;
     QStringList values;
     std::vector<default_types> types;
 };
-void create_object(dev::datatype o_type, object_data values);
+void create_object(dev::datatype object_type, object_data values);
 
 }

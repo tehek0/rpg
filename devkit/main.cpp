@@ -2,8 +2,6 @@
 #include "header/id_support.hpp"
 #include <QString>
 #include <QApplication>
-#include <filesystem>
-#include <cassert>
 
 int main(int argc, char *argv[])
 {
@@ -21,5 +19,6 @@ int main(int argc, char *argv[])
     // dev::remove_id(dev::datatype::enemy, x - 12);
     // dev::remove_id(dev::datatype::enemy, x);
     // qInfo() << x;
+
     return a.exec();
 }

@@ -2,7 +2,7 @@
 #include "../rpg/game/inc/json.hpp"
 #include "datatypes.hpp"
 #include "QString"
-using js = nlohmann::json;
+using js = nlohmann::ordered_json;
 
 namespace dev {
 void set_ids_default_state();

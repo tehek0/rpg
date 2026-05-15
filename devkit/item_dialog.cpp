@@ -1,6 +1,5 @@
 #include "item_dialog.h"
 #include "ui_item_dialog.h"
-#include "header/id_support.hpp"
 #include "header/create_object.hpp"
 
 enum class item_type {
@@ -43,21 +42,37 @@ void item_dialog::on_save_clicked()
         sellable = "0";
     }
     dev::object_data item = {
-        {"name","desc","asset","max_stack_size","base_weight","base_cost","sellabele"},
+        {"name","desc","asset","max_stack_size","base_weight","base_cost","sellablle"},
         {name, desc, asset, max_stack_size, base_weight, base_cost, sellable},
-        {dev::default_types::qstring, dev::default_types::qstring, dev::default_types::qstring, dev::default_types::u_integer, dev::default_types::u_integer, dev::default_types::boolean},
+        {dev::default_types::qstring, dev::default_types::qstring, dev::default_types::qstring, dev::default_types::u_integer, dev::default_types::u_integer,
+         dev::default_types::u_integer, dev::default_types::boolean},
     };
     if (type == item_type::weapon) {
         for(QString key : {"base_dmg", "damage_type", "ammo_type", "energy_cost", "requirements"}) {
             item.keys.append(key);
         }
         for(QString value : {ui->add_info1->text(), ui->add_info2->text(), ui->add_info3->text(), ui->add_info4->text(), ui->add_info5->text()}) {
-            item.keys.append(value);
+            item.values.append(value);
         }
-        for(dev::default_types type : {dev::default_types::integer, dev::default_types::damage_type, dev::default_types::ammo_type, dev::default_types::integer, dev::})
-
+        for(dev::default_types type : {dev::default_types::integer, dev::default_types::damage_type, dev::default_types::ammo_type, dev::default_types::integer,
+                                        dev::default_types::damage_type, dev::default_types::ammo_type, dev::default_types::short_t}) {
+            item.types.emplace_back(type);
+        }
+    }
+    else if (type == item_type::ammo) {
+        for(QString key : {"base_dmg", "ammo_type"}) {
+            item.keys.append(key);
+        }
+        for(QString value : {ui->add_info1->text(), ui->add_info2->text(), ui->add_info3->text(), ui->add_info4->text(), ui->add_info5->text()}) {
+            item.values.append(value);
+        }
+        for(dev::default_types type : {dev::default_types::integer, dev::default_types::damage_type, dev::default_types::ammo_type, dev::default_types::integer,
+                                        dev::default_types::damage_type, dev::default_types::ammo_type, dev::default_types::short_t}) {
+            item.types.emplace_back(type);
+        }
     }
 
+    dev::create_object(dev::datatype::item, item);
 }
 
 
