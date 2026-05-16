@@ -31,6 +31,7 @@ void inventory::add_item(item* item_) {
             // Может, можно хотя бы кусочек добавить? Можно? Круто.
             item_->set_stack(item_->get_stack() - (_items[i]->get_max_stack_size() - _items[i]->get_stack()));
             _items[i]->set_stack(_items[i]->get_max_stack_size());
+            emit trigger_update(i, inv_update_context::refresh_stack);
             continue;
         }
     }
@@ -64,6 +65,21 @@ void inventory::remove_item(unsigned int slot) {
     _items.erase(_items.begin() + slot);
     _items.shrink_to_fit();
     emit trigger_update(slot, inv_update_context::removed_item);
+}
+
+void inventory::remove_item(unsigned int slot, unsigned int amount) {
+    if (slot >= _items.size()) {
+        throw std::exception("[inventory::remove_item] reached end of vector");
+    }
+    if (amount >= _items[slot]->get_stack()) {
+        delete _items[slot];
+        _items.erase(_items.begin() + slot);
+        _items.shrink_to_fit();
+        emit trigger_update(slot, inv_update_context::removed_item);
+        return;
+    }
+    _items[slot]->remove(amount);
+    emit trigger_update(slot, inv_update_context::refresh_stack);
 }
 
 // Пускаем любое оружие, другие предметы идут в функцию ниже

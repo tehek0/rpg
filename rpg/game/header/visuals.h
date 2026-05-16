@@ -8,6 +8,7 @@
 #include <QTextBrowser>
 #include <QPixmap>
 #include <QPainter>
+#include "QWheelEvent"
 #include "global.h"
 #include "inventory.h"
 #include "character.h"
@@ -199,17 +200,35 @@ signals:
     void click_send_to_parent(); // нужно запрашивать контекст инвентаря у списка предметов, чтобы вызывать правильный попап
 public:
     item* linked_item;
+    QLabel* stack_label;
+    item_object() = default; // это обязательно
     item_object(item* linked_item_, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable(linked_item_->get_asset(), coord, size, clickable), linked_item(linked_item_)
     {
+        stack_label = new QLabel(_disp);
+        stack_label->setGeometry(_disp->geometry());
+        stack_label->setAlignment(Qt::AlignRight | Qt::AlignBottom);
+        stack_label->setStyleSheet(QString("color: rgb(255, 255, 255);\nfont: %1pt \"MS Gothic\";").arg(_disp->width() / 5));
+        this->refresh_stack();
         _disp->tooltip = tooltip_types::item_display;
         connect(_disp, &tracked_button::request_tooltip, this, &item_object::markdown_item);
         connect(_disp, &tracked_button::clicked, this, &item_object::clicked);
     }
+    void refresh_stack() {
+        if (linked_item->get_stack() > 1) {
+            stack_label->setText(QString("x%1").arg(linked_item->get_stack()));
+            return;
+        }
+
+        stack_label->clear();
+    };
 };
 
 class inventory_background : public QWidget {
 
     Q_OBJECT
+
+signals:
+    void scrolled(int delta);
 
 public:
     QPixmap sprite;
@@ -223,6 +242,10 @@ public:
 
         paint.drawTiledPixmap(this->rect(), sprite);
     }
+    void wheelEvent(QWheelEvent* event) {
+        emit scrolled(event->angleDelta().y());
+        event->accept();
+    }
 };
 
 class inventory_object : public QObject {
@@ -231,7 +254,8 @@ class inventory_object : public QObject {
 
 public slots:
     void process_item_click(item_object* item_obj) {
-        linked_inventory->remove_item(linked_inventory->get_slot(item_obj->linked_item));
+        // linked_inventory->remove_item(linked_inventory->get_slot(item_obj->linked_item), 1);
+        linked_inventory->add_item(new item("Имя","Фамилия", "icon_inv_armor_pot", 1, 10, 1.0f, 1, true));
     }
     void update(unsigned int slot, inv_update_context context_) {
         unsigned int lower_boundry = _scrolled_cols * _cols;
@@ -254,19 +278,131 @@ public slots:
                 return;
             }
             if (slot >= lower_boundry && slot <= upper_boundry) {
+                slot = slot - lower_boundry;
                 for (size_t i = slot + 1; i < item_objects.size(); ++i) {
                     layout->removeWidget(item_objects[i]->_disp);
                     layout->replaceWidget(item_objects[slot]->_disp, item_objects[i]->_disp);
                     layout->addWidget(item_objects[slot]->_disp, i / _cols, i % _cols);
                 }
-                delete item_objects[slot - lower_boundry];
-                item_objects.erase(item_objects.begin() + slot - lower_boundry);
+                delete item_objects[slot];
+                item_objects.erase(item_objects.begin() + slot);
                 if (linked_inventory->get_items().size() > upper_boundry) {
                     append_object(upper_boundry);
                 }
                 this->shrink_widget_to_contents(lower_boundry);
                 return;
             }
+        }
+        if (context_ == inv_update_context::refresh_stack) {
+            if (slot > upper_boundry || slot < lower_boundry)
+                return;
+
+            item_objects[slot - lower_boundry]->refresh_stack();
+        }
+        if (context_ == inv_update_context::added_item) {
+            if (slot > upper_boundry)
+                return;
+            if (slot < lower_boundry) {
+                size_t final_object = item_objects.size() - 1;
+                for (size_t i = final_object - 1; i >= 0; --i) {
+                    layout->removeWidget(item_objects[i]->_disp);
+                    layout->replaceWidget(item_objects[final_object]->_disp, item_objects[i]->_disp);
+                    layout->addWidget(item_objects[final_object]->_disp, i / _cols, i % _cols);
+                }
+                layout->removeWidget(item_objects[final_object]->_disp);
+                if (final_object == upper_boundry) {
+                    delete item_objects[final_object];
+                    item_objects.erase(item_objects.end());
+                    item_objects.shrink_to_fit();
+                } else {
+                    layout->addWidget(item_objects[final_object]->_disp, (final_object + 1) / _cols, (final_object + 1) % _cols);
+                }
+                prepend_object(lower_boundry);
+                this->shrink_widget_to_contents(lower_boundry);
+                return;
+            }
+            if (slot >= lower_boundry && slot <= upper_boundry) {
+                // size_t final_object = item_objects.size() - 1;
+                // for (size_t i = final_object - 1; i >= slot; --i) {
+                //     layout->removeWidget(item_objects[i]->_disp);
+                //     layout->replaceWidget(item_objects[final_object]->_disp, item_objects[i]->_disp);
+                //     layout->addWidget(item_objects[final_object]->_disp, i / _cols, i % _cols);
+                // }
+                // layout->removeWidget(item_objects[final_object]->_disp);
+                // if (final_object == upper_boundry) {
+                //     delete item_objects[final_object];
+                //     item_objects.erase(item_objects.end());
+                //     item_objects.shrink_to_fit();
+                // } else {
+                //     layout->addWidget(item_objects[final_object]->_disp, final_object / _cols, final_object % _cols);
+                // }
+                append_object(slot);
+                this->shrink_widget_to_contents(lower_boundry);
+                return;
+            }
+        }
+    }
+    void scroll(int delta) {
+
+        //
+        if (delta > 0) {
+            if (_scrolled_cols == 0)
+                return;
+            --_scrolled_cols;
+            unsigned int lower_boundry = _scrolled_cols * _cols;
+            unsigned int final_object = _cols * (_displayed_rows) - 1;
+            if (item_objects.size() <= final_object) {
+                for (unsigned int i = item_objects.size(); i <= final_object; ++i) {
+                    item_object* dummy = new item_object();
+                    dummy->_disp = new tracked_button();
+                    layout->addWidget(dummy->_disp, i / _cols, i % _cols);
+                    item_objects.emplace_back(dummy);
+                }
+            }
+            for (unsigned int i = _cols * (_displayed_rows) - 1; i >= _cols; --i) {
+                layout->removeWidget(item_objects[i]->_disp);
+                layout->replaceWidget(item_objects[i % _cols]->_disp, item_objects[i]->_disp);
+                layout->addWidget(item_objects[i % _cols]->_disp, i / _cols, i % _cols);
+            }
+            std::vector<item_object*> temp = {};
+            for (unsigned int j = 0; j < _cols; ++j) {
+                unsigned int to_replace = item_objects.size() - _cols + j;
+                item_object* obj = create_object(linked_inventory->get_item(lower_boundry + j));
+                temp.emplace_back(obj);
+                layout->replaceWidget(item_objects[to_replace]->_disp, obj->_disp);
+                delete item_objects[to_replace];
+                item_objects.erase(item_objects.begin() + to_replace);
+            }
+            item_objects.insert(item_objects.begin(), temp.begin(), temp.end());
+            this->shrink_widget_to_contents(lower_boundry);
+            return;
+        }
+        if (delta < 0) {
+            if (((long long)(linked_inventory->get_items().size()) - (_scrolled_cols * _cols)) <= _displayed_rows * _cols)
+                return;
+
+            ++_scrolled_cols;
+            unsigned int lower_boundry = _scrolled_cols * _cols;
+            for (unsigned int i = _cols; i < item_objects.size(); ++i) {
+                layout->removeWidget(item_objects[i]->_disp);
+                layout->replaceWidget(item_objects[i % _cols]->_disp, item_objects[i]->_disp);
+                layout->addWidget(item_objects[i % _cols]->_disp, i / _cols, i % _cols);
+            }
+            for (unsigned int j = _cols * (_displayed_rows - 1); j < _cols * _displayed_rows; ++j) {
+
+                if (linked_inventory->get_items().size() > lower_boundry + j) {
+                    item_object* obj = create_object(linked_inventory->get_item(lower_boundry + j));
+                    layout->replaceWidget(item_objects[0]->_disp, obj->_disp);
+                    item_objects.emplace_back(obj);
+                    delete item_objects[0];
+                    item_objects.erase(item_objects.begin());
+                    continue;
+                }
+                layout->removeWidget(item_objects[0]->_disp);
+                delete item_objects[0];
+                item_objects.erase(item_objects.begin());
+            }
+            return;
         }
     }
 protected:
@@ -284,12 +420,24 @@ protected:
         unsigned int widget_size_y = ((inventory_size_div_col > _displayed_rows ? _displayed_rows : inventory_size_div_col)) * _item_size;
         layout_widget->setGeometry(QRect(QPoint(0,0), QSize(widget_size_x, widget_size_y)));
     }
+    item_object* create_object(item* link_item) {
+        item_object* itm_obj = new item_object(link_item, QPoint(0,0), QSize(_item_size, _item_size));
+        itm_obj->_disp->setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
+        connect(itm_obj, &item_object::click_send_to_parent, this, [=]() {this->process_item_click(itm_obj);});
+        return itm_obj;
+    }
     void append_object(unsigned int index) {
+        item_object* itm_obj = create_object(linked_inventory->get_item(index));
+        index = index - (_scrolled_cols * _cols);
+        item_objects.emplace_back(itm_obj);
+        layout->addWidget(item_objects[index]->_disp, index / _cols, index % _cols);
+    }
+    void prepend_object(unsigned int index) {
         item_object* itm_obj = new item_object(linked_inventory->get_item(index), QPoint(0,0), QSize(_item_size, _item_size));
         itm_obj->_disp->setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
         connect(itm_obj, &item_object::click_send_to_parent, this, [=]() {this->process_item_click(itm_obj);});
-        item_objects.emplace_back(itm_obj);
-        layout->addWidget(item_objects[index]->_disp, index / _cols, index % _cols);
+        item_objects.insert(item_objects.begin(), itm_obj);
+        layout->addWidget(item_objects[index]->_disp, 0, 0);
     }
 
 public:
@@ -319,6 +467,7 @@ public:
             append_object(i);
         }
         connect(linked_inventory, &inventory::trigger_update, this, &inventory_object::update);
+        connect(base, &inventory_background::scrolled, this, &inventory_object::scroll);
     }
     ~inventory_object() {
         base->deleteLater();

@@ -61,6 +61,7 @@ public:
     item* get_item(unsigned int slot);
     unsigned int get_slot(item* item_);
     void remove_item(unsigned int slot);
+    void remove_item(unsigned int slot, unsigned int amount);
     void equip_weapon(weapon* weapon_);
     void equip_weapon(item* not_suitable);
     void equip_armor_head(armor* armor_);

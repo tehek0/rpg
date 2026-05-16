@@ -39,8 +39,9 @@ int main()
     inter.execute();
     inter.execute();
 
-    item_object* item_obj = new item_object(new item(QString("Тапки"),QString("Это тапки."), QString("icon_inv_armor_sandals"), 55, 56, 0.0f, 10, true), QPoint(100, 100));
-    global::w.on_inventory.emplace_back(item_obj->_disp);
+    item_object* item_obj = new item_object(new item(QString("Тапки"),QString("Это тапки."), QString("icon_inv_armor_sandals"), 3, 56, 0.0f, 10, true), QPoint(100, 100));
+    qInfo() << item_obj->stack_label->text();
+    // global::w.on_inventory.emplace_back(item_obj->_disp);
     item_obj->_disp->hide();
     QWidget* lyt_w = new QWidget(&global::w);
 
@@ -62,14 +63,27 @@ int main()
     //delete lyt;
     lyt_w->deleteLater();
     inventory* inv = new inventory();
-    int generate_items = 20;
+    int generate_items = 70;
     for (int i = 0; i < generate_items; ++i) {
-        inv->add_item(new item(QString("Предмет %1").arg(i), QString("Тест инвентаря"), QString("icon_inv_combat_knife"), 1, 1, 1.0f, 100, true));
+        inv->add_item(new item(QString("Предмет %1").arg(i), QString("Тест инвентаря"), QString("icon_inv_combat_knife"), 2, 3, 1.0f, 100, true));
     }
-    inventory_object* inv_o = new inventory_object(inv, inventory_context::container_self, 4, 6, 100, QPoint(250, 250));
+    inv->add_item(item_obj->linked_item);
+    delete item_obj;
+    QPushButton* btttn = new QPushButton(&global::w);
+    btttn->setGeometry(QRect(QPoint(0,0),QSize(200,200)));
+    btttn->show();
+    QLabel* lbl = new QLabel(btttn);
+    lbl->setGeometry(btttn->geometry());
+    lbl->setText("Кол-во");
+    lbl->setAlignment(Qt::AlignBottom | Qt::AlignRight);
+    delete btttn;
+    inventory_object* inv_o = new inventory_object(inv, inventory_context::container_self, 4, 6, 90, QPoint(250, 250));
     qInfo() << inv_o->layout->columnCount() << inv_o->layout->rowCount();
     global::w.on_inventory.emplace_back(inv_o->base);
     inv_o->base->hide();
+    for (item_object* elem : inv_o->item_objects) {
+        qInfo() << elem->linked_item->get_name();
+    }
     global::w.show();
     global::w.on_menu_b_clicked();
 
