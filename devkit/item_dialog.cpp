@@ -1,14 +1,8 @@
 #include "item_dialog.h"
 #include "ui_item_dialog.h"
 #include "header/create_object.hpp"
+#include "header/object_subclasses.hpp"
 
-enum class item_type {
-    none,
-    weapon,
-    ammo,
-    armor,
-    consumable
-} type;
 
 item_dialog::item_dialog(QWidget *parent)
     : QWidget(parent)
@@ -47,28 +41,28 @@ void item_dialog::on_save_clicked()
         {dev::default_types::qstring, dev::default_types::qstring, dev::default_types::qstring, dev::default_types::u_integer, dev::default_types::u_integer,
          dev::default_types::u_integer, dev::default_types::boolean},
     };
-    if (type == item_type::weapon) {
+    if (dev::subcl::item_subtypes == dev::subcl::item_subtypes::weapon) {
         for(QString key : {"base_dmg", "damage_type", "ammo_type", "energy_cost", "requirements"}) {
-            item.keys.append(key);
+            item.keys_.append(key);
         }
         for(QString value : {ui->add_info1->text(), ui->add_info2->text(), ui->add_info3->text(), ui->add_info4->text(), ui->add_info5->text()}) {
-            item.values.append(value);
+            item.values_.append(value);
         }
         for(dev::default_types type : {dev::default_types::integer, dev::default_types::damage_type, dev::default_types::ammo_type, dev::default_types::integer,
                                         dev::default_types::damage_type, dev::default_types::ammo_type, dev::default_types::short_t}) {
-            item.types.emplace_back(type);
+            item.types_.emplace_back(type);
         }
     }
-    else if (type == item_type::ammo) {
+    else if (dev::subcl::item_subtypes == dev::subcl::item_subtypes::ammo) {
         for(QString key : {"base_dmg", "ammo_type"}) {
-            item.keys.append(key);
+            item.keys_.append(key);
         }
         for(QString value : {ui->add_info1->text(), ui->add_info2->text(), ui->add_info3->text(), ui->add_info4->text(), ui->add_info5->text()}) {
-            item.values.append(value);
+            item.values_.append(value);
         }
         for(dev::default_types type : {dev::default_types::integer, dev::default_types::damage_type, dev::default_types::ammo_type, dev::default_types::integer,
                                         dev::default_types::damage_type, dev::default_types::ammo_type, dev::default_types::short_t}) {
-            item.types.emplace_back(type);
+            item.types_.emplace_back(type);
         }
     }
 
@@ -111,7 +105,7 @@ void item_dialog::on_type_none_clicked()
     ui->add_info3->hide();
     ui->add_info4->hide();
     ui->add_info5->hide();
-    type = item_type::none;
+    dev::subcl::item_subtypes = dev::subcl::item_subtypes::none;
 }
 
 
@@ -132,7 +126,7 @@ void item_dialog::on_type_weapon_clicked()
     ui->add_info3->show();
     ui->add_info4->show();
     ui->add_info5->show();
-    type = item_type::weapon;
+    dev::subcl::item_subtypes = dev::subcl::item_subtypes::weapon;
 }
 
 
@@ -153,7 +147,7 @@ void item_dialog::on_type_ammo_clicked()
     ui->add_info3->show();
     ui->add_info4->hide();
     ui->add_info5->hide();
-    type = item_type::ammo;
+    dev::subcl::item_subtypes = dev::subcl::item_subtypes::ammo;
 }
 
 
@@ -174,7 +168,7 @@ void item_dialog::on_type_armor_clicked()
     ui->add_info3->hide();
     ui->add_info4->show();
     ui->add_info5->show();
-    type = item_type::armor;
+    dev::subcl::item_subtypes = dev::subcl::item_subtypes::armor;
 }
 
 
@@ -195,6 +189,6 @@ void item_dialog::on_type_consumable_clicked()
     ui->add_info3->hide();
     ui->add_info4->hide();
     ui->add_info5->hide();
-    type = item_type::consumable;
+    dev::subcl::item_subtypes = dev::subcl::item_subtypes::consumable;
 }
 

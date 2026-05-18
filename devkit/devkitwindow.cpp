@@ -25,6 +25,6 @@ void DevkitWindow::on_createItem_pb_clicked()
     item->show();
 
     //object dialog test
-    dev::build_dialog(dev::datatype::item);
+    dev::build_dialog_window(dev::datatype::item);
 
 }

@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QLineEdit>
 #include "QPoint"
+#include "../header/create_object.hpp"
 #include "../header/datatypes.hpp"
 
 namespace dev {
@@ -15,5 +16,9 @@ public:
     info_field(QLabel* label, QWidget* field, QPoint location);
     virtual ~info_field();
 };
-QWidget* build_dialog(dev::datatype object_type);
+
+//Выбор qlineedit или выпадающего списка как field для info_field
+QWidget* create_appropriate_field(dev::default_types object_type, QWidget* parent);
+
+QWidget* build_dialog_window(dev::datatype object_type);
 }

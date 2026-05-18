@@ -23,6 +23,7 @@ HEADERS += \
     header/general.hpp \
     header/id_support.hpp \
     header/object_dialogs.hpp \
+    header/object_subclasses.hpp \
     item_dialog.h
 
 FORMS += \
