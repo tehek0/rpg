@@ -7,9 +7,7 @@
 #include "../header/datatypes.hpp"
 
 namespace dev {
-class info_field {
-    QWidget* w_;
-public:
+struct info_field {
     QLabel* label_;
     QWidget* field_;
 
@@ -18,7 +16,18 @@ public:
 };
 
 //Выбор qlineedit или выпадающего списка как field для info_field
-QWidget* create_appropriate_field(dev::default_types object_type, QWidget* parent);
+QWidget* create_appropriate_field(dev::default_types object_type, QWidget* parent = nullptr);
 
-QWidget* build_dialog_window(dev::datatype object_type);
+
+class object_dialog_window : public QWidget {
+    Q_OBJECT
+    std::vector<QWidget*> fields;
+    std::vector<QLabel*> labels;
+public:
+    explicit object_dialog_window(dev::datatype object_type);
+private slots:
+    void type_chosen();
+};
+
+
 }

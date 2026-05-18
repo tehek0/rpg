@@ -84,9 +84,10 @@ dev::info_field::info_field(QLabel* label, QWidget* field, QPoint location) : la
     field_->show();
 };
 dev::info_field::~info_field() {
-    if (w_ == nullptr) {
-        delete w_;
+    if (label_->parent() == nullptr) {
         delete label_;
+    }
+    if (field_->parent() == nullptr) {
         delete field_;
     }
 }
@@ -114,12 +115,8 @@ QWidget* dev::create_appropriate_field(dev::default_types field_type, QWidget* p
     }
 };
 
-QWidget* dev::build_dialog_window(dev::datatype object_type) {
-    QWidget* dialog = new QWidget();
-    dialog->setBaseSize(400,800);
-
-    std::vector<QWidget*> fields;
-    std::vector<QLabel*> labels;
+dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWidget() {
+    this->setBaseSize(400,800);
     short amount_of_fields;
     try {
         amount_of_fields = templates[object_type].keys_.length();
@@ -132,18 +129,22 @@ QWidget* dev::build_dialog_window(dev::datatype object_type) {
     for (short i = 1; i < amount_of_fields; ++i) {
         QString current_key = templates[object_type].keys_[i];
         dev::default_types current_type = templates[object_type].types_[i];
-        QLabel* l = new QLabel(dialog);
+        QLabel* l = new QLabel(this);
         l->setText(current_key);
 
-        QWidget* le = dev::create_appropriate_field(current_type, dialog);
+        QWidget* f = dev::create_appropriate_field(current_type, this);
 
-        dev::info_field whole_field = {l, le, QPoint(10, ypos)};
+        dev::info_field whole_field = {l, f, QPoint(10, ypos)};
         labels.emplace_back(l);
-        fields.emplace_back(le);
+        fields.emplace_back(f);
 
         ypos += any_line_hight + 5;
     }
+    this->show();
+    qInfo() << "const worked";
+}
 
-    dialog->show();
-    return dialog;
+
+void dev::object_dialog_window::type_chosen() {
+    qInfo() << '1';
 }

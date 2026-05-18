@@ -1,8 +1,6 @@
 #include "devkitwindow.h"
 #include "ui_devkitwindow.h"
-#include "header/id_support.hpp"
 #include "item_dialog.h"
-
 #include <QLabel>
 #include <QLineEdit>
 #include "header/object_dialogs.hpp"
@@ -25,6 +23,6 @@ void DevkitWindow::on_createItem_pb_clicked()
     item->show();
 
     //object dialog test
-    dev::build_dialog_window(dev::datatype::item);
+    dev::object_dialog_window* te = new dev::object_dialog_window(dev::datatype::item);
 
 }
