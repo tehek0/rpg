@@ -1,5 +1,5 @@
 #include "../header/id_support.hpp"
-#include "../header/general.hpp"
+#include "../header/data/general.hpp"
 #include "fstream"
 #include <QDebug>
 #include <QFileDialog>

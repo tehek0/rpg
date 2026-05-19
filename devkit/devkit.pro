@@ -19,11 +19,11 @@ SOURCES += \
 HEADERS += \
     devkitwindow.h \
     header/create_object.hpp \
-    header/datatypes.hpp \
-    header/general.hpp \
+    header/data/object_dialog_templates.hpp \
+    header/data/datatypes.hpp \
+    header/data/general.hpp \
     header/id_support.hpp \
     header/object_dialogs.hpp \
-    header/object_subclasses.hpp \
     item_dialog.h
 
 FORMS += \

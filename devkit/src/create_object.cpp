@@ -1,11 +1,10 @@
 #include "../header/create_object.hpp"
 #include "../rpg/game/inc/json.hpp"
 #include "../header/id_support.hpp"
-#include "../header/general.hpp"
+#include "../header/data/general.hpp"
 #include "fstream"
 #include <filesystem>
 #include <QDebug>
-//using js = nlohmann::ordered_json;
 
 dev::object_data dev::object_data::operator+(const dev::object_data& other) {
     std::vector<dev::default_types> ttypes = types_;
