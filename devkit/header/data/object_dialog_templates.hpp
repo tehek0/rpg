@@ -59,7 +59,7 @@ const std::vector<dev::object_data> subtypes_template[dev::datatype::total + 1] 
      { //armor
       {"armor_slot", "armor_points", "armor_bonus"},
       {},
-      {dev::default_types::TODO, dev::default_types::u_short, dev::default_types::u_short},
+      {dev::default_types::TODO, dev::default_types::u_short, dev::default_types::TODO},
       },
      { //consumable
      {"on_use", "uses_left", "use_energy_cost"},

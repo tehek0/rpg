@@ -1,9 +1,9 @@
 #include "../header/object_dialogs.hpp"
 #include <QDebug>
 #include <QComboBox>
-
 #include "../header/data/object_dialog_templates.hpp"
 
+//Параметры размера и положения объектов на экране
 const short label_w = 120;
 const short field_w = 300;
 const short any_line_hight = 25;
@@ -11,8 +11,7 @@ const short gap = 5;
 int ypos = 10;
 int last_main_field_ypos;
 
-
-
+//INFO_FIELD
 dev::info_field::info_field(QString key, dev::default_types field_type, QPoint location, QWidget* parent) : field_type_(field_type) {
     label_ = new QLabel(parent);
     label_->setText(key);
@@ -44,11 +43,13 @@ dev::info_field::info_field(QString key, dev::default_types field_type, QPoint l
     label_->show();
     field_->show();
 };
+
 dev::info_field::info_field(const info_field& other) {
     label_ = other.label_;
     field_ = other.field_;
     field_type_ = other.field_type_;
 };
+
 dev::info_field::~info_field() {
     //Когда поля привязаны к pqrent окну, окно само запускает для них delete
     if (label_->parent() == nullptr) {
@@ -58,6 +59,25 @@ dev::info_field::~info_field() {
         delete field_;
     }
 }
+
+void dev::read_from_infoField_to_objectData(const dev::info_field& data, dev::object_data& object) {
+    QString current_key = data.get_label()->text();
+    dev::default_types current_type = data.get_field_type();
+    QString current_value;
+    if (is_type_linear(current_type)) {
+        current_value = dynamic_cast<QLineEdit*>(data.get_field())->text();
+    }
+    else {
+        current_value = QString::number(dynamic_cast<QComboBox*>(data.get_field())->currentIndex());
+    }
+
+    object.keys_.append(current_key);
+    object.values_.append(current_value);
+    object.types_.emplace_back(current_type);
+
+}
+
+//OBJECT_DIALOG_WINDOW
 void dev::object_dialog_window::change_subfields(short object_sybtype) {
     for (info_field subf : info_subfields_) {
         subf.get_label()->deleteLater();
@@ -87,6 +107,7 @@ void dev::object_dialog_window::change_subfields(short object_sybtype) {
         ypos += any_line_hight + gap;
     }
 }
+
 dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWidget(), object_type_(object_type) {
     this->setBaseSize(500, 800);
 
@@ -117,11 +138,21 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWi
     this->show();
 }
 
-
+//SLOTS
 void dev::object_dialog_window::type_chosen() {
     short object_sybtype = dynamic_cast<QComboBox*>(this->info_fields_[0].get_field())->currentIndex();
     change_subfields(object_sybtype);
 }
 void dev::object_dialog_window::on_save_clicked() {
+    object_data object;
+
+    for (const info_field& data : info_fields_) {
+        read_from_infoField_to_objectData(data, object);
+    }
+    for (const info_field& data : info_subfields_) {
+        read_from_infoField_to_objectData(data, object);
+    }
+
+    create_object(object_type_, object);
     qInfo() << "save";
 }
