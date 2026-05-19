@@ -47,6 +47,10 @@ item* inventory::get_item(unsigned int slot) {
     return _items[slot];
 }
 
+size_t inventory::get_items_size() {
+    return _items.size();
+}
+
 unsigned int inventory::get_slot(item* item_) {
     unsigned int slot = 0;
     for (auto const itm : _items) {

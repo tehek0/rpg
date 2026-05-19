@@ -40,5 +40,13 @@
         <file>animated/shrimp/test_anim2/frame5.png</file>
         <file>animated/shrimp/test_anim2/frame6.png</file>
         <file>inventory_background_tile.png</file>
+        <file>ui_armor_icon.png</file>
+        <file>ui_base_cost_icon.png</file>
+        <file>ui_damage_icon.png</file>
+        <file>ui_energy_cost_icon.png</file>
+        <file>ui_weight_icon.png</file>
+        <file>ui_ammo_icon.png</file>
+        <file>ui_armor_bonus_icon.png</file>
+        <file>ui_use_effect_icon.png</file>
     </qresource>
 </RCC>

@@ -5,7 +5,8 @@ enum class skill_type {
     big_guns,
     unarmed,
     science,
-    spech,
+    speech,
     barter,
     survival
 };
+

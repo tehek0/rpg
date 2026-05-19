@@ -7,3 +7,4 @@ enum class char_type {
     intelligence,
     luck
 };
+

@@ -18,7 +18,7 @@ int main()
     QPoint p(960 - 150,540 - 150);
     QSize z(150,150);
     QString s = "shrimp";
-    QString n = "Креветка на клетке ";
+    QString n = "<img src=\":/ui_armor_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"> Броня: 5";
     entity_object* entt = new entity_object(new entity(n, s), anim_sequence(1, anim("test_anim", 3, 6), anim("test_anim2", 10, 6)), p, z);
     global::w.on_map.emplace_back(entt->_disp);
     entt->_disp->hide();
@@ -68,6 +68,21 @@ int main()
         inv->add_item(new item(QString("Предмет %1").arg(i), QString("Тест инвентаря"), QString("icon_inv_combat_knife"), 2, 3, 1.0f, 100, true));
     }
     inv->add_item(item_obj->linked_item);
+    item_requirements x_r;
+    x_r.item_requirements_ptrs.emplace_back(new skill_requirement(40, skill_type::guns));
+    x_r.min_level = 5;
+    item_requirements y_r;
+    y_r.item_requirements_ptrs.emplace_back(new skill_requirement(5, skill_type::speech));
+    y_r.item_requirements_ptrs.emplace_back(new char_requirement(3, char_type::endurance));
+    armor_bonus bonus;
+    bonus.bonus = equipment_bonus::change_char_intelligence;
+    bonus.value = -2;
+    inv->add_item(new weapon("Пистолет массового поражения", "В комментариях не нуждается", "icon_inv_weapon_revolver", 1, 1, 3.5f, 199, true, x_r, 50, damage_type::bullet, ammo_type::pistol, 1));
+    inv->add_item(new armor("Броня бомжа", "Носят бомжи. Воняет.", "icon_inv_armor_scrapJacket", 1, 1, 7.5f, 30, true, y_r, armor_slot::body, 3, bonus));
+    on_use z_u;
+    z_u.effect = use_effect::change_health;
+    z_u.value = 15;
+    inv->add_item(new consumable("Бинт", "Лечит", "icon_inv_consumable_bleedBandage", 3, 5, 0.1, 30, true, z_u, 1, 1));
     delete item_obj;
     QPushButton* btttn = new QPushButton(&global::w);
     btttn->setGeometry(QRect(QPoint(0,0),QSize(200,200)));

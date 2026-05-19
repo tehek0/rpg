@@ -59,6 +59,7 @@ public:
     std::vector<item*> get_items();
     void add_item(item* item_);
     item* get_item(unsigned int slot);
+    size_t get_items_size();
     unsigned int get_slot(item* item_);
     void remove_item(unsigned int slot);
     void remove_item(unsigned int slot, unsigned int amount);

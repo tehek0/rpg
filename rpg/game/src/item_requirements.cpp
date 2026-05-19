@@ -1,5 +1,5 @@
 #include "../header/item_requirements.h"
-
+#include "../header/enum_translation.h"
 // Избегаем утечку памяти (небольшую)
 item_requirements::~item_requirements() {
     for (size_t i = 0; i < item_requirements_ptrs.size(); ++i) {
@@ -12,6 +12,11 @@ bool base_requirement::operator==(base_requirement* other) {
 }
 bool base_requirement::operator!=(base_requirement* other) {
     return false;
+}
+
+QString skill_requirement::text_requirement() {
+    QString text_requirement = QString("%1 %2").arg(skill_type_to_str(type)).arg(required);
+    return text_requirement;
 }
 
 bool skill_requirement::operator==(skill_requirement* other) {
@@ -31,6 +36,11 @@ bool skill_requirement::operator==(base_requirement* other) {
 }
 bool skill_requirement::operator!=(base_requirement* other){
     return true;
+}
+
+QString char_requirement::text_requirement() {
+    QString text_requirement = QString("%1 %2").arg(char_type_to_str(type)).arg(required);
+    return text_requirement;
 }
 
 bool char_requirement::operator==(char_requirement* other) {

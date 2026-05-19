@@ -87,7 +87,7 @@ public:
     unsigned int get_max_stack_size();
     double get_base_weight();
     double get_base_weight(unsigned int x);
-    unsigned int get_total_weight();
+    double get_total_weight();
     unsigned int get_base_cost();
     bool get_sellable();
     void set_name(const QString& name);
@@ -98,6 +98,11 @@ public:
     void set_base_weight(double base_weight);
     void set_base_cost(unsigned int base_cost);
     void set_sellable(bool sellable);
+    QString html_name();
+    QString html_desc();
+    QString html_weight();
+    QString html_cost();
+    virtual QString get_tooltip_text();
     virtual bool operator==(item* other);
     virtual bool operator!=(item* other);
 };
@@ -131,23 +136,60 @@ public:
     virtual ~item_with_requirements() = default;
     item_requirements get_item_requirements();
     void set_item_requirements(item_requirements& requirements);
-
+    QString html_requirements();
+    virtual QString get_tooltip_text() = 0;
     // Этот класс сам использоваться вряд-ли будет, так что ему оператор не определяю
 
     bool operator==(item* other) final;
     bool operator!=(item* other) final;
 };
 
-
-
-
-// Оружие
-class weapon : public item_with_requirements {
+class has_base_dmg {
 protected:
     int _base_dmg;
-    damage_type _damage_type;
+public:
+    has_base_dmg(int base_dmg): _base_dmg(base_dmg)
+    {}
+    has_base_dmg(has_base_dmg* copy) {
+        this->_base_dmg = copy->_base_dmg;
+    }
+    int get_base_dmg();
+    void set_base_dmg(int _base_dmg);
+    virtual QString html_base_dmg();
+};
+
+class has_ammo_type {
+protected:
     ammo_type _ammo_type;
+public:
+    has_ammo_type(ammo_type ammo_type_): _ammo_type(ammo_type_)
+    {}
+    has_ammo_type(has_ammo_type* copy) {
+        this->_ammo_type = copy->_ammo_type;
+    }
+    ammo_type get_ammo_type();
+    void set_ammo_type(ammo_type ammo_type_);
+    QString html_ammo_type();
+};
+
+class has_energy_cost {
+protected:
     short _energy_cost;
+public:
+    has_energy_cost(short energy_cost): _energy_cost(energy_cost)
+    {}
+    has_energy_cost(has_energy_cost* copy) {
+        this->_energy_cost = copy->_energy_cost;
+    }
+    short get_energy_cost();
+    void set_energy_cost(short energy_cost);
+    QString html_energy_cost();
+};
+
+// Оружие
+class weapon : public item_with_requirements, public has_base_dmg, public has_ammo_type, public has_energy_cost {
+protected:
+    damage_type _damage_type = damage_type::non_specified;
 public:
     weapon() = default;
     weapon(const QString& name,
@@ -167,34 +209,27 @@ public:
                                stack, max_stack_size,
                                base_weight, base_cost,
                                sellable, requirements),
-        _base_dmg(base_dmg),
-        _damage_type(damage_type_),
-        _ammo_type(ammo_type_),
-        _energy_cost(energy_cost)
+        has_base_dmg(base_dmg),
+        has_ammo_type(ammo_type_),
+        has_energy_cost(energy_cost),
+        _damage_type(damage_type_)
     {}
     weapon(weapon* copy): item_with_requirements(copy),
-        _base_dmg(copy->_base_dmg),
-        _damage_type(copy->_damage_type),
-        _ammo_type(copy->_ammo_type),
-        _energy_cost(copy->_energy_cost)
+        has_base_dmg(copy),
+        has_ammo_type(copy),
+        has_energy_cost(copy),
+        _damage_type(copy->_damage_type)
     {}
-    int get_base_dmg();
     damage_type get_damage_type();
-    ammo_type get_ammo_type();
-    short get_energy_cost();
-    void set_base_dmg(int base_dmg);
     void set_damage_type(damage_type damage_type_);
-    void set_ammo_type(ammo_type ammo_type_);
-    void set_energy_cost(short energy_cost);
+    QString html_base_dmg();
+    virtual QString get_tooltip_text();
     bool operator==(weapon* other);
     bool operator!=(weapon* other);
 };
 
 // Боезапас
-class ammo : public item {
-protected:
-    int _base_dmg;
-    ammo_type _ammo_type;
+class ammo : public item, public has_base_dmg, public has_ammo_type {
 public:
     ammo() = default;
     ammo(const QString& name,
@@ -211,17 +246,14 @@ public:
              stack, max_stack_size,
              base_weight, base_cost,
              sellable),
-        _base_dmg(base_dmg),
-        _ammo_type(ammo_type_)
+        has_base_dmg(base_dmg),
+        has_ammo_type(ammo_type_)
     {}
     ammo(ammo* copy): item(copy),
-        _base_dmg(copy->_base_dmg),
-        _ammo_type(copy->_ammo_type)
+        has_base_dmg(copy),
+        has_ammo_type(copy)
     {}
-    int get_base_dmg();
-    ammo_type get_ammo_type();
-    void set_base_dmg(int base_dmg);
-    void set_ammo_type(ammo_type ammo_type_);
+    virtual QString get_tooltip_text();
     // Виртуальные операторы, на случай, если захочется сделать патроны с требованиями
     virtual bool operator==(ammo* other);
     virtual bool operator!=(ammo* other);
@@ -235,6 +267,7 @@ public:
 struct armor_bonus {
     equipment_bonus bonus;
     int value;
+    QString text_armor_bonus();
     bool operator==(armor_bonus& other);
     bool operator!=(armor_bonus& other);
 };
@@ -279,6 +312,9 @@ public:
     void set_armor_slot(armor_slot armor_slot_);
     void set_armor_points(short armor_points);
     void set_armor_bonus(armor_bonus armor_bonus_);
+    QString html_armor_points();
+    QString html_armor_bonus();
+    virtual QString get_tooltip_text();
     bool operator==(armor* other);
     bool operator!=(armor* other);
 };
@@ -291,17 +327,17 @@ public:
 struct on_use {
     use_effect effect;
     int value;
+    QString text_use_effect();
     bool operator==(on_use& other);
     bool operator!=(on_use& other);
 };
 
 
 // Потребляемый предмет
-class consumable : public item {
+class consumable : public item, public has_energy_cost {
 protected:
     on_use _on_use;
     unsigned short _uses_left;
-    unsigned short _use_energy_cost;
 public:
     consumable() = default;
     consumable(const QString& name,
@@ -314,26 +350,26 @@ public:
                bool sellable,
                on_use on_use_,
                unsigned short uses_left,
-               unsigned short use_energy_cost):
+               unsigned short energy_cost):
         item(name, desc, asset,
             stack, max_stack_size,
             base_weight, base_cost,
             sellable),
+        has_energy_cost(energy_cost),
         _on_use(on_use_),
-        _uses_left(uses_left),
-        _use_energy_cost(use_energy_cost)
+        _uses_left(uses_left)
     {}
     consumable(consumable* copy): item(copy),
+        has_energy_cost(copy),
         _on_use(copy->_on_use),
-        _uses_left(copy->_uses_left),
-        _use_energy_cost(copy->_use_energy_cost)
+        _uses_left(copy->_uses_left)
     {}
     on_use get_on_use();
     unsigned short get_uses_left();
-    unsigned short get_use_energy_cost();
     void set_on_use(on_use on_use_);
     void set_uses_left(unsigned short uses_left);
-    void set_use_energy_cost(unsigned short use_energy_cost);
+    QString html_on_use();
+    virtual QString get_tooltip_text();
     // Виртуальные операторы, на случай, если захочется сделать используемые предметы с требованиями
     virtual bool operator==(consumable* other);
     virtual bool operator!=(consumable* other);

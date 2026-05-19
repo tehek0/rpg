@@ -5,6 +5,8 @@ enum class ammo_type {
     pistol,
     shotgun,
     rifle,
+    sniper,
+    minigun,
     energy,
     energy_shotgun,
     rocket

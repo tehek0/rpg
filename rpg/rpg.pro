@@ -10,6 +10,7 @@ CONFIG += c++17
 
 SOURCES += \
     game/src/character.cpp \
+    game/src/enum_translation.cpp \
     game/src/inventory.cpp \
     game/src/item.cpp \
     game/src/item_requirements.cpp \
@@ -33,6 +34,7 @@ HEADERS += \
     game/header/data/tooltip_types.h \
     game/header/data/trait_types.h \
     game/header/data/use_effects.h \
+    game/header/enum_translation.h \
     game/header/global.h \
     game/header/inventory.h \
     game/header/item.h \
