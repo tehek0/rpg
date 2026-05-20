@@ -62,5 +62,9 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
 };
 
 bool dev::is_type_linear(int default_type_index) {
-    return (default_type_index <= 8 && default_type_index != 0);
-};
+    return (default_type_index <= default_types::u_long_long && default_type_index != default_types::boolean);
+}
+bool dev::is_type_struct(int default_type_index) {
+    return (default_type_index >= default_types::requirements);
+}
+

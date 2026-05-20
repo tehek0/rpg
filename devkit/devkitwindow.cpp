@@ -19,10 +19,12 @@ DevkitWindow::~DevkitWindow()
 
 void DevkitWindow::on_createItem_pb_clicked()
 {
-    // item_dialog* item = new item_dialog();
-    // item->show();
-
-    //object dialog test
-    dev::object_dialog_window* te = new dev::object_dialog_window(dev::datatype::item);
+    dev::object_dialog_window* item_w = new dev::object_dialog_window(dev::datatype::item);
 
 }
+
+void DevkitWindow::on_createEntity_pb_clicked()
+{
+    dev::object_dialog_window* entity_w = new dev::object_dialog_window(dev::datatype::entity);
+}
+

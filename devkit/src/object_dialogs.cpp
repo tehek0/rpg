@@ -2,6 +2,9 @@
 #include <QDebug>
 #include <QComboBox>
 #include "../header/data/object_dialog_templates.hpp"
+#include "../rpg/game/inc/json.hpp"
+#include "./header/data/general.hpp"
+using js = nlohmann::ordered_json;
 
 //Параметры размера и положения объектов на экране
 const short label_w = 120;
@@ -20,6 +23,14 @@ dev::info_field::info_field(QString key, dev::default_types field_type, QPoint l
     if (dev::is_type_linear(field_type)) {
         field_ = new QLineEdit(parent);
     }
+    // if (dev::is_type_struct(field_type)) {
+    //     if (field_type == dev::default_types::requirements) {
+
+    //     }
+    //     if (field_type == dev::default_types::inventory) {
+
+    //     }
+    // }
     else {
         QComboBox* field = new QComboBox(parent);
         if (field_type == dev::default_types::boolean){
@@ -57,6 +68,15 @@ dev::info_field::~info_field() {
     }
     if (field_->parent() == nullptr) {
         delete field_;
+    }
+}
+
+void dev::info_field::clear_info_field() {
+    if (is_type_linear(field_type_)) {
+        dynamic_cast<QLineEdit*>(field_)->clear();
+    }
+    else {
+        dynamic_cast<QComboBox*>(field_)->setCurrentIndex(0);
     }
 }
 
@@ -110,6 +130,7 @@ void dev::object_dialog_window::change_subfields(short object_sybtype) {
 
 dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWidget(), object_type_(object_type) {
     this->setBaseSize(500, 800);
+    this->setAttribute(Qt::WA_DeleteOnClose);
 
     short amount_of_fields;
     try {
@@ -134,8 +155,16 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWi
     save_->setText("Save");
     save_->setGeometry(gap*3 + label_w + field_w, gap, label_w/2, any_line_hight*2);
     connect(save_, SIGNAL(clicked()), this, SLOT(on_save_clicked()));
+    reset_ = new QPushButton(this);
+    reset_->setText("Reset");
+    reset_->setGeometry(gap*3 + label_w + field_w, gap*2 + any_line_hight*2, label_w/2, any_line_hight*2);
+    connect(reset_, SIGNAL(clicked()), this, SLOT(on_reset_clicked()));
 
     this->show();
+}
+dev::object_dialog_window::~object_dialog_window() {
+    ypos = 10;
+    delete save_;
 }
 
 //SLOTS
@@ -155,4 +184,13 @@ void dev::object_dialog_window::on_save_clicked() {
 
     create_object(object_type_, object);
     qInfo() << "save";
+}
+
+void dev::object_dialog_window::on_reset_clicked() {
+    for (int i = 0; i < info_fields_.size(); ++i) {
+        info_fields_[i].clear_info_field();
+    }
+    for (int i = 0; i < info_subfields_.size(); ++i) {
+        info_subfields_[i].clear_info_field();
+    }
 }

@@ -11,7 +11,7 @@ enum datatype {
     enemy = 3,
     trader = 4,
     npc = 5,
-    disp = 6,
+    entity = 6,
     anim_disp = 7,
     item = 8,
     total = 9,
@@ -25,7 +25,7 @@ const std::string datatypes_to_string[datatype::total] = {
     "enemy",
     "trader",
     "npc",
-    "disp",
+    "entity",
     "anim_disp",
     "item",
 };
@@ -43,6 +43,9 @@ enum default_types {
     ammo_type,
     damage_type,
     item_subtypes,
+    requirements,
+    inventory,
     TODO,
 };
+
 }

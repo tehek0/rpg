@@ -40,6 +40,19 @@
      <string>PushButton</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="createEntity_pb">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>220</y>
+      <width>131</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Создать сущность</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

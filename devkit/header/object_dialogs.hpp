@@ -25,6 +25,8 @@ public:
     QLabel* get_label() const {return label_;}
     QWidget* get_field() const {return field_;}
     dev::default_types get_field_type() const {return field_type_;}
+
+    void clear_info_field();
 };
 
 //Считывает данные с шnfo_field и записывает в шаблонном виде object_data(из create_object) (для экспорта в json)
@@ -38,15 +40,17 @@ class object_dialog_window : public QWidget {
     std::vector<info_field> info_subfields_;
     dev::datatype object_type_;
     QPushButton* save_;
+    QPushButton* reset_;
 
 public:
     explicit object_dialog_window(dev::datatype object_type);
     void change_subfields(short object_sybtype);
-    ~object_dialog_window() {delete save_;}
+    ~object_dialog_window();
 
 public slots:
     void type_chosen();
     void on_save_clicked();
+    void on_reset_clicked();
 };
 
 }
