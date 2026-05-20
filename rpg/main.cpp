@@ -68,12 +68,12 @@ int main()
         inv->add_item(new item(QString("Предмет %1").arg(i), QString("Тест инвентаря"), QString("icon_inv_combat_knife"), 2, 3, 1.0f, 100, true));
     }
     inv->add_item(item_obj->linked_item);
-    item_requirements x_r;
-    x_r.item_requirements_ptrs.emplace_back(new skill_requirement(40, skill_type::guns));
-    x_r.min_level = 5;
-    item_requirements y_r;
-    y_r.item_requirements_ptrs.emplace_back(new skill_requirement(5, skill_type::speech));
-    y_r.item_requirements_ptrs.emplace_back(new char_requirement(3, char_type::endurance));
+    item_requirements* x_r = new item_requirements();
+    x_r->item_requirements_ptrs.emplace_back(new skill_requirement(40, skill_type::guns));
+    x_r->min_level = 5;
+    item_requirements* y_r = new item_requirements();
+    y_r->item_requirements_ptrs.emplace_back(new skill_requirement(5, skill_type::speech));
+    y_r->item_requirements_ptrs.emplace_back(new char_requirement(3, char_type::endurance));
     armor_bonus bonus;
     bonus.bonus = equipment_bonus::change_char_intelligence;
     bonus.value = -2;

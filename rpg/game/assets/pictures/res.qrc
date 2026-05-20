@@ -48,5 +48,14 @@
         <file>ui_ammo_icon.png</file>
         <file>ui_armor_bonus_icon.png</file>
         <file>ui_use_effect_icon.png</file>
+        <file>humans/human_base.png</file>
+        <file>humans/human_raider_boots_1.png</file>
+        <file>humans/human_raider_chestplate_1.png</file>
+        <file>humans/human_raider_hand_armor_left_melee_1.png</file>
+        <file>humans/human_raider_hand_armor_right_melee_1.png</file>
+        <file>humans/human_raider_helmet_1.png</file>
+        <file>humans/human_raider_leg_armor_1.png</file>
+        <file>humans/human_raider_necklace_1.png</file>
+        <file>humans/human_raider_pants_1.png</file>
     </qresource>
 </RCC>

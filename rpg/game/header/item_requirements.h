@@ -10,6 +10,7 @@ public:
     base_requirement(unsigned int set_requirement): required(set_requirement)
     {}
     virtual QString text_requirement() = 0;
+    virtual base_requirement* clone() = 0;
     virtual ~base_requirement() = default;
     virtual bool operator==(base_requirement* other);
     virtual bool operator!=(base_requirement* other);
@@ -21,6 +22,7 @@ public:
     {}
     char_type type;
     virtual QString text_requirement();
+    virtual base_requirement* clone();
     virtual ~char_requirement() = default;
     bool operator==(char_requirement* other);
     bool operator!=(char_requirement* other);
@@ -34,6 +36,7 @@ public:
     {}
     skill_type type;
     virtual QString text_requirement();
+    virtual base_requirement* clone();
     virtual ~skill_requirement() = default;
     bool operator==(skill_requirement* other);
     bool operator!=(skill_requirement* other);
@@ -44,6 +47,8 @@ public:
 struct item_requirements {
     unsigned short min_level = 0;
     std::vector<base_requirement*> item_requirements_ptrs;
+    item_requirements() = default;
+    item_requirements(item_requirements& other);
     ~item_requirements();
     bool operator==(item_requirements& other);
     bool operator!=(item_requirements& other);

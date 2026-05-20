@@ -112,7 +112,7 @@ public:
 // Предмет с требованиями, наследуется оружием и бронёй
 class item_with_requirements : public item {
 protected:
-    item_requirements _requirements;
+    item_requirements* _requirements;
 public:
     item_with_requirements() = default;
     item_with_requirements(const QString& name,
@@ -123,19 +123,19 @@ public:
                            double base_weight,
                            unsigned int base_cost,
                            bool sellable,
-                           item_requirements& requirements):
+                           item_requirements* requirements):
         item(name, desc, asset,
              stack, max_stack_size,
              base_weight, base_cost,
              sellable),
-        _requirements(requirements)
+        _requirements(new item_requirements(*requirements))
     {}
     item_with_requirements(item_with_requirements* copy): item(copy),
-        _requirements(copy->_requirements)
+        _requirements(new item_requirements(*(copy->_requirements)))
     {}
-    virtual ~item_with_requirements() = default;
-    item_requirements get_item_requirements();
-    void set_item_requirements(item_requirements& requirements);
+    virtual ~item_with_requirements();
+    item_requirements* get_item_requirements();
+    void set_item_requirements(item_requirements* requirements);
     QString html_requirements();
     virtual QString get_tooltip_text() = 0;
     // Этот класс сам использоваться вряд-ли будет, так что ему оператор не определяю
@@ -200,7 +200,7 @@ public:
            double base_weight,
            unsigned int base_cost,
            bool sellable,
-           item_requirements& requirements,
+           item_requirements* requirements,
            int base_dmg,
            damage_type damage_type_,
            ammo_type ammo_type_,
@@ -289,7 +289,7 @@ public:
           double base_weight,
           unsigned int base_cost,
           bool sellable,
-          item_requirements& requirements,
+          item_requirements* requirements,
           armor_slot armor_slot_,
           short armor_points,
           armor_bonus armor_bonus_):

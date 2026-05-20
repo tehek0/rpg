@@ -159,20 +159,20 @@ bool item::operator!=(item* other) {
 
 
 
-item_requirements item_with_requirements::get_item_requirements() {
+item_requirements* item_with_requirements::get_item_requirements() {
     return _requirements;
 }
 
-void item_with_requirements::set_item_requirements(item_requirements& requirements) {
+void item_with_requirements::set_item_requirements(item_requirements* requirements) {
     _requirements = requirements;
 }
 
 QString item_with_requirements::html_requirements() {
     QString str_insert = QString("");
-    if (_requirements.min_level != 0) {
-        str_insert += QString(" Уровень %1, ").arg(_requirements.min_level);
+    if (_requirements->min_level != 0) {
+        str_insert += QString(" Уровень %1, ").arg(_requirements->min_level);
     }
-    for (base_requirement* req_ptr : _requirements.item_requirements_ptrs) {
+    for (base_requirement* req_ptr : _requirements->item_requirements_ptrs) {
         str_insert += req_ptr->text_requirement();
         str_insert += QString(", ");
     }
@@ -182,6 +182,10 @@ QString item_with_requirements::html_requirements() {
     str_insert.removeLast().removeLast();
     QString html_requirements = QString("<p><center><font size=\"3\">Требования: %1</font></center><\p>").arg(str_insert);
     return html_requirements;
+}
+
+item_with_requirements::~item_with_requirements() {
+    delete _requirements;
 }
 
 bool item_with_requirements::operator==(item* other) {
