@@ -200,9 +200,13 @@ signals:
 public:
     item* linked_item;
     QLabel* stack_label;
-    item_object() = default; // это обязательно
+    bool is_dummy;
+    item_object() {
+        is_dummy = true;
+    } // это обязательно
     item_object(item* linked_item_, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable(linked_item_->get_asset(), coord, size, clickable), linked_item(linked_item_)
     {
+        is_dummy = false;
         stack_label = new QLabel(_disp);
         stack_label->setGeometry(_disp->geometry());
         stack_label->setAlignment(Qt::AlignRight | Qt::AlignBottom);
@@ -253,8 +257,8 @@ class inventory_object : public QObject {
 
 public slots:
     void process_item_click(item_object* item_obj) {
-        //linked_inventory->remove_item(linked_inventory->get_slot(item_obj->linked_item), 1);
-        linked_inventory->add_item(new item("Имя","Фамилия", "icon_inv_armor_pot", 1, 10, 1.0f, 1, true));
+        linked_inventory->remove_item(linked_inventory->get_slot(item_obj->linked_item), 1);
+        // linked_inventory->add_item(new item("Имя","Фамилия", "icon_inv_armor_pot", 1, 10, 1.0f, 1, true));
     }
     void update(unsigned int slot, inv_update_context context_) {
         unsigned int lower_boundry = _scrolled_cols * _cols;
@@ -350,15 +354,14 @@ public slots:
             --_scrolled_cols;
             unsigned int lower_boundry = _scrolled_cols * _cols;
             unsigned int final_object = _cols * (_displayed_rows) - 1;
-            std::vector<item_object*> dummy_objects;
-            if (item_objects.size() <= final_object) {
-                item_objects.reserve(item_objects.size() + (final_object - item_objects.size() + 1));
+            size_t original_size = item_objects.size();
+            if (original_size <= final_object) {
+                item_objects.reserve(original_size + (final_object - original_size + 1));
                 for (unsigned int i = item_objects.size(); i <= final_object; ++i) {
                     item_object* dummy = new item_object();
                     dummy->_disp = new tracked_button();
                     layout->addWidget(dummy->_disp, i / _cols, i % _cols);
                     item_objects.emplace_back(dummy);
-                    dummy_objects.emplace_back(dummy);
                 }
             }
             for (unsigned int i = _cols * (_displayed_rows) - 1; i >= _cols; --i) {
@@ -375,6 +378,11 @@ public slots:
                 delete item_objects[to_replace];
                 item_objects.erase(item_objects.begin() + to_replace);
             }
+            for (unsigned int k = item_objects.size() - 1; k >= original_size; --k) {
+                delete item_objects[k];
+                item_objects.erase(item_objects.end() - 1);
+            }
+
             item_objects.insert(item_objects.begin(), temp.begin(), temp.end());
             this->shrink_widget_to_contents(lower_boundry);
             return;

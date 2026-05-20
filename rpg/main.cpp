@@ -92,7 +92,7 @@ int main()
     lbl->setText("Кол-во");
     lbl->setAlignment(Qt::AlignBottom | Qt::AlignRight);
     delete btttn;
-    inventory_object* inv_o = new inventory_object(inv, inventory_context::container_self, 4, 6, 90, QPoint(250, 250));
+    inventory_object* inv_o = new inventory_object(inv, inventory_context::container_self, 15, 15, 30, QPoint(250, 250));
     qInfo() << inv_o->layout->columnCount() << inv_o->layout->rowCount();
     global::w.on_inventory.emplace_back(inv_o->base);
     inv_o->base->hide();

@@ -10,6 +10,7 @@ public:
     base_requirement(unsigned int set_requirement): required(set_requirement)
     {}
     virtual QString text_requirement() = 0;
+    virtual ~base_requirement() = default;
     virtual bool operator==(base_requirement* other);
     virtual bool operator!=(base_requirement* other);
 };
@@ -20,6 +21,7 @@ public:
     {}
     char_type type;
     virtual QString text_requirement();
+    virtual ~char_requirement() = default;
     bool operator==(char_requirement* other);
     bool operator!=(char_requirement* other);
     bool operator==(base_requirement* other);
@@ -32,6 +34,7 @@ public:
     {}
     skill_type type;
     virtual QString text_requirement();
+    virtual ~skill_requirement() = default;
     bool operator==(skill_requirement* other);
     bool operator!=(skill_requirement* other);
     bool operator==(base_requirement* other);
