@@ -1,4 +1,5 @@
 QT       += core gui
+QT += multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -55,12 +56,11 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    game/assets/pictures/res.qrc
+    game/assets/res.qrc
 
 DISTFILES += \
     assets/pictures/backg_map.jpg.kra \
     assets/pictures/map.jpg \
-    game/assets/pictures/backg_map.jpg.kra \
-    game/assets/pictures/map.jpg
+    game/assets/pictures/backg_map.jpg.kra
 
 QMAKE_CXXFLAGS += -clazy-disable=qstring-arg

@@ -27,8 +27,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
-    <string notr="true">background: url(:/map.jpg);
-background-position: center;</string>
+    <string notr="true">background-position: center;</string>
    </property>
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
@@ -53,7 +52,7 @@ background-position: center;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background:url(:/icon_inv_armor_sandals.png)</string>
+     <string notr="true">background:url(:/pictures/icon_inv_armor_sandals.png)</string>
     </property>
     <property name="text">
      <string/>
@@ -69,7 +68,7 @@ background-position: center;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background:url(:/icon_inv_combat_axe.png)</string>
+     <string notr="true">background:url(:/pictures/icon_inv_combat_axe.png)</string>
     </property>
     <property name="text">
      <string/>
@@ -85,7 +84,7 @@ background-position: center;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background:url(:/icon_inv_weapon_gun.png)</string>
+     <string notr="true">background:url(:/pictures/icon_inv_weapon_gun.png)</string>
     </property>
     <property name="text">
      <string/>
@@ -101,7 +100,7 @@ background-position: center;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background:url(:/icon_inv_weapon_gun.png)</string>
+     <string notr="true">background:url(:/pictures/icon_inv_weapon_gun.png)</string>
     </property>
     <property name="text">
      <string/>
@@ -117,7 +116,7 @@ background-position: center;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background: url(:/testbkg.jpg)</string>
+     <string notr="true">background: url(:/pictures/testbkg.jpg)</string>
     </property>
     <property name="text">
      <string>Выйти</string>
@@ -133,7 +132,7 @@ background-position: center;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background: url(:/testbkg_fight.jpg)</string>
+     <string notr="true">background: url(:/pictures/testbkg_fight.jpg)</string>
     </property>
     <property name="text">
      <string>К игре</string>

@@ -109,7 +109,7 @@ void MainWindow::on_map_b_clicked()
         }
         debug_screen(on_screen);
 
-        centralWidget()->setStyleSheet("background: url(:/map.jpg); background-position: center;");
+        centralWidget()->setStyleSheet("background: url(:/pictures/map.jpg); background-position: center;");
 
         hide_widgets(on_screen);
         on_screen = on_map;
@@ -131,7 +131,7 @@ void MainWindow::on_inventory_b_clicked()
 
         debug_screen(on_screen);
 
-        centralWidget()->setStyleSheet("background: url(:/testbkg.jpg); background-position: center;");
+        centralWidget()->setStyleSheet("background: url(:/pictures/testbkg.jpg); background-position: center;");
 
         hide_widgets(on_screen);
         on_screen = on_inventory;
@@ -154,7 +154,7 @@ void MainWindow::on_stats_b_clicked()
 
         debug_screen(on_screen);
 
-        centralWidget()->setStyleSheet("background: url(:/testbkg_stats.jpg); background-position: center;");
+        centralWidget()->setStyleSheet("background: url(:/pictures/testbkg_stats.jpg); background-position: center;");
 
         hide_widgets(on_screen);
         on_screen = on_stats;
@@ -173,7 +173,7 @@ void MainWindow::on_menu_b_clicked()
 
         debug_screen(on_screen);
 
-        centralWidget()->setStyleSheet("background: url(:/testbkg_menu.jpg); background-position: center;");
+        centralWidget()->setStyleSheet("background: url(:/pictures/testbkg_menu.jpg); background-position: center;");
         hide_ui(this);
 
         hide_widgets(on_screen);

@@ -72,7 +72,7 @@ void animated_displayable::next_frame() {
             }
             _anim_sequence.current_frame = 0;
         }
-        _disp->setStyleSheet(QString("border-image: url(:/animated/%1/%2/frame%3.png);").arg(_sprite_family).arg(_anim_sequence.anims[_anim_sequence.current_anim_id].name).arg(_anim_sequence.current_frame));
+        _disp->setStyleSheet(QString("border-image: url(:/pictures/animated/%1/%2/frame%3.png);").arg(_sprite_family).arg(_anim_sequence.anims[_anim_sequence.current_anim_id].name).arg(_anim_sequence.current_frame));
     }
 }
 

@@ -7,7 +7,7 @@
 
 #include <QGridLayout>
 #include <QSizePolicy>
-
+#include <QFile>
 int main()
 {
     global::player_ = new player;
@@ -18,7 +18,7 @@ int main()
     QPoint p(960 - 150,540 - 150);
     QSize z(150,150);
     QString s = "shrimp";
-    QString n = "<img src=\":/ui_armor_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"> Броня: 5";
+    QString n = "<img src=\":/pictures/ui_armor_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"> Броня: 5";
     entity_object* entt = new entity_object(new entity(n, s), anim_sequence(1, anim("test_anim", 3, 6), anim("test_anim2", 10, 6)), p, z);
     global::w.on_map.emplace_back(entt->_disp);
     entt->_disp->hide();
@@ -32,7 +32,7 @@ int main()
     inter.interaction_trees.emplace_back(new interaction_tree(new tell_line("Привет"), new tell_line("Мир"), new give_choice(new dialogue_choice("Выбор 1", 1), new char_check_choice("Выбор с проверкой удачи", 0, 1, char_type::luck, 8), new dialogue_choice("Выбор 2", 2), new dialogue_choice("Выбор 3", 3)), new tell_line("Конец")));
     qInfo() << inter.interaction_trees[0]->interactions.size();
     qInfo() << inter.interaction_trees[0]->interactions[0]->run();
-    //global::w.showFullScreen();
+    global::w.showFullScreen();
     inter.selected_interaction_tree = 0;
     inter.execute();
     inter.execute();
@@ -41,7 +41,6 @@ int main()
 
     item_object* item_obj = new item_object(new item(QString("Тапки"),QString("Это тапки."), QString("icon_inv_armor_sandals"), 3, 56, 0.0f, 10, true), QPoint(100, 100));
     qInfo() << item_obj->stack_label->text();
-    // global::w.on_inventory.emplace_back(item_obj->_disp);
     item_obj->_disp->hide();
     QWidget* lyt_w = new QWidget(&global::w);
 
@@ -95,11 +94,17 @@ int main()
     inventory_object* inv_o = new inventory_object(inv, inventory_context::container_self, 15, 15, 30, QPoint(250, 250));
     qInfo() << inv_o->layout->columnCount() << inv_o->layout->rowCount();
     global::w.on_inventory.emplace_back(inv_o->base);
-    inv_o->base->hide();
+
+    text_object* t_o = new text_object("АААААААААААААААААААААААААААААААААААААААААААААААААААААААААААА", "typing", 7);
+    t_o->show();
     for (item_object* elem : inv_o->item_objects) {
         qInfo() << elem->linked_item->get_name();
     }
-    global::w.show();
+    QSoundEffect* ef = new QSoundEffect();
+    ef->setSource(QUrl(QString("qrc:/sounds/typing.wav")));
+    ef->setVolume(global::master_volume * global::sfx_volume);
+
+    ef->play();
     global::w.on_menu_b_clicked();
 
     return global::a.exec();

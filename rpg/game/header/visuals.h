@@ -8,7 +8,9 @@
 #include <QTextBrowser>
 #include <QPixmap>
 #include <QPainter>
-#include "QWheelEvent"
+#include <QWheelEvent>
+#include <QRegularExpression>
+#include <QSoundEffect>
 #include "global.h"
 #include "character.h"
 #include "data/tooltip_types.h"
@@ -64,7 +66,7 @@ public:
     displayable(QString sprite_family, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true) : displayable() {
         _sprite_family = sprite_family;
         _disp = new tracked_button();
-        _disp->setStyleSheet(QString("border-image: url(:/%1.png);").arg(_sprite_family));
+        _disp->setStyleSheet(QString("border-image: url(:/pictures/%1.png);").arg(_sprite_family));
         _disp->setGeometry(coord.x(),coord.y(), size.width(), size.height());
         _disp->setParent(&global::w);
         _disp->setEnabled(clickable);
@@ -158,7 +160,7 @@ public:
     animated_displayable() = default;
     animated_displayable(QString sprite_family, const anim_sequence& anim_sequence_ = anim_sequence(), const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable(sprite_family, coord, size, clickable) {
         _anim_sequence = anim_sequence_;
-        _disp->setStyleSheet(QString("border-image: url(:animated/%1/base_sprite.png);").arg(_sprite_family));
+        _disp->setStyleSheet(QString("border-image: url(:/pictures/animated/%1/base_sprite.png);").arg(_sprite_family));
         connect(global::timer, &QTimer::timeout, this, &animated_displayable::next_frame);
     }
     anim_sequence get_anim_sequence();
@@ -236,7 +238,7 @@ signals:
 public:
     QPixmap sprite;
     inventory_background(const QString& asset, QWidget* parent = nullptr): QWidget(parent) {
-        sprite.load(QString(":/%1.png").arg(asset));
+        sprite.load(QString(":/pictures/%1.png").arg(asset));
     }
     void paintEvent(QPaintEvent *event) {
         QPainter paint(this);
@@ -506,4 +508,59 @@ public:
         connect(_disp, &tracked_button::request_tooltip, this, &entity_object::markdown_entity);
     }
 
+};
+
+class text_object : public QLabel {
+
+    Q_OBJECT
+
+signals:
+    void request_new_string();
+public slots:
+    void write() {
+        ++_ticks_passed;
+        if (_ticks_passed < ticks_per_symbol)
+            return;
+
+        _ticks_passed = 0;
+        if (_processed_string.size() != text_source.size()) {
+            _processed_string += text_source[_processed_string.size()];
+            this->setText(_processed_string);
+            this->adjustSize();
+        } else {
+            _processed_string += QString(" <img src=\":/pictures/ui_text_go_next.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\">");
+            this->setText(_processed_string);
+            this->adjustSize();
+            disconnect(global::timer, &QTimer::timeout, this, &text_object::write);
+            return;
+        }
+        if (_sfx != nullptr) {
+            _sfx->stop();
+            _sfx->setVolume(global::master_volume * global::sfx_volume);
+            _sfx->play();
+        }
+
+    }
+protected:
+    QString _processed_string;
+    QSoundEffect* _sfx = nullptr;
+    unsigned int _ticks_passed = 0;
+    unsigned int _pause_for = 0;
+public:
+    QString text_source;
+    QString symbol_sound;
+    unsigned int ticks_per_symbol;
+    text_object(QString text_source_, QString symbol_sound_ = "", unsigned int ticks_per_symbol_ = 1, QWidget* parent = &global::w): QLabel(parent), text_source(text_source_), symbol_sound(symbol_sound_), ticks_per_symbol(ticks_per_symbol_) {
+        if (text_source.isEmpty()) {
+            return;
+        }
+        connect(global::timer, &QTimer::timeout, this, &text_object::write);
+        if (symbol_sound.isEmpty() == false) {
+            _sfx = new QSoundEffect(this);
+            _sfx->setSource(QUrl(QString("qrc:/sounds/%1.wav").arg(symbol_sound)));
+        }
+    }
+    ~text_object() {
+        delete _sfx;
+    }
 };
