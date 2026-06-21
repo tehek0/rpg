@@ -3,7 +3,7 @@
 //#include "item_dialog.h"
 #include <QLabel>
 #include <QLineEdit>
-#include "header/object_dialogs.hpp"
+
 
 DevkitWindow::DevkitWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -16,15 +16,22 @@ DevkitWindow::~DevkitWindow()
 {
     delete ui;
 }
-
 void DevkitWindow::on_createItem_pb_clicked()
 {
     dev::object_dialog_window* item_w = new dev::object_dialog_window(dev::datatype::item);
+    windows.emplace_back(item_w);
 
 }
 
 void DevkitWindow::on_createEntity_pb_clicked()
 {
     dev::object_dialog_window* entity_w = new dev::object_dialog_window(dev::datatype::entity);
+    windows.emplace_back(entity_w);
 }
 
+
+void DevkitWindow::on_createRequirements_pb_clicked()
+{
+    dev::object_dialog_window* requirements_w = new dev::object_dialog_window(dev::datatype::requirements);
+    windows.emplace_back(requirements_w);
+}

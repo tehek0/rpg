@@ -3,19 +3,17 @@
 #include <QComboBox>
 #include "../header/data/object_dialog_templates.hpp"
 #include "../rpg/game/inc/json.hpp"
-#include "./header/data/general.hpp"
 using js = nlohmann::ordered_json;
 
-//Параметры размера и положения объектов на экране
-const short label_w = 120;
-const short field_w = 300;
-const short any_line_hight = 25;
-const short gap = 5;
-int ypos = 10;
-int last_main_field_ypos;
+//Параметры размера и положения объектов на экране, общие для всех окон
+constexpr short label_w = 120;
+constexpr short field_w = 300;
+constexpr short any_line_hight = 25;
+constexpr short gap = 5;
+
 
 //INFO_FIELD
-dev::info_field::info_field(QString key, dev::default_types field_type, QPoint location, QWidget* parent) : field_type_(field_type) {
+dev::info_field::info_field(QString key, dev::datatype field_type, QPoint location, QWidget* parent) : field_type_(field_type) {
     label_ = new QLabel(parent);
     label_->setText(key);
     label_->setGeometry(location.x(), location.y(), label_w, any_line_hight);
@@ -23,30 +21,36 @@ dev::info_field::info_field(QString key, dev::default_types field_type, QPoint l
     if (dev::is_type_linear(field_type)) {
         field_ = new QLineEdit(parent);
     }
-    // if (dev::is_type_struct(field_type)) {
-    //     if (field_type == dev::default_types::requirements) {
-
-    //     }
-    //     if (field_type == dev::default_types::inventory) {
-
-    //     }
-    // }
     else {
-        QComboBox* field = new QComboBox(parent);
-        if (field_type == dev::default_types::boolean){
+        QComboBox* field = new QComboBox(parent);      
+        if (field_type == dev::datatype::boolean){
             field->addItems({"false", "true"});
         }
         else {
-            if (field_type == dev::default_types::item_subtypes){
+            switch(field_type) {
+            case dev::datatype::item_subtypes:
                 field->addItems({"none", "weapon", "ammo", "armor", "consumable"});
                 connect(field, SIGNAL(currentIndexChanged(int)), parent, SLOT(type_chosen()));
-            }
-            if (field_type == dev::default_types::damage_type){
+                break;
+            case dev::datatype::damage_type:
                 field->addItems({"bullet", "energy", "melee", "unarmed", "explosive"});
-            }
-            if (field_type == dev::default_types::ammo_type){
+                break;
+            case dev::datatype::ammo_type:
                 field->addItems({"none", "pistol", "shotgun", "rifle", "energy", "energy_shotgun", "rocket"});
+                break;
+            case dev::datatype::requirements_subtypes:
+                field->addItems({"none", "char_type", "skill_type"});
+                connect(field, SIGNAL(currentIndexChanged(int)), parent, SLOT(type_chosen()));
+                break;
+            case dev::datatype::char_type:
+                field->addItems({"strength", "agility", "endurance", "intelligence", "luck"});
+                break;
+            case dev::datatype::skill_type:
+                field->addItems({"guns", "big_guns", "unarmed", "science", "spech", "barter", "survival"});
+                break;
+            default: break;
             }
+
         }
         field_ = field;
     }
@@ -82,7 +86,7 @@ void dev::info_field::clear_info_field() {
 
 void dev::read_from_infoField_to_objectData(const dev::info_field& data, dev::object_data& object) {
     QString current_key = data.get_label()->text();
-    dev::default_types current_type = data.get_field_type();
+    dev::datatype current_type = data.get_field_type();
     QString current_value;
     if (is_type_linear(current_type)) {
         current_value = dynamic_cast<QLineEdit*>(data.get_field())->text();
@@ -105,9 +109,9 @@ void dev::object_dialog_window::change_subfields(short object_sybtype) {
         subf.deleteLater();
     }
     info_subfields_.clear();
-    ypos = last_main_field_ypos;
+    this->ypos = this->last_y_pos;
 
-    this->resize(500, 600);
+    //this->resize(500, 600);
 
     short amount_of_fields;
     try {
@@ -119,17 +123,17 @@ void dev::object_dialog_window::change_subfields(short object_sybtype) {
 
     for (short i = 0; i < amount_of_fields; ++i) {
         QString current_key = subtypes_template[object_type_][object_sybtype].keys_[i];
-        dev::default_types current_type = subtypes_template[object_type_][object_sybtype].types_[i];
+        dev::datatype current_type = subtypes_template[object_type_][object_sybtype].types_[i];
 
-        dev::info_field whole_field = {current_key, current_type, QPoint(gap, ypos), this};
+        dev::info_field whole_field = {current_key, current_type, QPoint(gap, this->ypos), this};
         info_subfields_.emplace_back(whole_field);
 
-        ypos += any_line_hight + gap;
+        this->ypos += any_line_hight + gap;
     }
 }
 
 dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWidget(), object_type_(object_type) {
-    this->setBaseSize(500, 800);
+    this->resize(500, 400);
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     short amount_of_fields;
@@ -142,14 +146,14 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWi
 
     for (short i = 0; i < amount_of_fields; ++i) {
         QString current_key = templates[object_type].keys_[i];
-        dev::default_types current_type = templates[object_type].types_[i];
+        dev::datatype current_type = templates[object_type].types_[i];
 
-        dev::info_field whole_field = {current_key,current_type, QPoint(gap, ypos), this};
+        dev::info_field whole_field = {current_key,current_type, QPoint(gap, this->ypos), this};
         info_fields_.emplace_back(whole_field);
 
-        ypos += any_line_hight + gap;
+        this->ypos += any_line_hight + gap;
     }
-    last_main_field_ypos = ypos;
+    this->last_y_pos = this->ypos;
 
     save_ = new QPushButton(this);
     save_->setText("Save");
@@ -162,8 +166,9 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWi
 
     this->show();
 }
+
 dev::object_dialog_window::~object_dialog_window() {
-    ypos = 10;
+    this->ypos = 10;
     delete save_;
 }
 

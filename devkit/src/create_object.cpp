@@ -6,13 +6,13 @@
 #include <filesystem>
 #include <QDebug>
 
-dev::object_data dev::object_data::operator+(const dev::object_data& other) {
-    std::vector<dev::default_types> ttypes = types_;
-    for (const auto& type: other.types_) {
-        ttypes.emplace_back(type);
-    }
-    return dev::object_data(keys_ + other.keys_, values_ + other.values_, ttypes);
-};
+// dev::object_data dev::object_data::operator+(const dev::object_data& other) {
+//     std::vector<dev::datatype> ttypes = types_;
+//     for (const auto& type: other.types_) {
+//         ttypes.emplace_back(type);
+//     }
+//     return dev::object_data(keys_ + other.keys_, values_ + other.values_, ttypes);
+// };
 
 void dev::create_object(dev::datatype object_type, object_data& values) {
     js data;
@@ -20,28 +20,28 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
         auto key = values.keys_[i].toStdString();
         auto value = values.values_[i];
         auto type = values.types_[i];
-        if (type == dev::default_types::string || type == dev::default_types::qstring) {
+        if (type == dev::datatype::string || type == dev::datatype::qstring) {
             data[key] = value.toStdString(); continue;
         }
-        if (type == dev::default_types::integer) {
+        if (type == dev::datatype::integer) {
             data[key] = value.toInt(); continue;
         }
-        if (type == dev::default_types::u_integer) {
+        if (type == dev::datatype::u_integer) {
             data[key] = value.toUInt(); continue;
         }
-        if (type == dev::default_types::short_t) {
+        if (type == dev::datatype::short_t) {
             data[key] = value.toShort(); continue;
         }
-        if (type == dev::default_types::double_t) {
+        if (type == dev::datatype::double_t) {
             data[key] = value.toDouble(); continue;
         }
-        if (type == dev::default_types::u_long_long) {
+        if (type == dev::datatype::u_long_long) {
             data[key] = value.toULongLong(); continue;
         }
-        if (type == dev::default_types::boolean) {
+        if (type == dev::datatype::boolean) {
             data[key] = static_cast<bool>(value.toInt()); continue;
         }
-        if (type == dev::default_types::TODO) {
+        if (type == dev::datatype::TODO) {
             qInfo() << "[WARN][dev::create_object] function called with TO DO (unhandled) marked type. Make sure to add proper type support later";
             data[key] = value.toShort(); continue;
         }
@@ -61,10 +61,8 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
 
 };
 
-bool dev::is_type_linear(int default_type_index) {
-    return (default_type_index <= default_types::u_long_long && default_type_index != default_types::boolean);
+bool dev::is_type_linear(int type_index) {
+    return (type_index <= datatype::u_long_long && type_index != datatype::boolean);
 }
-bool dev::is_type_struct(int default_type_index) {
-    return (default_type_index >= default_types::requirements);
-}
+
 

@@ -15,16 +15,16 @@ class info_field : public QObject {
 
     QLabel* label_;
     QWidget* field_;
-    dev::default_types field_type_;
+    dev::datatype field_type_;
 
 public:
-    info_field(QString key, dev::default_types field_type, QPoint location, QWidget* parent = nullptr);
+    info_field(QString key, dev::datatype field_type, QPoint location, QWidget* parent = nullptr);
     info_field(const info_field& other);
     ~info_field();
 
     QLabel* get_label() const {return label_;}
     QWidget* get_field() const {return field_;}
-    dev::default_types get_field_type() const {return field_type_;}
+    dev::datatype get_field_type() const {return field_type_;}
 
     void clear_info_field();
 };
@@ -41,6 +41,8 @@ class object_dialog_window : public QWidget {
     dev::datatype object_type_;
     QPushButton* save_;
     QPushButton* reset_;
+    int last_y_pos;
+    int ypos = 10;
 
 public:
     explicit object_dialog_window(dev::datatype object_type);

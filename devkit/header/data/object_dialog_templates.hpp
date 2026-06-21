@@ -2,32 +2,48 @@
 #include "../create_object.hpp"
 
 dev::object_data templates[dev::datatype::total + 1] = {
-    {
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, //bool - linear типы
+    { //location
         {"subtype", "name", "asset"},
         {},
-        {dev::default_types::TODO, dev::default_types::qstring, dev::default_types::qstring},
+        {dev::datatype::TODO, dev::datatype::qstring, dev::datatype::qstring},
     },
-    {{},{},{},},
-    {{},{},{},},
-    {{},{},{},},
-    {{},{},{},},
-    {{},{},{},},
+    { //sublocation
+        {},{},{},}
+    ,
+    { //quest
+        {},{},{},}
+    ,
+    { //enemy
+        {},{},{},}
+    ,
+    { //trade
+        {},{},{},
+},
+    { //npc
+        {},{},{},
+},
     {// entity
         {"name", "asset", "inventory"},
         {},
-        {dev::default_types::qstring, dev::default_types::qstring, dev::default_types::inventory},
+        {dev::datatype::qstring, dev::datatype::qstring, dev::datatype::inventory},
     },
-    {{},{},{},},
+    { //requirements
+        {"subtype","min_level", "required"},
+        {},
+        {dev::datatype::requirements_subtypes, dev::datatype::u_short, dev::datatype::u_integer},
+     },
     { //item
         {"subtype", "name","desc","asset","max_stack_size","base_weight","base_cost","sellablle"},
         {},
-        {dev::default_types::item_subtypes, dev::default_types::qstring, dev::default_types::qstring, dev::default_types::qstring,
-        dev::default_types::u_integer, dev::default_types::u_integer,dev::default_types::u_integer, dev::default_types::boolean},
+        {dev::datatype::item_subtypes, dev::datatype::qstring, dev::datatype::qstring, dev::datatype::qstring,
+        dev::datatype::u_integer, dev::datatype::u_integer,dev::datatype::u_integer, dev::datatype::boolean},
     },
     {{},{},{},},
 };
 
 const std::vector<dev::object_data> subtypes_template[dev::datatype::total + 1] = {
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, //bool - linear типы
     { //location's
         {}, //none
      { //desert
@@ -40,7 +56,11 @@ const std::vector<dev::object_data> subtypes_template[dev::datatype::total + 1] 
      {{},{},{},},
 },
     { //etc
-     {{},{},{},},
+    {
+     {},
+     {},
+     {},
+     },
 },
     {
      {{},{},{},},
@@ -54,43 +74,42 @@ const std::vector<dev::object_data> subtypes_template[dev::datatype::total + 1] 
     {
      {{},{},{},},
 },
-    {
-     {{},{},{},},
+    {// requirements
+    {},//none = base requirement
+    { //char requirement
+     {"type"},
+     {},
+     {dev::datatype::char_type},
+    },
+    {//skill requirement
+     {"type"},
+     {},
+     {dev::datatype::skill_type},
+     },
 },
     {// item's
      {},//none
      { //weapon
       {"base_dmg", "damage_type", "ammo_type", "energy_cost", "requirements"},
       {},
-      {dev::default_types::integer, dev::default_types::damage_type, dev::default_types::ammo_type, dev::default_types::integer, dev::default_types::requirements},
+      {dev::datatype::integer, dev::datatype::damage_type, dev::datatype::ammo_type, dev::datatype::integer, dev::datatype::requirements},
       },
      { //ammo
       {"base_dmg", "ammo_type"},
       {},
-      {dev::default_types::integer, dev::default_types::ammo_type},
+      {dev::datatype::integer, dev::datatype::ammo_type},
       },
      { //armor
       {"armor_slot", "armor_points", "armor_bonus"},
       {},
-      {dev::default_types::TODO, dev::default_types::u_short, dev::default_types::TODO},
+      {dev::datatype::TODO, dev::datatype::u_short, dev::datatype::TODO},
       },
      { //consumable
      {"on_use", "uses_left", "use_energy_cost"},
       {},
-      {dev::default_types::TODO, dev::default_types::short_t, dev::default_types::TODO},
+      {dev::datatype::TODO, dev::datatype::short_t, dev::datatype::TODO},
       },
 },
-    {
-        {{},{},{},},
+    {{{},{},{},},
 },
-};
-const dev::object_data substructures_template[dev::default_types::TODO - dev::default_types::u_long_long] {
-    {//requirements
-     {},{},{},
-    },
-    {//inventory
-        {"item_id"},
-        {},
-        {dev::default_types::u_long_long},
-    },
 };

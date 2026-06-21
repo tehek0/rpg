@@ -17,8 +17,8 @@
    <widget class="QPushButton" name="createItem_pb">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>220</y>
+      <x>20</x>
+      <y>40</y>
       <width>131</width>
       <height>24</height>
      </rect>
@@ -27,30 +27,56 @@
      <string>Создать предмет</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>80</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>PushButton</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="createEntity_pb">
     <property name="geometry">
      <rect>
-      <x>150</x>
-      <y>220</y>
+      <x>20</x>
+      <y>80</y>
       <width>131</width>
       <height>24</height>
      </rect>
     </property>
     <property name="text">
      <string>Создать сущность</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="createRequirements_pb">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>40</y>
+      <width>161</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Создать requirement</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>10</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Итоговые объекты</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>10</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Компоненты</string>
     </property>
    </widget>
   </widget>

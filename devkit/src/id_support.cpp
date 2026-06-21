@@ -7,14 +7,19 @@
 void dev::set_ids_default_state() {
     std::ofstream default_ids("ids.json");
     js default_object = js::object();
+    short index = 0;
     for (const auto& str : datatypes_to_string) {
-        QString q_last = QString(q_last_ptrn).arg(str);
-        std::string last = q_last.toStdString();
-        default_object[last] = 0;
+        if (index >= dev::datatype::location){
+            QString q_last = QString(q_last_ptrn).arg(str);
+            std::string last = q_last.toStdString();
+            default_object[last] = 0;
 
-        QString q_dangling = QString(q_dangling_ptrn).arg(str);
-        std::string dangling = q_dangling.toStdString();
-        default_object[dangling] = js::array();
+            QString q_dangling = QString(q_dangling_ptrn).arg(str);
+            std::string dangling = q_dangling.toStdString();
+            default_object[dangling] = js::array();
+        }
+
+        ++index;
     }
     default_ids << default_object.dump(js_indent);
 }
