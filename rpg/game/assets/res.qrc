@@ -60,5 +60,6 @@
         <file>pictures/ui_weight_icon.png</file>
         <file>sounds/typing.wav</file>
         <file>pictures/ui_text_go_next.png</file>
+        <file>pictures/black_text_bg.png</file>
     </qresource>
 </RCC>

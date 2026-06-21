@@ -9,10 +9,19 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     global::timer->start(global::tick_timeout);
-    on_inventory.emplace_back(ui->pushButton);
-    ui->pushButton->hide();
-    on_menu.emplace_back(ui->menu_exit);
-    on_menu.emplace_back(ui->menu_toGame);
+    // on_inventory.emplace_back(ui->pushButton);
+    // ui->pushButton->hide();
+    // on_menu.emplace_back(ui->menu_exit);
+    // on_menu.emplace_back(ui->menu_toGame);
+    QGraphicsScene* scene = new QGraphicsScene();
+    menu_screen = new QGraphicsView(scene, this);
+    menu_screen->setGeometry(this->geometry());
+    menu_screen->setBackgroundBrush(QBrush(QPixmap(":/pictures/testbkg.jpg")));
+    ui->menu_toGame->setParent(menu_screen);
+    ui->menu_exit->setParent(menu_screen);
+    scene->addWidget(ui->menu_toGame);
+    scene->addWidget(ui->menu_exit);
+    selected_screen = menu_screen;
 
 
     //test
@@ -169,27 +178,31 @@ void MainWindow::on_stats_b_clicked()
 
 void MainWindow::on_menu_b_clicked()
 {
-    if (!(current_screen == screens::menu)) {
+    // if (!(current_screen == screens::menu)) {
 
-        debug_screen(on_screen);
+    //     debug_screen(on_screen);
 
-        centralWidget()->setStyleSheet("background: url(:/pictures/testbkg_menu.jpg); background-position: center;");
-        hide_ui(this);
+    //     centralWidget()->setStyleSheet("background: url(:/pictures/testbkg_menu.jpg); background-position: center;");
+    //     hide_ui(this);
 
-        hide_widgets(on_screen);
-        on_screen = on_menu;
-        show_widgets(on_screen);
+    //     hide_widgets(on_screen);
+    //     on_screen = on_menu;
+    //     show_widgets(on_screen);
 
-        debug_screen(on_screen);
+    //     debug_screen(on_screen);
 
-        current_screen = screens::menu;
-    }
+    //     current_screen = screens::menu;
+    // }
 
+    selected_screen->hide();
+    selected_screen = menu_screen;
+    selected_screen->show();
 }
 
 
 void MainWindow::on_menu_toGame_clicked()
 {
+    selected_screen->hide();
     on_map_b_clicked();
 }
 

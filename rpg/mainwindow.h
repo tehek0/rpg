@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #include <QMainWindow>
+#include <QGraphicsView>
 
 class animated_displayable;
 
@@ -31,6 +32,15 @@ public:
     std::vector<QWidget*> on_menu;
     std::vector<QWidget*> on_map;
     screens current_screen;
+
+    QGraphicsView* menu_screen;
+    QGraphicsView* inventory_screen = nullptr;
+    QGraphicsView* stats_screen = nullptr;
+    QGraphicsView* map_screen = nullptr;
+    QGraphicsView* dialog_screen = nullptr;
+    QGraphicsView* other_screen = nullptr; // Для всяких экранов на разок, типа создания игрока, проигрыша и т.п.
+
+    QGraphicsView* selected_screen = nullptr;
 
     Ui::MainWindow *ui;
 public slots:

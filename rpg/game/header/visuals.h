@@ -348,8 +348,14 @@ public slots:
         }
     }
     void scroll(int delta) {
+        if (linked_inventory->get_items_size() == 0)
+            return;
 
-        //
+        if (item_objects.size() == 0) {
+            _scrolled_cols = linked_inventory->get_items_size() / _cols;
+        } else {
+            _scrolled_cols = linked_inventory->get_slot(item_objects[0]->linked_item) / _cols;
+        }
         if (delta > 0) {
             if (_scrolled_cols == 0)
                 return;
@@ -380,7 +386,7 @@ public slots:
                 delete item_objects[to_replace];
                 item_objects.erase(item_objects.begin() + to_replace);
             }
-            for (unsigned int k = item_objects.size() - 1; k >= original_size; --k) {
+            for (unsigned int k = item_objects.size() - 1; k >= original_size && k < item_objects.size(); --k) {
                 delete item_objects[k];
                 item_objects.erase(item_objects.end() - 1);
             }
@@ -390,7 +396,7 @@ public slots:
             return;
         }
         if (delta < 0) {
-            if (((long long)(linked_inventory->get_items().size()) - (_scrolled_cols * _cols)) <= _displayed_rows * _cols)
+            if (((long long)(linked_inventory->get_items_size()) - (_scrolled_cols * _cols)) <= _displayed_rows * _cols)
                 return;
 
             ++_scrolled_cols;
@@ -517,50 +523,117 @@ class text_object : public QLabel {
 signals:
     void request_new_string();
 public slots:
-    void write() {
+    void tick() {
         ++_ticks_passed;
         if (_ticks_passed < ticks_per_symbol)
             return;
 
         _ticks_passed = 0;
-        if (_processed_string.size() != text_source.size()) {
-            _processed_string += text_source[_processed_string.size()];
-            this->setText(_processed_string);
-            this->adjustSize();
-        } else {
-            _processed_string += QString(" <img src=\":/pictures/ui_text_go_next.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\">");
-            this->setText(_processed_string);
-            this->adjustSize();
-            disconnect(global::timer, &QTimer::timeout, this, &text_object::write);
+        this->write();
+    }
+    void mouseReleaseEvent(QMouseEvent *ev) {
+        ev->ignore();
+    }
+    void process_click() {
+        if (_currently_writing = true) {
+            this->final();
             return;
         }
-        if (_sfx != nullptr) {
-            _sfx->stop();
-            _sfx->setVolume(global::master_volume * global::sfx_volume);
-            _sfx->play();
-        }
-
+        emit request_new_string();
     }
 protected:
     QString _processed_string;
     QSoundEffect* _sfx = nullptr;
     unsigned int _ticks_passed = 0;
     unsigned int _pause_for = 0;
+    bool _currently_writing = false;
+    void write() {
+        if (_processed_string.size() != text_source.size() && no_animation == false) {
+            while (_processed_string.size() < text_source.size() - 1 && text_source[_processed_string.size()] == " ") {
+                _processed_string += text_source[_processed_string.size()];
+            }
+            _processed_string += text_source[_processed_string.size()];
+            this->setText(_processed_string);
+        } else {
+            this->final();
+            return;
+        }
+        this->play_sound();
+    }
+    void play_sound() {
+        if (_sfx != nullptr) {
+            _sfx->stop();
+            _sfx->setVolume(global::master_volume * global::sfx_volume);
+            _sfx->play();
+        }
+    }
+    void final() {
+        _processed_string = text_source + QString(" <img src=\":/pictures/ui_text_go_next.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\">");
+        this->setText(_processed_string);
+        disconnect(global::timer, &QTimer::timeout, this, &text_object::tick);
+        _currently_writing = false;
+    }
 public:
     QString text_source;
     QString symbol_sound;
     unsigned int ticks_per_symbol;
-    text_object(QString text_source_, QString symbol_sound_ = "", unsigned int ticks_per_symbol_ = 1, QWidget* parent = &global::w): QLabel(parent), text_source(text_source_), symbol_sound(symbol_sound_), ticks_per_symbol(ticks_per_symbol_) {
-        if (text_source.isEmpty()) {
-            return;
-        }
-        connect(global::timer, &QTimer::timeout, this, &text_object::write);
+    bool no_animation;
+    text_object(QString text_source_, QString symbol_sound_ = "", bool no_animation_ = false, unsigned int ticks_per_symbol_ = 1, QWidget* parent = &global::w): QLabel(parent), symbol_sound(symbol_sound_), no_animation(no_animation_), ticks_per_symbol(ticks_per_symbol_) {
+        this->setWordWrap(true);
+        this->setAlignment(Qt::AlignLeft | Qt::AlignTop);
         if (symbol_sound.isEmpty() == false) {
             _sfx = new QSoundEffect(this);
             _sfx->setSource(QUrl(QString("qrc:/sounds/%1.wav").arg(symbol_sound)));
         }
+        if (text_source_.isEmpty()) {
+            return;
+        }
+        this->new_text_source(text_source_);
+    }
+    void new_text_source(QString text_source_) {
+        text_source = text_source_;
+        if (no_animation == true) {
+            this->final();
+            this->play_sound();
+            return;
+        }
+        _processed_string = "";
+        connect(global::timer, &QTimer::timeout, this, &text_object::tick);
+        _currently_writing = true;
     }
     ~text_object() {
         delete _sfx;
+    }
+};
+
+class text_holder: public QPushButton {
+    Q_OBJECT
+protected:
+    text_object* _linked_text_object = nullptr;
+public:
+    QPixmap sprite;
+    text_holder(const QString& asset, QSize size = QSize(1920,300), QPoint point = QPoint(0,0), QWidget* parent = &global::w): QPushButton(parent) {
+        sprite.load(QString(":/pictures/%1.png").arg(asset));
+        this->setGeometry(QRect(point, size));
+    }
+    text_holder(const QString& asset, text_object* linked_text_object, QSize size = QSize(1920,300), QPoint point = QPoint(0,0), QWidget* parent = &global::w): text_holder(asset, size, point, parent) {
+        set_text_object(linked_text_object);
+    }
+    void set_text_object(text_object* new_text_object) {
+        delete _linked_text_object;
+        _linked_text_object = new_text_object;
+        _linked_text_object->setParent(this);
+        _linked_text_object->setGeometry(this->rect());
+        connect(this, &text_holder::clicked, _linked_text_object, &text_object::process_click);
+    }
+    void paintEvent(QPaintEvent *event) {
+        QPainter paint(this);
+        if (sprite.isNull())
+            return;
+
+        paint.drawPixmap(this->rect(), sprite);
+    }
+    ~text_holder() {
+        delete _linked_text_object;
     }
 };
