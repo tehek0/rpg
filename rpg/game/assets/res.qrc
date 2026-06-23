@@ -61,5 +61,7 @@
         <file>sounds/typing.wav</file>
         <file>pictures/ui_text_go_next.png</file>
         <file>pictures/black_text_bg.png</file>
+        <file>pictures/logo.png</file>
+        <file>sounds/music/menu.ogg</file>
     </qresource>
 </RCC>

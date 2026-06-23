@@ -33,7 +33,7 @@ protected:
 public:
     QTextBrowser* linked_tooltip = nullptr;
     tooltip_types tooltip = tooltip_types::disabled;
-    tracked_button(): QPushButton()
+    tracked_button(QWidget* parent = nullptr): QPushButton(parent)
     {
         this->setMouseTracking(true);
         this->setFocusPolicy(Qt::FocusPolicy::NoFocus);
@@ -43,6 +43,19 @@ public:
         if (linked_tooltip != nullptr)
             linked_tooltip->deleteLater();
         emit called_detor();
+    }
+};
+
+class unclickable_button: public tracked_button {
+
+    Q_OBJECT
+
+public:
+    void mousePressEvent(QMouseEvent* e) {
+        e->ignore();
+    }
+    void mouseReleaseEvent(QMouseEvent* e) {
+        e->ignore();
     }
 };
 
@@ -65,7 +78,7 @@ public:
     displayable() = default;
     displayable(QString sprite_family, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true) : displayable() {
         _sprite_family = sprite_family;
-        _disp = new tracked_button();
+        _disp = (clickable ? new tracked_button() : new unclickable_button());
         _disp->setStyleSheet(QString("border-image: url(:/pictures/%1.png);").arg(_sprite_family));
         _disp->setGeometry(coord.x(),coord.y(), size.width(), size.height());
         _disp->setParent(&global::w);
@@ -156,6 +169,9 @@ public slots:
         this->disconnect(global::timer, &QTimer::timeout, this, &animated_displayable::next_step);
         this->deleteLater();
     }
+signals:
+    void finished_animation();
+    void reached_destination();
 public:
     animated_displayable() = default;
     animated_displayable(QString sprite_family, const anim_sequence& anim_sequence_ = anim_sequence(), const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable(sprite_family, coord, size, clickable) {
@@ -606,13 +622,15 @@ public:
     }
 };
 
-class text_holder: public QPushButton {
+class text_holder: public tracked_button {
+
     Q_OBJECT
+
 protected:
     text_object* _linked_text_object = nullptr;
 public:
     QPixmap sprite;
-    text_holder(const QString& asset, QSize size = QSize(1920,300), QPoint point = QPoint(0,0), QWidget* parent = &global::w): QPushButton(parent) {
+    text_holder(const QString& asset, QSize size = QSize(1920,300), QPoint point = QPoint(0,0), QWidget* parent = &global::w): tracked_button(parent) {
         sprite.load(QString(":/pictures/%1.png").arg(asset));
         this->setGeometry(QRect(point, size));
     }
@@ -636,4 +654,43 @@ public:
     ~text_holder() {
         delete _linked_text_object;
     }
+};
+
+class map_player_object: public animated_displayable {
+
+};
+
+class map_poi: public displayable {
+
+}; // point of interest
+
+class map_grid_part: public tracked_button {
+protected:
+    bool _is_locked = true;
+    map_poi* _poi = nullptr;
+    float _difficulty = 0;
+public:
+    map_grid_part() = default;
+    map_grid_part(float difficulty, bool is_locked = true, map_poi* poi = nullptr) {
+        _is_locked = is_locked;
+        _difficulty = difficulty;
+        _poi = poi;
+        if (_is_locked = true) {
+            _poi->_disp->hide();
+        }
+    }
+    ~map_grid_part() {
+        delete _poi;
+    }
+};
+
+class map_grid;
+
+class map_widget: public QWidget {
+
+    Q_OBJECT
+
+public:
+    map_grid* grid = nullptr;
+    map_player_object* player_object = nullptr;
 };

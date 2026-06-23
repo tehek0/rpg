@@ -1,6 +1,7 @@
 #pragma once
 #include <QTimer>
 #include <QApplication>
+#include "music.h"
 #include "mainwindow.h"
 // Тест глобального пространства имён
 class player;
@@ -17,4 +18,5 @@ namespace global {
     inline unsigned short window_height = 1080;
     inline QApplication a(argc, argv);
     inline MainWindow w;
+    inline music_manager* music = new music_manager();
 }

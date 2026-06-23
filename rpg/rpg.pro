@@ -15,6 +15,7 @@ SOURCES += \
     game/src/inventory.cpp \
     game/src/item.cpp \
     game/src/item_requirements.cpp \
+    game/src/ui.cpp \
     game/src/visuals.cpp \
     main.cpp \
     mainwindow.cpp
@@ -41,8 +42,11 @@ HEADERS += \
     game/header/item.h \
     game/header/item_requirements.h \
     game/header/location.h \
+    game/header/music.h \
     game/header/quest.h \
     game/header/save.h \
+    game/header/scenes.h \
+    game/header/ui.h \
     game/header/visuals.h \
     game/inc/json.hpp \
     mainwindow.h
@@ -64,3 +68,4 @@ DISTFILES += \
     game/assets/pictures/backg_map.jpg.kra
 
 QMAKE_CXXFLAGS += -clazy-disable=qstring-arg
+DEFINES += QT_MEDIA_BACKEND=\\\"ffmpeg\\\"

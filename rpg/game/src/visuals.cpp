@@ -68,6 +68,7 @@ void animated_displayable::next_frame() {
             if (_anim_sequence.anims[_anim_sequence.current_anim_id].is_looping == false) {
                 _anim_sequence.paused = true;
                 _anim_sequence.current_frame = 0;
+                emit this->finished_animation();
                 return;
             }
             _anim_sequence.current_frame = 0;
@@ -92,6 +93,7 @@ void animated_displayable::next_step() {
         } else {
             disconnect(global::timer, &QTimer::timeout, this, &animated_displayable::next_step);
             _transpos.has_reached_destination = true;
+            emit this->reached_destination();
         }
     }
     int set_x = _transpos.final_destination.x() - _transpos.start_destination.x();
