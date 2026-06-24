@@ -32,6 +32,7 @@ void DevkitWindow::on_createEntity_pb_clicked()
 
 void DevkitWindow::on_createRequirements_pb_clicked()
 {
-    dev::object_dialog_window* requirements_w = new dev::object_dialog_window(dev::datatype::requirements);
-    windows.emplace_back(requirements_w);
+    dev::object_dialog_window* requirement_w = new dev::object_dialog_window(dev::datatype::requirement);
+    windows.emplace_back(requirement_w);
 }
+

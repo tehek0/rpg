@@ -16,7 +16,4 @@ struct object_data{
 
 //Записывает данные объекта в json
 void create_object(dev::datatype object_type, object_data& values);
-
-// Проверк линейности. Линейным считается тип, не требующий для своей записи выпадающего списка (это int, i_int, string и тд. Всё, что не bool и не кастомное)
-bool is_type_linear(int type_index);
 }
