@@ -34,5 +34,8 @@ public slots:
     void type_chosen();
     void on_save_clicked();
     void on_reset_clicked();
+
+    void table_cell_clicked(QTreeWidgetItem* item, int column);
 };
 }
+

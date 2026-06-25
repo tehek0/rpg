@@ -110,3 +110,13 @@ void dev::object_dialog_window::on_reset_clicked() {
     }
 }
 
+void dev::object_dialog_window::table_cell_clicked(QTreeWidgetItem* item, int column) {
+    if (item->background(1).color() == check_color) {
+        item->setBackground(1, QBrush());
+    }
+    else {
+       item->setBackground(1,QBrush(check_color));
+    }
+
+
+};

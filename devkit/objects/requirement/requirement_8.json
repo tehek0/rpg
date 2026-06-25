@@ -1,0 +1,10 @@
+{
+  "subtype": 3,
+  "required": 12,
+  "min_level": 0,
+  "requirements": [
+    "1",
+    "2",
+    "3"
+  ]
+}

@@ -1,5 +1,5 @@
 #pragma once
-#include "../rpg/game/inc/json.hpp"
+#include "inc/json.hpp"
 #include "data/datatypes.hpp"
 #include "QString"
 using js = nlohmann::ordered_json;

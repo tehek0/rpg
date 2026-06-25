@@ -3,6 +3,7 @@
 #include "../header/id_support.hpp"
 #include "../header/data/general.hpp"
 #include "fstream"
+#include "QRegularExpression"
 #include <filesystem>
 #include <QDebug>
 
@@ -14,6 +15,7 @@
 //     return dev::object_data(keys_ + other.keys_, values_ + other.values_, ttypes);
 // };
 
+const QRegularExpression cut_id_out_of_separated_line("[1-9][0-9]{0,}");
 void dev::create_object(dev::datatype object_type, object_data& values) {
     js data;
     for (size_t i = 0; i < values.keys_.size(); ++i) {
@@ -24,7 +26,11 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
             data[key] = static_cast<bool>(value.toInt());
         }
         else if (dev::is_type_struct(type)) {
-            data[key] = value.toStdString();
+            js::array_t array;
+            for (QRegularExpressionMatch elem : cut_id_out_of_separated_line.globalMatch(value)) {
+                array.emplace_back(elem.captured().toStdString());
+            }
+            data[key] = array;
         }
         else if(dev::is_type_linear(type)) {
             switch(type) {
@@ -53,7 +59,7 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
 
     unsigned long long id = dev::throw_id(object_type);
 
-    QString folder_path = QString("objects/%1").arg(datatypes_to_string[object_type]);
+    QString folder_path = QString("../../../objects/%1").arg(datatypes_to_string[object_type]);
     std::filesystem::create_directories(folder_path.toStdString());
     QString file_path = (folder_path + QString("/%1_%2.json").arg(datatypes_to_string[object_type]).arg(id));
     std::ofstream file(file_path.toStdString());
