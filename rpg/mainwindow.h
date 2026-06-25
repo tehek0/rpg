@@ -27,8 +27,10 @@ public:
     Ui::MainWindow *ui;
 public slots:
     void menu_play();
-    void menu_settings();
+    void open_settings();
+    void change_volume(double* source, float value);
     void menu_exit();
+    void switch_to_scene(game_scene* scene_);
 
 private:
 

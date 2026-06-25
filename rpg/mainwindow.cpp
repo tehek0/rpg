@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "game/header/visuals.h"
+#include "game/header/config.h"
+#include "game/header/ui.h"
 #include <QPushButton>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -19,12 +21,26 @@ MainWindow::~MainWindow()
 void MainWindow::menu_play() {
     // global::music->get_player()->setPosition(0);
     qInfo() << global::music->get_player()->duration() << global::music->get_player()->position() << global::music->get_player()->source();
+    global::music->set_music("desert_calm");
 }
 
-void MainWindow::menu_settings() {
+void MainWindow::open_settings() {
+    game_scene* scene_ = throw_settings_scene();
+    switch_to_scene(scene_);
+}
 
+void MainWindow::change_volume(double* source, float value) {
+    *source = value / 100;
+    change_cfg(global::master_volume, global::sfx_volume, global::music_volume);
+    global::music->change_volume(global::master_volume * global::music_volume);
 }
 
 void MainWindow::menu_exit() {
     this->close();
+}
+
+void MainWindow::switch_to_scene(game_scene *scene_) {
+    current_scene->hide();
+    current_scene = scene_;
+    current_scene->show();
 }

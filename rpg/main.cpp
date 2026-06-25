@@ -1,17 +1,10 @@
 
 #include <QApplication>
-[[maybe_unused]] static bool _init_backend = []() {
-#ifdef _WIN32
-    _putenv_s("QT_MEDIA_BACKEND", "ffmpeg");
-#else
-    setenv("QT_MEDIA_BACKEND", "ffmpeg", 1);
-#endif
-    return true;
-}();
 #include "mainwindow.h"
 #include <cstdlib>
 #include <ctime>
 #include "game/header/ui.h"
+#include "game/header/config.h"
 #include <QGridLayout>
 #include <QSizePolicy>
 #include <QFile>
@@ -26,12 +19,8 @@ int main()
     global::w.current_scene = global::w.menu_scene;
     global::w.current_scene->show();
 
-    // global::music->setParent(&global::w);
-    // global::music_output->setVolume(global::master_volume * global::music_volume);
-    // global::music->setAudioOutput(global::music_output);
-    // global::music->setSource(QUrl(QString("qrc:/sounds/music/menu.mp3")));
-    // global::music->setLoops(QMediaPlayer::Loops::Infinite);
-    // global::music->play();
+    load_cfg();
+    global::music->change_volume(global::master_volume * global::music_volume);
     global::music->set_music("menu");
     // inter.selected_interaction_tree = 0;
     // inter.execute();

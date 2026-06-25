@@ -63,5 +63,7 @@
         <file>pictures/black_text_bg.png</file>
         <file>pictures/logo.png</file>
         <file>sounds/music/menu.ogg</file>
+        <file>pictures/testbkg_settings.jpg</file>
+        <file>sounds/music/desert_calm.ogg</file>
     </qresource>
 </RCC>

@@ -11,6 +11,7 @@ CONFIG += static
 
 SOURCES += \
     game/src/character.cpp \
+    game/src/config.cpp \
     game/src/enum_translation.cpp \
     game/src/inventory.cpp \
     game/src/item.cpp \
@@ -23,6 +24,7 @@ SOURCES += \
 HEADERS += \
     game/header/battle.h \
     game/header/character.h \
+    game/header/config.h \
     game/header/data/ammo_types.h \
     game/header/data/armor_slots.h \
     game/header/data/char_types.h \
