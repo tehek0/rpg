@@ -7,13 +7,14 @@ namespace dev {
 //Если добавляется новый линейный тип, он должетн быть после bool и до location
 //Это важно для коррекности работы проверок is_linear и is_struct у info_field
 enum datatype {
+    erased, //Для окна удаления
     boolean, // ОСОБЫЙ
     string, // ЛИНЕЙНЫЕ
     qstring,
     integer,
     short_t,
     double_t,
-    u_short,
+    u_short, // *линейные unsigned
     u_integer,
     u_long_long,
     location, // СТРУКТУРЫ
@@ -25,19 +26,24 @@ enum datatype {
     entity,
     requirement,
     inventory,
+    armor_bonus,
+    on_use,
     item, //КОНЕЦ СТРУКТУР
     ammo_type, // вот тут enum, которые как "всё остальное"
     damage_type,
     char_type,
     skill_type,
+    equipment_bonus,
+    armor_slot,
+    use_effect,
     requirement_subtypes, //ПОДТИПЫ
     item_subtypes,
     total, // Категория вне
-    id_array,
     TODO,
 };
 //Конвертит в строку (обычно требуется для json)
-const std::string datatypes_to_string[datatype::total + 2] = {
+const std::string datatypes_to_string[datatype::total] = {
+    "erased",
     "boolean",
     "string",
     "qstring",
@@ -56,6 +62,7 @@ const std::string datatypes_to_string[datatype::total + 2] = {
     "entity",
     "requirement",
     "inventory",
+    "armor_bonus",
     "item",
 };
 
@@ -65,4 +72,6 @@ bool is_type_linear(int type_index);
 bool is_type_struct(int type_index);
 //Проверка, если это подтип. Нужно для упрощение switch d fill_combo_box_data при создании info field
 bool is_type_sybtype(int type_index);
+
+bool is_type_unsigned(int type_index);
 }

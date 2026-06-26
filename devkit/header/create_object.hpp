@@ -11,7 +11,7 @@ struct object_data{
 
     object_data() = default;
     object_data(QStringList keys, QStringList values, std::vector<datatype> types) : keys_(keys), values_(values), types_(types) {};
-    object_data operator+(const object_data& other);
+    //object_data operator+(const object_data& other);
 };
 
 //Записывает данные объекта в json

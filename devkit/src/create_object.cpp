@@ -15,7 +15,7 @@
 //     return dev::object_data(keys_ + other.keys_, values_ + other.values_, ttypes);
 // };
 
-const QRegularExpression cut_id_out_of_separated_line("[1-9][0-9]{0,}");
+const QRegularExpression cut_id_out_of_line_e("[1-9][0-9]{0,}");
 void dev::create_object(dev::datatype object_type, object_data& values) {
     js data;
     for (size_t i = 0; i < values.keys_.size(); ++i) {
@@ -27,21 +27,42 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
         }
         else if (dev::is_type_struct(type)) {
             js::array_t array;
-            for (QRegularExpressionMatch elem : cut_id_out_of_separated_line.globalMatch(value)) {
+            for (QRegularExpressionMatch elem : cut_id_out_of_line_e.globalMatch(value)) {
                 array.emplace_back(elem.captured().toStdString());
             }
             data[key] = array;
         }
         else if(dev::is_type_linear(type)) {
+            bool right;
             switch(type) {
-            case dev::datatype::string || dev::datatype::qstring:
+            case dev::datatype::string:
+                data[key] = value.toStdString(); break;
+            case dev::datatype::qstring:
                 data[key] = value.toStdString(); break;
             case dev::datatype::integer:
-                data[key] = value.toInt(); break;
+                if (value.toInt(&right)) {
+                    data[key] = value.toInt();
+                }
+                else {
+                    data[key] = INT_MAX;
+                }
+                break;
             case dev::datatype::u_integer:
-                data[key] = value.toUInt(); break;
+                if (value.toUInt(&right)) {
+                    data[key] = value.toUInt();
+                }
+                else {
+                    data[key] = UINT_MAX;
+                }
+                break;
             case dev::datatype::short_t:
-                data[key] = value.toShort(); break;
+                if (value.toShort(&right)) {
+                    data[key] = value.toShort();
+                }
+                else {
+                    data[key] = SHRT_MAX;
+                }
+                break;
             case dev::datatype::double_t:
                 data[key] = value.toDouble(); break;
             case dev::datatype::u_long_long:
@@ -53,6 +74,7 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
             if (type == dev::datatype::TODO) {
                 qInfo() << "[WARN][dev::create_object] function called with TO DO (unhandled) marked type. Make sure to add proper type support later";
             }
+
             data[key] = value.toShort();
         }
     }
@@ -63,9 +85,10 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
     std::filesystem::create_directories(folder_path.toStdString());
     QString file_path = (folder_path + QString("/%1_%2.json").arg(datatypes_to_string[object_type]).arg(id));
     std::ofstream file(file_path.toStdString());
-
     file << data.dump(js_indent);
+}
 
-};
+
+
 
 

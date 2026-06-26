@@ -26,6 +26,12 @@ private slots:
     void on_createEntity_pb_clicked();
     void on_createRequirements_pb_clicked();
 
+    void on_createArmor_bonus_pb_clicked();
+
+    void on_createOn_use_pb_clicked();
+
+    void on_delete_object_clicked();
+
 private:
     Ui::DevkitWindow *ui;
     std::vector<dev::object_dialog_window*> windows;

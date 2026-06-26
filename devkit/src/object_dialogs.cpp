@@ -3,8 +3,24 @@
 #include <QComboBox>
 #include "../header/data/object_dialog_templates.hpp"
 #include "../header/data/general.hpp"
+#include "../header/read_object.hpp"
 
-//OBJECT_DIALOG_WINDOW
+//object_dialog_window
+void dev::object_dialog_window::resize_dependent_on_fields() {
+    short additional = 0;
+    for (auto& field : info_fields_) {
+        if (dev::is_type_struct(field.get_field_type())) {
+            additional += dynamic_cast<QTreeWidget*>(field.get_field())->topLevelItemCount()*any_line_hight;
+        }
+    }
+    for (auto& field : info_subfields_) {
+        if (dev::is_type_struct(field.get_field_type())) {
+            additional += dynamic_cast<QTreeWidget*>(field.get_field())->topLevelItemCount()*any_line_hight;
+        }
+    }
+    this->resize(label_w + field_w + button_side + gap*3, button_side + (info_fields_.size() + info_subfields_.size()) * (any_line_hight + gap) + additional + gap);
+};
+
 void dev::object_dialog_window::delete_subfields() {
     for (info_field subf : info_subfields_) {
         subf.get_label()->deleteLater();
@@ -14,9 +30,8 @@ void dev::object_dialog_window::delete_subfields() {
     info_subfields_.clear();
     this->ypos = this->last_y_pos;
 }
-void dev::object_dialog_window::add_subfields(short object_sybtype) {
-    //this->resize(500, 600);
 
+void dev::object_dialog_window::add_subfields(short object_sybtype) {
     short amount_of_fields;
     try {
         amount_of_fields = subtypes_template[object_type_][object_sybtype].keys_.length();
@@ -33,7 +48,13 @@ void dev::object_dialog_window::add_subfields(short object_sybtype) {
         dev::info_field whole_field = {current_key, current_type, QPoint(gap, this->ypos), this};
         info_subfields_.emplace_back(whole_field);
 
-        this->ypos += any_line_hight + gap;
+        if (is_type_struct(current_type)) {
+            this->ypos += dynamic_cast<QTreeWidget*>(whole_field.get_field())->topLevelItemCount()*any_line_hight + gap;
+        }
+        else {
+            this->ypos += any_line_hight + gap;
+        }
+        resize_dependent_on_fields();
     }
 }
 void dev::object_dialog_window::change_subfields(short object_sybtype) {
@@ -41,17 +62,32 @@ void dev::object_dialog_window::change_subfields(short object_sybtype) {
     add_subfields(object_sybtype);
 }
 
-dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWidget(), object_type_(object_type) {
-    this->resize(600, 450);
-    this->setAttribute(Qt::WA_DeleteOnClose);
-
+void dev::object_dialog_window::add_save_button() {
     save_ = new QPushButton(this);
     save_->setText("Save");
-    save_->setGeometry(gap, gap, label_w/2, any_line_hight*2);
+    save_->setGeometry(gap, gap, button_side, button_side);
     connect(save_, SIGNAL(clicked()), this, SLOT(on_save_clicked()));
+}
+
+void dev::object_dialog_window::add_delete_button() {
+    delete_ = new QPushButton(this);
+    delete_->setText("Delete");
+    delete_->setGeometry(gap, gap, button_side, button_side);
+    connect(delete_, SIGNAL(clicked()), this, SLOT(on_delete_clicked()));
+}
+
+dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWidget(), object_type_(object_type) {
+    this->setAttribute(Qt::WA_DeleteOnClose);
+
+    if (object_type == dev::erased) {
+        add_delete_button();
+    }
+    else {
+        add_save_button();
+    }
     reset_ = new QPushButton(this);
     reset_->setText("Reset");
-    reset_->setGeometry(gap*2 + label_w/2, gap, label_w/2, any_line_hight*2);
+    reset_->setGeometry(gap*2 + label_w/2, gap, button_side, button_side);
     connect(reset_, SIGNAL(clicked()), this, SLOT(on_reset_clicked()));
     this->ypos = any_line_hight*2 + gap;
 
@@ -74,6 +110,7 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWi
     }
     this->last_y_pos = this->ypos;
 
+    resize_dependent_on_fields();
     this->show();
 }
 
@@ -83,10 +120,6 @@ dev::object_dialog_window::~object_dialog_window() {
 }
 
 //SLOTS
-void dev::object_dialog_window::type_chosen() {
-    short object_sybtype = dynamic_cast<QComboBox*>(this->info_fields_[0].get_field())->currentIndex();
-    change_subfields(object_sybtype);
-}
 void dev::object_dialog_window::on_save_clicked() {
     object_data object;
 
@@ -100,7 +133,6 @@ void dev::object_dialog_window::on_save_clicked() {
     create_object(object_type_, object);
     qInfo() << "save";
 }
-
 void dev::object_dialog_window::on_reset_clicked() {
     for (int i = 0; i < info_fields_.size(); ++i) {
         info_fields_[i].clear_info_field();
@@ -110,6 +142,29 @@ void dev::object_dialog_window::on_reset_clicked() {
     }
 }
 
+void dev::object_dialog_window::on_delete_clicked() {
+    for (info_field& field : info_fields_) {
+        QTreeWidget* table = dynamic_cast<QTreeWidget*>(field.get_field());
+        for (int i = 0; i < table->topLevelItemCount(); ++i) {
+            dev::delete_object(field.get_field_type(), dev::read_ids(dev::get_path_to_datatype_folder(field.get_field_type())));
+        }
+    }
+    for (info_field& field : info_subfields_) {
+        QTreeWidget* table = dynamic_cast<QTreeWidget*>(field.get_field());
+        for (int i = 0; i < table->topLevelItemCount(); ++i) {
+            dev::delete_object(field.get_field_type(), dev::read_ids(dev::get_path_to_datatype_folder(field.get_field_type())));
+        }
+    }
+}
+
+void dev::object_dialog_window::type_chosen() {
+    short object_sybtype = dynamic_cast<QComboBox*>(this->info_fields_[0].get_field())->currentIndex();
+    change_subfields(object_sybtype);
+}
+
+void dev::object_dialog_window::delete_type_chosen() {
+    //info_field* field = info_field()
+}
 void dev::object_dialog_window::table_cell_clicked(QTreeWidgetItem* item, int column) {
     if (item->background(1).color() == check_color) {
         item->setBackground(1, QBrush());

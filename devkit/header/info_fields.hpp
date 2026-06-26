@@ -37,7 +37,7 @@ public:
     void fill_qtable_data(QTreeWidget* field, dev::datatype type);
 };
 
-//Считывает данные с info_field и записывает в шаблонном виде object_data(из create_object) (для экспорта в json)
+//Считывает данные с info_field и записывает в шаблонном виде object_data(из create_object) (для экспорта в json). В процессе конвертаций поэтапно обрабатываются массивы id
 void read_from_infoField_to_objectData(const dev::info_field& data, dev::object_data& object);
 
 }

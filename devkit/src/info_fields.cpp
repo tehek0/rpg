@@ -4,6 +4,7 @@
 #include <QPushButton>
 #include <QTreeWidgetItem>
 #include <QHeaderView>
+#include <QRegularExpressionValidator>
 #include "../header/inc/json.hpp"
 #include "../header/read_object.hpp"
 #include "../header/data/general.hpp"
@@ -12,6 +13,12 @@ using js = nlohmann::ordered_json;
 
 //INFO_FIELD
 void dev::info_field::fill_combo_box_data(QComboBox* field, dev::datatype type) {
+    if (type == dev::datatype::erased) {
+        for (int i = dev::datatype::location; i < dev::datatype::item; ++i) {
+            field->addItem(QString::fromStdString(datatypes_to_string[i]));
+        }
+        connect(field, SIGNAL(currentIndexChanged(int)), field->parent(), SLOT(delete_type_chosen()));
+    }
     if (type == dev::datatype::boolean){
         field->addItems({"false", "true"});
     }
@@ -42,6 +49,17 @@ void dev::info_field::fill_combo_box_data(QComboBox* field, dev::datatype type) 
         case dev::datatype::skill_type:
             field->addItems({"guns", "big_guns", "unarmed", "science", "spech", "barter", "survival"});
             break;
+        case dev::datatype::armor_slot:
+            field->addItems({"head", "body", "legs"});
+            break;
+        case dev::datatype::use_effect:
+            field->addItems({"none", "change_health", "change_energy"});
+            break;
+        case dev::datatype::equipment_bonus:
+            field->addItems({"none", "change_armor", "change_health", "change_energy", "change_strength", "change_agility",
+                             "change_endurance", "change_intellegence", "change_luck", "change_guns", "change_big_guns",
+                             "change_unarmed", "change_science", "change_spech", "change_barter", "change_survival"});
+            break;
         default: break;
         }
 
@@ -49,15 +67,13 @@ void dev::info_field::fill_combo_box_data(QComboBox* field, dev::datatype type) 
 };
 
 void dev::info_field::fill_qtable_data(QTreeWidget* field, dev::datatype type) {
-    QString path = "../../../objects/";
-    switch(type) {
-    case dev::datatype::requirement: path += "requirement"; break;
-    default: break;
-    }
+    QString path = get_path_to_datatype_folder(type);
 
     field->setColumnCount(2);
-    field->setColumnWidth(0, 20);
+    field->setColumnWidth(0, button_side/2);
     field->setColumnWidth(1, field_w);
+    field->setHeaderHidden(true);
+
     auto lines = dev::lines_present(path);
     auto ids = dev::read_ids(path);
     for (size_t i = 0; i < ids.length(); ++i) {
@@ -65,8 +81,16 @@ void dev::info_field::fill_qtable_data(QTreeWidget* field, dev::datatype type) {
         QTreeWidgetItem* item = new QTreeWidgetItem(field_line);
         field->addTopLevelItem(item);
     }
+    field->resize(field_w + button_side, (field->topLevelItemCount()%5)*any_line_hight);
     connect(field, SIGNAL(itemClicked(QTreeWidgetItem*,int)), field->parent(), SLOT(table_cell_clicked(QTreeWidgetItem*,int)));
 }
+
+const QRegularExpression num_e("-{0,1}\\d{0,}");
+const QRegularExpression unum_e("[1-9]\\d{0,}");
+const QRegularExpression double_e("[1-9]\\d{0,}.\\d{1,}");
+const QValidator* num_val = new QRegularExpressionValidator(num_e);
+const QValidator* unum_val = new QRegularExpressionValidator(unum_e);
+const QValidator* double_val = new QRegularExpressionValidator(double_e);
 dev::info_field::info_field(QString key, dev::datatype field_type, QPoint location, QWidget* parent) : field_type_(field_type) {
     this->setParent(parent);
     label_ = new QLabel(parent);
@@ -74,14 +98,27 @@ dev::info_field::info_field(QString key, dev::datatype field_type, QPoint locati
     label_->setGeometry(location.x(), location.y(), label_w, any_line_hight);
 
     if (dev::is_type_linear(field_type)) {
-        field_ = new QLineEdit(parent);
+        QLineEdit* temp = new QLineEdit(parent);
+
+        if (field_type == dev::datatype::double_t) {
+            temp->setValidator(double_val);
+        }
+        else if (dev::is_type_unsigned(field_type)) {
+            temp->setValidator(unum_val);
+        }
+        else if (!(field_type == dev::datatype::string || field_type == dev::datatype::qstring)) {
+            temp->setValidator(num_val);
+        }
+
+        field_ = temp;
         field_->setGeometry(location.x()+ label_w + gap, location.y(), field_w , any_line_hight);
+
     }
     else if (dev::is_type_struct(field_type)) {
         QTreeWidget* field = new QTreeWidget(parent);
         fill_qtable_data(field,field_type);
         field_ = field;
-        field_->setGeometry(location.x()+ label_w + gap, location.y(),field_w*1.2, any_line_hight*5);
+        field_->move(location.x()+ label_w + gap, location.y());
     }
     else {
         QComboBox* field = new QComboBox(parent);
@@ -115,6 +152,12 @@ void dev::info_field::clear_info_field() {
     if (is_type_linear(field_type_)) {
         dynamic_cast<QLineEdit*>(field_)->clear();
     }
+    else if (is_type_struct(field_type_)) {
+        QTreeWidget* table = dynamic_cast<QTreeWidget*>(field_);
+        for (int i = 0; i < table->topLevelItemCount(); ++i) {
+            table->topLevelItem(i)->setBackground(1, QBrush());
+        }
+    }
     else {
         dynamic_cast<QComboBox*>(field_)->setCurrentIndex(0);
     }
@@ -136,7 +179,6 @@ void dev::read_from_infoField_to_objectData(const dev::info_field& data, dev::ob
                 current_value += txt_separator;
             }
         }
-        qInfo() << current_value;
     }
     else {
         current_value = QString::number(dynamic_cast<QComboBox*>(data.get_field())->currentIndex());

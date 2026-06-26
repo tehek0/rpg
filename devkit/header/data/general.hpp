@@ -15,6 +15,7 @@ constexpr short label_w = 120;
 constexpr short field_w = 350;
 constexpr short any_line_hight = 25;
 constexpr short gap = 5;
+constexpr short button_side = any_line_hight*2;
 
 }
 

@@ -18,7 +18,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>40</y>
+      <y>80</y>
       <width>131</width>
       <height>24</height>
      </rect>
@@ -31,7 +31,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>80</y>
+      <y>180</y>
       <width>131</width>
       <height>24</height>
      </rect>
@@ -44,7 +44,7 @@
     <property name="geometry">
      <rect>
       <x>270</x>
-      <y>40</y>
+      <y>80</y>
       <width>161</width>
       <height>24</height>
      </rect>
@@ -57,7 +57,7 @@
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>10</y>
+      <y>50</y>
       <width>111</width>
       <height>16</height>
      </rect>
@@ -70,13 +70,52 @@
     <property name="geometry">
      <rect>
       <x>310</x>
-      <y>10</y>
+      <y>50</y>
       <width>81</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
      <string>Компоненты</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="createArmor_bonus_pb">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>120</y>
+      <width>161</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Создать armor_bonus</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="createOn_use_pb">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>160</y>
+      <width>161</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Создать on_use</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="delete_object">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>10</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Удалить объект</string>
     </property>
    </widget>
   </widget>

@@ -3,8 +3,12 @@
 #include <QString>
 #include <QApplication>
 
+
 int main(int argc, char *argv[])
 {
+    //При добавлении нового класса обязательно перезаписать файл с id
+    dev::set_ids_default_state();
+
     QApplication a(argc, argv);
     DevkitWindow w;
     w.show();
@@ -19,7 +23,6 @@ int main(int argc, char *argv[])
     // dev::remove_id(dev::datatype::enemy, x - 12);
     // dev::remove_id(dev::datatype::enemy, x);
     // qInfo() << x;
-    dev::set_ids_default_state();
 
     return a.exec();
 }
