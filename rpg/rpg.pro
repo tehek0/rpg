@@ -16,6 +16,7 @@ SOURCES += \
     game/src/inventory.cpp \
     game/src/item.cpp \
     game/src/item_requirements.cpp \
+    game/src/scenes.cpp \
     game/src/ui.cpp \
     game/src/visuals.cpp \
     main.cpp \
@@ -27,6 +28,7 @@ HEADERS += \
     game/header/config.h \
     game/header/data/ammo_types.h \
     game/header/data/armor_slots.h \
+    game/header/data/biomes.h \
     game/header/data/char_types.h \
     game/header/data/damage_types.h \
     game/header/data/enemy_trait_types.h \

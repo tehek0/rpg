@@ -76,6 +76,10 @@ short living_entity::get_entity_stat(skill_type type) {
     }
 }
 
+entity_stats living_entity::get_entity_stats() {
+    return this->_entity_stats;
+}
+
 void living_entity::set_entity_stats(entity_stats &entity_stats_) {
     _entity_stats = entity_stats_;
 }

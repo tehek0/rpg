@@ -65,5 +65,14 @@
         <file>sounds/music/menu.ogg</file>
         <file>pictures/testbkg_settings.jpg</file>
         <file>sounds/music/desert_calm.ogg</file>
+        <file>pictures/testbkg_hub.jpg</file>
+        <file>pictures/animated/map_player/moving/frame0.png</file>
+        <file>pictures/animated/map_player/moving/frame1.png</file>
+        <file>pictures/animated/map_player/moving/frame2.png</file>
+        <file>pictures/animated/map_player/moving/frame3.png</file>
+        <file>pictures/animated/map_player/static/frame0.png</file>
+        <file>pictures/animated/map_player/base_sprite.png</file>
+        <file>pictures/black.png</file>
+        <file>pictures/null.png</file>
     </qresource>
 </RCC>

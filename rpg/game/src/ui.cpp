@@ -72,3 +72,19 @@ disposable_scene* throw_settings_scene() {
     scene_->add(layout_widget);
     return scene_;
 }
+
+game_scene* throw_hub_scene() {
+    game_scene* scene_ = new game_scene(new QGraphicsScene(), &global::w);
+    scene_->setGeometry(0, 0, global::window_width, global::window_height);
+    scene_->setSceneRect(scene_->rect());
+    scene_->setBackgroundBrush(QBrush(QPixmap(":/pictures/testbkg_hub.jpg")));
+
+    auto button = new QPushButton;
+    global::w.connect(button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(global::w.menu_scene);});
+    scene_->add(button);
+    auto map = new map_widget();
+    map->move(478, 223);
+    scene_->add(map);
+
+    return scene_;
+}

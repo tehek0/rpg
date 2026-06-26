@@ -19,9 +19,11 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::menu_play() {
-    // global::music->get_player()->setPosition(0);
-    qInfo() << global::music->get_player()->duration() << global::music->get_player()->position() << global::music->get_player()->source();
-    global::music->set_music("desert_calm");
+    if (hub_scene == nullptr) {
+        hub_scene = throw_hub_scene();
+    }
+    switch_to_scene(hub_scene);
+
 }
 
 void MainWindow::open_settings() {

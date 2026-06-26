@@ -12,6 +12,10 @@
 int main()
 {
     global::player_ = new player;
+    entity_stats stat;
+    stat.survival = 30;
+    stat.agility = 4;
+    global::player_->set_entity_stats(stat);
 
     std::srand(std::time(0));
     global::w.showFullScreen();
