@@ -87,6 +87,10 @@ void animated_displayable::next_step() {
         _disp->linked_tooltip->deleteLater();
         _disp->linked_tooltip = nullptr;
     }
+    if (this->_disp->isVisible() == false) {
+        this->interrupt();
+        return;
+    }
     ++_transpos.step;
     if (_transpos.step > _transpos.required_steps) {
         if (_transpos.times_to_swap_destinations > 0) {
@@ -97,6 +101,7 @@ void animated_displayable::next_step() {
             _transpos.start_destination = temp_destination;
         } else {
             this->interrupt();
+            return;
         }
     }
     int set_x = _transpos.final_destination.x() - _transpos.start_destination.x();
@@ -203,7 +208,7 @@ void animated_displayable::begin_step(const QPoint& destination, unsigned int st
         connect(global::timer, &QTimer::timeout, this, &animated_displayable::next_step);
     }
     _transpos.has_reached_destination = false;
-
+    emit began_step();
 }
 
 void tracked_button::enterEvent(QEnterEvent *event) {

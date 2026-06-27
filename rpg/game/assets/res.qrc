@@ -74,5 +74,7 @@
         <file>pictures/animated/map_player/base_sprite.png</file>
         <file>pictures/black.png</file>
         <file>pictures/null.png</file>
+        <file>pictures/map_player_marker.png</file>
+        <file>pictures/map_player_destination.png</file>
     </qresource>
 </RCC>

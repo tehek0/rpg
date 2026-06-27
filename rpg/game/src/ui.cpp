@@ -6,7 +6,7 @@ game_scene* throw_menu_scene() {
     game_scene* scene_ = new game_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->setBackgroundBrush(QBrush(QPixmap(":/pictures/testbkg_menu.jpg")));
+    scene_->set_background(":/pictures/testbkg_menu.jpg");
 
     QPushButton* play_button = new QPushButton("Играть");
     play_button->setGeometry(QRect(20, 900, 400, 50));
@@ -35,7 +35,7 @@ disposable_scene* throw_settings_scene() {
     disposable_scene* scene_ = new disposable_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->setBackgroundBrush(QBrush(QPixmap(":/pictures/testbkg_settings.jpg")));
+    scene_->set_background(":/pictures/testbkg_settings.jpg");
 
     QSlider* master_vol = new QSlider(Qt::Horizontal);
     master_vol->setMinimum(0);
@@ -77,14 +77,13 @@ game_scene* throw_hub_scene() {
     game_scene* scene_ = new game_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->setBackgroundBrush(QBrush(QPixmap(":/pictures/testbkg_hub.jpg")));
+    scene_->set_background(":/pictures/testbkg_hub.jpg");
 
     auto button = new QPushButton;
     global::w.connect(button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(global::w.menu_scene);});
     scene_->add(button);
-    auto map = new map_widget();
-    map->move(478, 223);
+    auto map = new map_widget(QPoint(242, 111), scene_);
     scene_->add(map);
-
+    global::w.connect(map->player_object, &map_player_object::link_line, &global::w, [=](QGraphicsLineItem*& line) {global::w.draw_destination_line(line, map);});
     return scene_;
 }

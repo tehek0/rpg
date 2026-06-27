@@ -4,6 +4,7 @@
 #include "game/header/config.h"
 #include "game/header/ui.h"
 #include <QPushButton>
+#include <QGraphicsProxyWidget>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -45,4 +46,11 @@ void MainWindow::switch_to_scene(game_scene *scene_) {
     current_scene->hide();
     current_scene = scene_;
     current_scene->show();
+}
+
+void MainWindow::draw_destination_line(QGraphicsLineItem*& line, game_scene* map_) {
+    line = new QGraphicsLineItem();
+    line->setPen(QPen(QBrush(QColor(Qt::red)), 4, Qt::DashLine, Qt::RoundCap));
+    line->setZValue(1);
+    map_->scene()->addItem(line);
 }
