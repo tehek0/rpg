@@ -3,8 +3,12 @@
 #include <QString>
 #include <QApplication>
 
+
 int main(int argc, char *argv[])
 {
+    //При добавлении нового класса обязательно перезаписать файл с id
+    dev::set_ids_default_state();
+
     QApplication a(argc, argv);
     DevkitWindow w;
     w.show();
