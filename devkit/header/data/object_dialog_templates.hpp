@@ -2,7 +2,10 @@
 #include "../create_object.hpp"
 
 dev::object_data templates[dev::datatype::total + 1] = {
-    {{"Класс объекта"}, {}, {dev::datatype::erased}},
+    {   {"item", "requirement", "armor_bonus", "on_use"},
+        {},
+        {dev::datatype::item, dev::datatype::requirement, dev::datatype::armor_bonus, dev::datatype::on_use}
+    },
     {}, {}, {}, {}, {}, {}, {}, {}, {},//bool- linear типы
     { //location
         {"subtype", "name", "asset"},
@@ -59,7 +62,7 @@ dev::object_data templates[dev::datatype::total + 1] = {
 
 const std::vector<dev::object_data> subtypes_template[dev::datatype::total + 1] = {
     {},
-    {}, {}, {}, {}, {}, {}, {}, {}, //bool - linear типы
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, //bool - linear типы
     { //location's
         {}, //none
      {

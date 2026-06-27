@@ -28,6 +28,7 @@ public:
     std::vector<info_field> get_info_fields() {return info_fields_;}
 
     void resize_dependent_on_fields();
+
     void delete_subfields();
     void add_subfields(short object_sybtype);
     void change_subfields(short object_sybtype);
@@ -40,7 +41,6 @@ public slots:
     void on_delete_clicked();
 
     void type_chosen();
-    void delete_type_chosen();
     void table_cell_clicked(QTreeWidgetItem* item, int column);
 };
 }

@@ -10,12 +10,12 @@ void dev::object_dialog_window::resize_dependent_on_fields() {
     short additional = 0;
     for (auto& field : info_fields_) {
         if (dev::is_type_struct(field.get_field_type())) {
-            additional += dynamic_cast<QTreeWidget*>(field.get_field())->topLevelItemCount()*any_line_hight;
+            additional += field.calculate_table_hight();
         }
     }
     for (auto& field : info_subfields_) {
         if (dev::is_type_struct(field.get_field_type())) {
-            additional += dynamic_cast<QTreeWidget*>(field.get_field())->topLevelItemCount()*any_line_hight;
+            additional += field.calculate_table_hight();
         }
     }
     this->resize(label_w + field_w + button_side + gap*3, button_side + (info_fields_.size() + info_subfields_.size()) * (any_line_hight + gap) + additional + gap);
@@ -49,13 +49,14 @@ void dev::object_dialog_window::add_subfields(short object_sybtype) {
         info_subfields_.emplace_back(whole_field);
 
         if (is_type_struct(current_type)) {
-            this->ypos += dynamic_cast<QTreeWidget*>(whole_field.get_field())->topLevelItemCount()*any_line_hight + gap;
+            this->ypos += whole_field.calculate_table_hight();
         }
         else {
             this->ypos += any_line_hight + gap;
         }
         resize_dependent_on_fields();
     }
+
 }
 void dev::object_dialog_window::change_subfields(short object_sybtype) {
     delete_subfields();
@@ -106,7 +107,13 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWi
         dev::info_field whole_field = {current_key,current_type, QPoint(gap, this->ypos), this};
         info_fields_.emplace_back(whole_field);
 
-        this->ypos += any_line_hight + gap;
+        if (is_type_struct(current_type)) {
+            this->ypos += whole_field.calculate_table_hight();
+        }
+        else {
+            this->ypos += any_line_hight + gap;
+        }
+
     }
     this->last_y_pos = this->ypos;
 
@@ -116,7 +123,13 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWi
 
 dev::object_dialog_window::~object_dialog_window() {
     this->ypos = 10;
-    delete save_;
+    delete reset_;
+    if (object_type_ == dev::datatype::erased) {
+        delete delete_;
+    }
+    else {
+        delete save_;
+    }
 }
 
 //SLOTS
@@ -146,13 +159,11 @@ void dev::object_dialog_window::on_delete_clicked() {
     for (info_field& field : info_fields_) {
         QTreeWidget* table = dynamic_cast<QTreeWidget*>(field.get_field());
         for (int i = 0; i < table->topLevelItemCount(); ++i) {
-            dev::delete_object(field.get_field_type(), dev::read_ids(dev::get_path_to_datatype_folder(field.get_field_type())));
-        }
-    }
-    for (info_field& field : info_subfields_) {
-        QTreeWidget* table = dynamic_cast<QTreeWidget*>(field.get_field());
-        for (int i = 0; i < table->topLevelItemCount(); ++i) {
-            dev::delete_object(field.get_field_type(), dev::read_ids(dev::get_path_to_datatype_folder(field.get_field_type())));
+            if (table->topLevelItem(i)->background(1) == check_color) {
+                dev::delete_object(field.get_field_type(), dev::read_ids(dev::get_path_to_datatype_folder(field.get_field_type())));
+                table->takeTopLevelItem(i);
+            }
+
         }
     }
 }
@@ -162,9 +173,6 @@ void dev::object_dialog_window::type_chosen() {
     change_subfields(object_sybtype);
 }
 
-void dev::object_dialog_window::delete_type_chosen() {
-    //info_field* field = info_field()
-}
 void dev::object_dialog_window::table_cell_clicked(QTreeWidgetItem* item, int column) {
     if (item->background(1).color() == check_color) {
         item->setBackground(1, QBrush());

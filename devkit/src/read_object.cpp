@@ -4,6 +4,7 @@
 #include <QRegularExpressionMatch>
 #include "../../header/id_support.hpp"
 
+
 QString dev::get_path_to_datatype_folder(dev::datatype type) {
     QString path = "../../../objects/";
     switch(type) {
@@ -14,6 +15,14 @@ QString dev::get_path_to_datatype_folder(dev::datatype type) {
     default: break;
     }
     return path;
+}
+
+bool dev::is_directory_empty(QString path) {
+    QDir dir(path);
+    if (dir.isEmpty()) {
+        return true;
+    }
+    return false;
 }
 
 QStringList dev::lines_present(const QString& path){
@@ -54,7 +63,7 @@ void dev::delete_object(dev::datatype object_type, QStringList ids) {
         for (QString id : ids) {
             if (id == file_id) {
                 dev::remove_id(object_type, id.toULongLong());
-                file.deleteLater();
+                file.remove();
             }
         }
 
