@@ -1,5 +1,4 @@
 #include "../header/character.h"
-#include "../header/visuals.h"
 #include "../header/global.h"
 
 inventory* entity::get_inventory() {
@@ -61,7 +60,7 @@ short living_entity::get_entity_stat(skill_type type) {
     case skill_type::science: {
         return _entity_stats.science;
     }
-    case skill_type::spech: {
+    case skill_type::speech: {
         return _entity_stats.speech;
     }
     case skill_type::survival: {
@@ -75,6 +74,10 @@ short living_entity::get_entity_stat(skill_type type) {
         exit(-1);
     }
     }
+}
+
+entity_stats living_entity::get_entity_stats() {
+    return this->_entity_stats;
 }
 
 void living_entity::set_entity_stats(entity_stats &entity_stats_) {

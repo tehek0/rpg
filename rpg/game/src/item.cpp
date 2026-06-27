@@ -1,5 +1,5 @@
 #include "../header/item.h"
-
+#include "../header/enum_translation.h"
 // Проверка возможности объединить предметы в один.
 bool item::can_add(item* other) {
     if (*this != other || _stack + other->_stack > _max_stack_size)
@@ -71,7 +71,7 @@ double item::get_base_weight(unsigned int x) {
     return x * _base_weight;
 }
 
-unsigned int item::get_total_weight() {
+double item::get_total_weight() {
     return _stack * _base_weight;
 }
 
@@ -115,6 +115,33 @@ void item::set_sellable(bool sellable) {
     _sellable = sellable;
 }
 
+QString item::html_name() {
+    QString html_name = QString("<p><center><font size=\"5\">%1</font></center><\p>").arg(_name);
+    return html_name;
+}
+
+QString item::html_desc() {
+    QString html_desc = QString("<p><center><font size=\"4\">%1</font></center><\p>").arg(_desc);
+    return html_desc;
+}
+
+QString item::html_weight() {
+    double total_weight = get_total_weight();
+    QString html_weight = QString("<p><img src=\":/pictures/ui_weight_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> Вес: %1%2</font><\p>").arg(_base_weight).arg((total_weight == _base_weight ? QString("") : QString(" (%1)").arg(total_weight)));
+    return html_weight;
+}
+
+QString item::html_cost() {
+    unsigned int total_cost = _stack * _base_cost;
+    QString html_cost = QString("<p><img src=\":/pictures/ui_base_cost_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> Стоимость: %1%2</font></p>").arg(_base_cost).arg((total_cost == _base_cost ? QString("") : QString(" (%1)").arg(total_cost)));
+    return html_cost;
+}
+
+QString item::get_tooltip_text() {
+    QString tooltip = html_name() + html_desc() + html_weight() + html_cost();
+    return tooltip;
+}
+
 // Операторы равенства и неравенства для обычных предметов. Сравнивают всё, кроме количества. В наследованных класах переопределяются.
 bool item::operator==(item* other) {
     if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable)
@@ -132,14 +159,34 @@ bool item::operator!=(item* other) {
 
 
 
-item_requirements item_with_requirements::get_item_requirements() {
+item_requirements* item_with_requirements::get_item_requirements() {
     return _requirements;
 }
 
-void item_with_requirements::set_item_requirements(item_requirements& requirements) {
+void item_with_requirements::set_item_requirements(item_requirements* requirements) {
     _requirements = requirements;
 }
 
+QString item_with_requirements::html_requirements() {
+    QString str_insert = QString("");
+    if (_requirements->min_level != 0) {
+        str_insert += QString(" Уровень %1, ").arg(_requirements->min_level);
+    }
+    for (base_requirement* req_ptr : _requirements->item_requirements_ptrs) {
+        str_insert += req_ptr->text_requirement();
+        str_insert += QString(", ");
+    }
+    if (str_insert.isEmpty())
+        return str_insert;
+
+    str_insert.removeLast().removeLast();
+    QString html_requirements = QString("<p><center><font size=\"3\">Требования: %1</font></center><\p>").arg(str_insert);
+    return html_requirements;
+}
+
+item_with_requirements::~item_with_requirements() {
+    delete _requirements;
+}
 
 bool item_with_requirements::operator==(item* other) {
     return false;
@@ -149,7 +196,7 @@ bool item_with_requirements::operator!=(item* other) {
     return true;
 }
 
-int weapon::get_base_dmg() {
+int has_base_dmg::get_base_dmg() {
     return _base_dmg;
 }
 
@@ -157,15 +204,15 @@ damage_type weapon::get_damage_type() {
     return _damage_type;
 }
 
-ammo_type weapon::get_ammo_type() {
+ammo_type has_ammo_type::get_ammo_type() {
     return _ammo_type;
 }
 
-short weapon::get_energy_cost() {
+short has_energy_cost::get_energy_cost() {
     return _energy_cost;
 }
 
-void weapon::set_base_dmg(int base_dmg) {
+void has_base_dmg::set_base_dmg(int base_dmg) {
     _base_dmg = base_dmg;
 }
 
@@ -173,12 +220,44 @@ void weapon::set_damage_type(damage_type damage_type_) {
     _damage_type = damage_type_;
 }
 
-void weapon::set_ammo_type(ammo_type ammo_type_) {
+void has_ammo_type::set_ammo_type(ammo_type ammo_type_) {
     _ammo_type = ammo_type_;
 }
 
-void weapon::set_energy_cost(short energy_cost) {
+void has_energy_cost::set_energy_cost(short energy_cost) {
     _energy_cost = energy_cost;
+}
+
+QString has_base_dmg::html_base_dmg() {
+    QString str_insert = QString("Базовый урон: %1").arg(_base_dmg);
+    QString html_base_dmg = QString("<p><img src=\":/pictures/ui_damage_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
+    return html_base_dmg;
+}
+
+QString weapon::html_base_dmg() {
+    QString str_insert = QString("Базовый урон: %1").arg(_base_dmg);
+    if (_damage_type != damage_type::non_specified) {
+        str_insert += QString(" (%1)").arg(damage_type_to_str(_damage_type));
+    }
+    QString html_base_dmg = QString("<p><img src=\":/pictures/ui_damage_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
+    return html_base_dmg;
+}
+
+QString has_ammo_type::html_ammo_type() {
+    if (_ammo_type == ammo_type::none) {
+        return "";
+    }
+    QString html_ammo_type = QString("<p><img src=\":/pictures/ui_ammo_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> Тип боезапаса: %1</font></p>").arg(ammo_type_to_str(_ammo_type));
+    return html_ammo_type;
+}
+
+QString has_energy_cost::html_energy_cost() {
+    QString html_energy_cost = QString("<p><img src=\":/pictures/ui_energy_cost_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> Стоимость хода: %1</font></p>").arg(_energy_cost);
+    return html_energy_cost;
+}
+
+QString weapon::get_tooltip_text() {
+    return html_name() + html_desc() + html_requirements() + html_base_dmg() + html_ammo_type() + html_energy_cost() + html_weight() + html_cost();
 }
 
 bool weapon::operator==(weapon* other) {
@@ -195,21 +274,8 @@ bool weapon::operator!=(weapon* other) {
     return false;
 }
 
-
-int ammo::get_base_dmg() {
-    return _base_dmg;
-}
-
-ammo_type ammo::get_ammo_type() {
-    return _ammo_type;
-}
-
-void ammo::set_base_dmg(int base_dmg) {
-    _base_dmg = base_dmg;
-}
-
-void ammo::set_ammo_type(ammo_type ammo_type_) {
-    _ammo_type = ammo_type_;
+QString ammo::get_tooltip_text() {
+    return html_name() + html_desc() + html_base_dmg() + html_ammo_type() + html_weight() + html_cost();
 }
 
 bool ammo::operator==(item* other) {
@@ -234,6 +300,14 @@ bool ammo::operator!=(ammo* other) {
     return false;
 }
 
+QString value_to_colored_text(int value) {
+    return (value >= 0 ? QString("<font color=\"#0CCC3F\">+%1</font>").arg(value) : QString("<font color=\"#CC0C0C\">%1</font>").arg(value));
+}
+
+QString armor_bonus::text_armor_bonus() {
+    QString str = equipment_bonus_to_str(bonus).arg(value_to_colored_text(value));
+    return str;
+}
 
 armor_slot armor::get_armor_slot() {
     return _armor_slot;
@@ -245,6 +319,22 @@ short armor::get_armor_points() {
 
 armor_bonus armor::get_armor_bonus() {
     return _armor_bonus;
+}
+
+QString armor::html_armor_points() {
+    QString str_insert = QString("Броня: ") + armor_slot_to_str(_armor_slot) + ", " + value_to_colored_text(_armor_points);
+    QString html_armor_points = QString("<p><img src=\":/pictures/ui_armor_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
+    return html_armor_points;
+}
+
+QString armor::html_armor_bonus() {
+    QString str_insert = QString("Когда надето: %1").arg(_armor_bonus.text_armor_bonus());
+    QString html_armor_bonus = QString("<p><img src=\":/pictures/ui_armor_bonus_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
+    return html_armor_bonus;
+}
+
+QString armor::get_tooltip_text() {
+    return html_name() + html_desc() + html_requirements() + html_armor_points() + html_armor_bonus() + html_weight() + html_cost();
 }
 
 bool armor_bonus::operator==(armor_bonus& other) {
@@ -288,6 +378,21 @@ bool armor::operator!=(armor* other) {
 }
 
 
+QString on_use::text_use_effect() {
+    QString str = use_effect_to_str(effect).arg(value_to_colored_text(value));
+    return str;
+}
+
+QString consumable::html_on_use() {
+    QString str_insert = QString("Когда использовано: %1 (Осталось: %2)").arg(_on_use.text_use_effect()).arg(_uses_left);
+    QString html_on_use = QString("<p><img src=\":/pictures/ui_use_effect_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
+    return html_on_use;
+}
+
+QString consumable::get_tooltip_text() {
+    return html_name() + html_desc() + html_on_use() + html_energy_cost() + html_weight() + html_cost();
+}
+
 on_use consumable::get_on_use() {
     return _on_use;
 }
@@ -310,20 +415,12 @@ unsigned short consumable::get_uses_left() {
     return _uses_left;
 }
 
-unsigned short consumable::get_use_energy_cost() {
-    return _use_energy_cost;
-}
-
 void consumable::set_on_use(on_use on_use_) {
     _on_use = on_use_;
 }
 
 void consumable::set_uses_left(unsigned short uses_left) {
     _uses_left = uses_left;
-}
-
-void consumable::set_use_energy_cost(unsigned short use_energy_cost) {
-    _use_energy_cost = use_energy_cost;
 }
 
 bool consumable::operator==(item* other) {
@@ -335,14 +432,14 @@ bool consumable::operator!=(item* other) {
 }
 
 bool consumable::operator==(consumable* other) {
-    if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || this->_on_use != other->_on_use || this->_uses_left != other->_uses_left || this->_use_energy_cost != other->_use_energy_cost)
+    if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || this->_on_use != other->_on_use || this->_uses_left != other->_uses_left || this->_energy_cost != other->_energy_cost)
         return false;
 
     return true;
 }
 
 bool consumable::operator!=(consumable* other) {
-    if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || this->_on_use != other->_on_use || this->_uses_left != other->_uses_left || this->_use_energy_cost != other->_use_energy_cost)
+    if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || this->_on_use != other->_on_use || this->_uses_left != other->_uses_left || this->_energy_cost != other->_energy_cost)
         return true;
 
     return false;

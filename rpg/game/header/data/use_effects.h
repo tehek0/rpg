@@ -5,3 +5,4 @@ enum class use_effect {
     change_health,
     change_energy
 };
+

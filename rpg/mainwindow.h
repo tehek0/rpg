@@ -1,15 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #include <QMainWindow>
-
-class animated_displayable;
-
-enum class screens {
-    map,
-    inventory,
-    stats,
-    menu
-};
+#include "game/header/scenes.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -25,26 +17,20 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    std::vector<QWidget*> on_screen;
-    std::vector<QWidget*> on_inventory;
-    std::vector<QWidget*> on_stats;
-    std::vector<QWidget*> on_menu;
-    std::vector<QWidget*> on_map;
-    screens current_screen;
+    game_scene* menu_scene;
+    game_scene* hub_scene = nullptr;
+    game_scene* dialog_scene = nullptr;
+    game_scene* location_scene = nullptr;
+    game_scene* battle_scene = nullptr;
+    game_scene* current_scene = nullptr;
 
     Ui::MainWindow *ui;
 public slots:
-    void on_pushButton_clicked();
-    void OnEntClicked();
-    void OnEntClicked(animated_displayable* ent_);
-    void on_menu_b_clicked();
-private slots:
-    void on_inventory_b_clicked();
-    void on_map_b_clicked();
-    void on_stats_b_clicked();
-    void on_menu_toGame_clicked();
-
-    void on_menu_exit_clicked();
+    void menu_play();
+    void open_settings();
+    void change_volume(double* source, float value);
+    void menu_exit();
+    void switch_to_scene(game_scene* scene_);
 
 private:
 

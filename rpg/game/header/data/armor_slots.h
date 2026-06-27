@@ -5,3 +5,4 @@ enum class armor_slot {
     body,
     legs
 };
+

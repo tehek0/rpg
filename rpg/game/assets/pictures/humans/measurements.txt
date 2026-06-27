@@ -1,6 +1,6 @@
 280*280 - boots/legs_armor/helmet/chestplate
 320*280 - pants
-320*14 - hands_armor (left and right)
+320*140 - hands_armor (left and right)
 200*200 - necklace
 
 boots/legs_armor от одной точки привязки стоят

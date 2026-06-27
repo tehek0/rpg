@@ -1,4 +1,5 @@
 #pragma once
+#include <QCursor>
 #include <QString>
 #include <mainwindow.h>
 #include <QPushButton>
@@ -8,11 +9,14 @@
 #include <QTextBrowser>
 #include <QPixmap>
 #include <QPainter>
+#include <QWheelEvent>
+#include <QRegularExpression>
+#include <QSoundEffect>
 #include "global.h"
-#include "inventory.h"
 #include "character.h"
 #include "data/tooltip_types.h"
 #include "data/inventory_contexts.h"
+#include "data/biomes.h"
 
 //визуальные компоненты игровых объектов
 
@@ -31,7 +35,7 @@ protected:
 public:
     QTextBrowser* linked_tooltip = nullptr;
     tooltip_types tooltip = tooltip_types::disabled;
-    tracked_button(): QPushButton()
+    tracked_button(QWidget* parent = nullptr): QPushButton(parent)
     {
         this->setMouseTracking(true);
         this->setFocusPolicy(Qt::FocusPolicy::NoFocus);
@@ -41,6 +45,17 @@ public:
         if (linked_tooltip != nullptr)
             linked_tooltip->deleteLater();
         emit called_detor();
+    }
+};
+
+class unclickable_button: public tracked_button {
+
+    Q_OBJECT
+
+public:
+
+    unclickable_button(QWidget* parent = nullptr): tracked_button(parent) {
+        this->setAttribute(Qt::WA_TransparentForMouseEvents);
     }
 };
 
@@ -63,8 +78,8 @@ public:
     displayable() = default;
     displayable(QString sprite_family, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true) : displayable() {
         _sprite_family = sprite_family;
-        _disp = new tracked_button();
-        _disp->setStyleSheet(QString("border-image: url(:/%1.png);").arg(_sprite_family));
+        _disp = (clickable ? new tracked_button() : new unclickable_button());
+        _disp->setStyleSheet(QString("border-image: url(:/pictures/%1.png);").arg(_sprite_family));
         _disp->setGeometry(coord.x(),coord.y(), size.width(), size.height());
         _disp->setParent(&global::w);
         _disp->setEnabled(clickable);
@@ -154,11 +169,14 @@ public slots:
         this->disconnect(global::timer, &QTimer::timeout, this, &animated_displayable::next_step);
         this->deleteLater();
     }
+signals:
+    void finished_animation();
+    void reached_destination();
 public:
     animated_displayable() = default;
     animated_displayable(QString sprite_family, const anim_sequence& anim_sequence_ = anim_sequence(), const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable(sprite_family, coord, size, clickable) {
         _anim_sequence = anim_sequence_;
-        _disp->setStyleSheet(QString("border-image: url(:animated/%1/base_sprite.png);").arg(_sprite_family));
+        _disp->setStyleSheet(QString("border-image: url(:/pictures/animated/%1/base_sprite.png);").arg(_sprite_family));
         connect(global::timer, &QTimer::timeout, this, &animated_displayable::next_frame);
     }
     anim_sequence get_anim_sequence();
@@ -166,6 +184,7 @@ public:
     transpos get_transpos();
     void set_anim_sequence(anim_sequence& anim_sequence_);
     void set_current_anim(anim& anim_);
+    void set_current_anim(unsigned int _current_anim_id);
     void set_current_frame(unsigned int current_frame);
     void switch_paused();
     void set_transpos(transpos& transpos_);
@@ -173,7 +192,9 @@ public:
     void add_swap_destinations();
 
     void move_to(QPoint& coord);
-    void begin_step(QPoint& destination, unsigned int steps, transpos_algs alg);
+    void begin_step(const QPoint& destination, unsigned int steps, transpos_algs alg);
+    void interrupt();
+    void skip();
 
     virtual ~animated_displayable() {
         if (_disp != nullptr)
@@ -190,7 +211,7 @@ public slots:
         if (_disp->linked_tooltip == nullptr)
             return;
 
-        _disp->linked_tooltip->setText(QString("<center><font size=\"5\">%1</font></center>\n<center><font size=\"4\">%2</font></center>").arg(linked_item->get_name()).arg(linked_item->get_desc()));
+        _disp->linked_tooltip->setText(linked_item->get_tooltip_text());
     }
     virtual void clicked() {
         emit click_send_to_parent();
@@ -199,22 +220,44 @@ signals:
     void click_send_to_parent(); // нужно запрашивать контекст инвентаря у списка предметов, чтобы вызывать правильный попап
 public:
     item* linked_item;
+    QLabel* stack_label;
+    bool is_dummy;
+    item_object() {
+        is_dummy = true;
+    } // это обязательно
     item_object(item* linked_item_, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable(linked_item_->get_asset(), coord, size, clickable), linked_item(linked_item_)
     {
+        is_dummy = false;
+        stack_label = new QLabel(_disp);
+        stack_label->setGeometry(_disp->geometry());
+        stack_label->setAlignment(Qt::AlignRight | Qt::AlignBottom);
+        stack_label->setStyleSheet(QString("color: rgb(255, 255, 255);\nfont: %1pt \"MS Gothic\";").arg(_disp->width() / 5));
+        this->refresh_stack();
         _disp->tooltip = tooltip_types::item_display;
         connect(_disp, &tracked_button::request_tooltip, this, &item_object::markdown_item);
         connect(_disp, &tracked_button::clicked, this, &item_object::clicked);
     }
+    void refresh_stack() {
+        if (linked_item->get_stack() > 1) {
+            stack_label->setText(QString("x%1").arg(linked_item->get_stack()));
+            return;
+        }
+
+        stack_label->clear();
+    };
 };
 
 class inventory_background : public QWidget {
 
     Q_OBJECT
 
+signals:
+    void scrolled(int delta);
+
 public:
     QPixmap sprite;
     inventory_background(const QString& asset, QWidget* parent = nullptr): QWidget(parent) {
-        sprite.load(QString(":/%1.png").arg(asset));
+        sprite.load(QString(":/pictures/%1.png").arg(asset));
     }
     void paintEvent(QPaintEvent *event) {
         QPainter paint(this);
@@ -222,6 +265,10 @@ public:
             return;
 
         paint.drawTiledPixmap(this->rect(), sprite);
+    }
+    void wheelEvent(QWheelEvent* event) {
+        emit scrolled(event->angleDelta().y());
+        event->accept();
     }
 };
 
@@ -231,7 +278,8 @@ class inventory_object : public QObject {
 
 public slots:
     void process_item_click(item_object* item_obj) {
-        linked_inventory->remove_item(linked_inventory->get_slot(item_obj->linked_item));
+        linked_inventory->remove_item(linked_inventory->get_slot(item_obj->linked_item), 1);
+        // linked_inventory->add_item(new item("Имя","Фамилия", "icon_inv_armor_pot", 1, 10, 1.0f, 1, true));
     }
     void update(unsigned int slot, inv_update_context context_) {
         unsigned int lower_boundry = _scrolled_cols * _cols;
@@ -247,26 +295,151 @@ public slots:
                 }
                 delete item_objects[0];
                 item_objects.erase(item_objects.begin());
-                if (linked_inventory->get_items().size() > upper_boundry) {
+                if (linked_inventory->get_items_size() > upper_boundry) {
                     append_object(upper_boundry);
                 }
                 this->shrink_widget_to_contents(lower_boundry);
                 return;
             }
             if (slot >= lower_boundry && slot <= upper_boundry) {
+                slot = slot - lower_boundry;
                 for (size_t i = slot + 1; i < item_objects.size(); ++i) {
                     layout->removeWidget(item_objects[i]->_disp);
                     layout->replaceWidget(item_objects[slot]->_disp, item_objects[i]->_disp);
                     layout->addWidget(item_objects[slot]->_disp, i / _cols, i % _cols);
                 }
-                delete item_objects[slot - lower_boundry];
-                item_objects.erase(item_objects.begin() + slot - lower_boundry);
-                if (linked_inventory->get_items().size() > upper_boundry) {
+                delete item_objects[slot];
+                item_objects.erase(item_objects.begin() + slot);
+                if (linked_inventory->get_items_size() > upper_boundry) {
                     append_object(upper_boundry);
                 }
                 this->shrink_widget_to_contents(lower_boundry);
                 return;
             }
+        }
+        if (context_ == inv_update_context::refresh_stack) {
+            if (slot > upper_boundry || slot < lower_boundry)
+                return;
+
+            item_objects[slot - lower_boundry]->refresh_stack();
+        }
+        if (context_ == inv_update_context::added_item) {
+            if (slot > upper_boundry)
+                return;
+            if (slot < lower_boundry) {
+                size_t final_object = item_objects.size() - 1;
+                for (size_t i = final_object - 1; i >= 0; --i) {
+                    layout->removeWidget(item_objects[i]->_disp);
+                    layout->replaceWidget(item_objects[final_object]->_disp, item_objects[i]->_disp);
+                    layout->addWidget(item_objects[final_object]->_disp, i / _cols, i % _cols);
+                }
+                layout->removeWidget(item_objects[final_object]->_disp);
+                if (final_object == upper_boundry) {
+                    delete item_objects[final_object];
+                    item_objects.erase(item_objects.end());
+                    item_objects.shrink_to_fit();
+                } else {
+                    layout->addWidget(item_objects[final_object]->_disp, (final_object + 1) / _cols, (final_object + 1) % _cols);
+                }
+                prepend_object(lower_boundry);
+                this->shrink_widget_to_contents(lower_boundry);
+                return;
+            }
+            if (slot >= lower_boundry && slot <= upper_boundry) {
+                size_t final_object = item_objects.size() - 1;
+                for (size_t i = final_object - 1; i >= slot; --i) {
+                    layout->removeWidget(item_objects[i]->_disp);
+                    layout->replaceWidget(item_objects[final_object]->_disp, item_objects[i]->_disp);
+                    layout->addWidget(item_objects[final_object]->_disp, i / _cols, i % _cols);
+                }
+                layout->removeWidget(item_objects[final_object]->_disp);
+                if (final_object == upper_boundry) {
+                    delete item_objects[final_object];
+                    item_objects.erase(item_objects.end() - 1);
+                    item_objects.shrink_to_fit();
+                } else {
+                    layout->addWidget(item_objects[final_object]->_disp, final_object / _cols, final_object % _cols);
+                }
+                append_object(slot);
+                this->shrink_widget_to_contents(lower_boundry);
+                return;
+            }
+        }
+    }
+    void scroll(int delta) {
+        if (linked_inventory->get_items_size() == 0)
+            return;
+
+        if (item_objects.size() == 0) {
+            _scrolled_cols = linked_inventory->get_items_size() / _cols;
+        } else {
+            _scrolled_cols = linked_inventory->get_slot(item_objects[0]->linked_item) / _cols;
+        }
+        if (delta > 0) {
+            if (_scrolled_cols == 0)
+                return;
+            --_scrolled_cols;
+            unsigned int lower_boundry = _scrolled_cols * _cols;
+            unsigned int final_object = _cols * (_displayed_rows) - 1;
+            size_t original_size = item_objects.size();
+            if (original_size <= final_object) {
+                item_objects.reserve(original_size + (final_object - original_size + 1));
+                for (unsigned int i = item_objects.size(); i <= final_object; ++i) {
+                    item_object* dummy = new item_object();
+                    dummy->_disp = new tracked_button();
+                    layout->addWidget(dummy->_disp, i / _cols, i % _cols);
+                    item_objects.emplace_back(dummy);
+                }
+            }
+            for (unsigned int i = _cols * (_displayed_rows) - 1; i >= _cols; --i) {
+                layout->removeWidget(item_objects[i]->_disp);
+                layout->replaceWidget(item_objects[i % _cols]->_disp, item_objects[i]->_disp);
+                layout->addWidget(item_objects[i % _cols]->_disp, i / _cols, i % _cols);
+            }
+            std::vector<item_object*> temp = {};
+            for (unsigned int j = 0; j < _cols; ++j) {
+                unsigned int to_replace = item_objects.size() - _cols + j;
+                item_object* obj = create_object(linked_inventory->get_item(lower_boundry + j));
+                temp.emplace_back(obj);
+                layout->replaceWidget(item_objects[to_replace]->_disp, obj->_disp);
+                delete item_objects[to_replace];
+                item_objects.erase(item_objects.begin() + to_replace);
+            }
+            for (unsigned int k = item_objects.size() - 1; k >= original_size && k < item_objects.size(); --k) {
+                delete item_objects[k];
+                item_objects.erase(item_objects.end() - 1);
+            }
+
+            item_objects.insert(item_objects.begin(), temp.begin(), temp.end());
+            this->shrink_widget_to_contents(lower_boundry);
+            return;
+        }
+        if (delta < 0) {
+            if (((long long)(linked_inventory->get_items_size()) - (_scrolled_cols * _cols)) <= _displayed_rows * _cols)
+                return;
+
+            ++_scrolled_cols;
+            unsigned int lower_boundry = _scrolled_cols * _cols;
+            for (unsigned int i = _cols; i < item_objects.size(); ++i) {
+                layout->removeWidget(item_objects[i]->_disp);
+                layout->replaceWidget(item_objects[i % _cols]->_disp, item_objects[i]->_disp);
+                layout->addWidget(item_objects[i % _cols]->_disp, i / _cols, i % _cols);
+            }
+            for (unsigned int j = _cols * (_displayed_rows - 1); j < _cols * _displayed_rows; ++j) {
+
+                if (linked_inventory->get_items().size() > lower_boundry + j) {
+                    item_object* obj = create_object(linked_inventory->get_item(lower_boundry + j));
+                    layout->replaceWidget(item_objects[0]->_disp, obj->_disp);
+                    item_objects.emplace_back(obj);
+                    delete item_objects[0];
+                    item_objects.erase(item_objects.begin());
+                    continue;
+                }
+                layout->removeWidget(item_objects[0]->_disp);
+                delete item_objects[0];
+                item_objects.erase(item_objects.begin());
+            }
+            return;
         }
     }
 protected:
@@ -275,7 +448,7 @@ protected:
     unsigned short _scrolled_cols = 0;
     unsigned short _item_size;
     void shrink_widget_to_contents(unsigned int lower_boundry) {
-        unsigned int inventory_size = linked_inventory->get_items().size() - lower_boundry;
+        unsigned int inventory_size = linked_inventory->get_items_size() - lower_boundry;
         unsigned int widget_size_x = _item_size * (inventory_size < _cols ? inventory_size : _cols);
         if (inventory_size % _cols == 0) {
             --inventory_size;
@@ -284,12 +457,24 @@ protected:
         unsigned int widget_size_y = ((inventory_size_div_col > _displayed_rows ? _displayed_rows : inventory_size_div_col)) * _item_size;
         layout_widget->setGeometry(QRect(QPoint(0,0), QSize(widget_size_x, widget_size_y)));
     }
+    item_object* create_object(item* link_item) {
+        item_object* itm_obj = new item_object(link_item, QPoint(0,0), QSize(_item_size, _item_size));
+        itm_obj->_disp->setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
+        connect(itm_obj, &item_object::click_send_to_parent, this, [=]() {this->process_item_click(itm_obj);});
+        return itm_obj;
+    }
     void append_object(unsigned int index) {
+        item_object* itm_obj = create_object(linked_inventory->get_item(index));
+        index = index - (_scrolled_cols * _cols);
+        item_objects.emplace_back(itm_obj);
+        layout->addWidget(item_objects[index]->_disp, index / _cols, index % _cols);
+    }
+    void prepend_object(unsigned int index) {
         item_object* itm_obj = new item_object(linked_inventory->get_item(index), QPoint(0,0), QSize(_item_size, _item_size));
         itm_obj->_disp->setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
         connect(itm_obj, &item_object::click_send_to_parent, this, [=]() {this->process_item_click(itm_obj);});
-        item_objects.emplace_back(itm_obj);
-        layout->addWidget(item_objects[index]->_disp, index / _cols, index % _cols);
+        item_objects.insert(item_objects.begin(), itm_obj);
+        layout->addWidget(item_objects[index]->_disp, 0, 0);
     }
 
 public:
@@ -315,10 +500,11 @@ public:
         layout = new QGridLayout(layout_widget);
         layout->setContentsMargins(0,0,0,0);
         layout->setSpacing(0);
-        for (unsigned int i = 0; i < _cols * _displayed_rows && i < linked_inventory->get_items().size(); ++i) {
+        for (unsigned int i = 0; i < _cols * _displayed_rows && i < linked_inventory->get_items_size(); ++i) {
             append_object(i);
         }
         connect(linked_inventory, &inventory::trigger_update, this, &inventory_object::update);
+        connect(base, &inventory_background::scrolled, this, &inventory_object::scroll);
     }
     ~inventory_object() {
         base->deleteLater();
@@ -347,4 +533,323 @@ public:
         connect(_disp, &tracked_button::request_tooltip, this, &entity_object::markdown_entity);
     }
 
+};
+
+class text_object : public QLabel {
+
+    Q_OBJECT
+
+signals:
+    void request_new_string();
+public slots:
+    void tick() {
+        ++_ticks_passed;
+        if (_ticks_passed < ticks_per_symbol)
+            return;
+
+        _ticks_passed = 0;
+        this->write();
+    }
+    void mouseReleaseEvent(QMouseEvent *ev) {
+        ev->ignore();
+    }
+    void process_click() {
+        if (_currently_writing = true) {
+            this->final();
+            return;
+        }
+        emit request_new_string();
+    }
+protected:
+    QString _processed_string;
+    QSoundEffect* _sfx = nullptr;
+    unsigned int _ticks_passed = 0;
+    unsigned int _pause_for = 0;
+    bool _currently_writing = false;
+    void write() {
+        if (_processed_string.size() != text_source.size() && no_animation == false) {
+            while (_processed_string.size() < text_source.size() - 1 && text_source[_processed_string.size()] == " ") {
+                _processed_string += text_source[_processed_string.size()];
+            }
+            _processed_string += text_source[_processed_string.size()];
+            this->setText(_processed_string);
+        } else {
+            this->final();
+            return;
+        }
+        this->play_sound();
+    }
+    void play_sound() {
+        if (_sfx != nullptr) {
+            _sfx->stop();
+            _sfx->setVolume(global::master_volume * global::sfx_volume);
+            _sfx->play();
+        }
+    }
+    void final() {
+        _processed_string = text_source + QString(" <img src=\":/pictures/ui_text_go_next.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\">");
+        this->setText(_processed_string);
+        disconnect(global::timer, &QTimer::timeout, this, &text_object::tick);
+        _currently_writing = false;
+    }
+public:
+    QString text_source;
+    QString symbol_sound;
+    unsigned int ticks_per_symbol;
+    bool no_animation;
+    text_object(QString text_source_, QString symbol_sound_ = "", bool no_animation_ = false, unsigned int ticks_per_symbol_ = 1, QWidget* parent = &global::w): QLabel(parent), symbol_sound(symbol_sound_), no_animation(no_animation_), ticks_per_symbol(ticks_per_symbol_) {
+        this->setWordWrap(true);
+        this->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+        if (symbol_sound.isEmpty() == false) {
+            _sfx = new QSoundEffect(this);
+            _sfx->setSource(QUrl(QString("qrc:/sounds/%1.wav").arg(symbol_sound)));
+        }
+        if (text_source_.isEmpty()) {
+            return;
+        }
+        this->new_text_source(text_source_);
+    }
+    void new_text_source(QString text_source_) {
+        text_source = text_source_;
+        if (no_animation == true) {
+            this->final();
+            this->play_sound();
+            return;
+        }
+        _processed_string = "";
+        connect(global::timer, &QTimer::timeout, this, &text_object::tick);
+        _currently_writing = true;
+    }
+    ~text_object() {
+        delete _sfx;
+    }
+};
+
+class text_holder: public tracked_button {
+
+    Q_OBJECT
+
+protected:
+    text_object* _linked_text_object = nullptr;
+public:
+    QPixmap sprite;
+    text_holder(const QString& asset, QSize size = QSize(1920,300), QPoint point = QPoint(0,0), QWidget* parent = &global::w): tracked_button(parent) {
+        sprite.load(QString(":/pictures/%1.png").arg(asset));
+        this->setGeometry(QRect(point, size));
+    }
+    text_holder(const QString& asset, text_object* linked_text_object, QSize size = QSize(1920,300), QPoint point = QPoint(0,0), QWidget* parent = &global::w): text_holder(asset, size, point, parent) {
+        set_text_object(linked_text_object);
+    }
+    void set_text_object(text_object* new_text_object) {
+        delete _linked_text_object;
+        _linked_text_object = new_text_object;
+        _linked_text_object->setParent(this);
+        _linked_text_object->setGeometry(this->rect());
+        connect(this, &text_holder::clicked, _linked_text_object, &text_object::process_click);
+    }
+    void paintEvent(QPaintEvent *event) {
+        QPainter paint(this);
+        if (sprite.isNull())
+            return;
+
+        paint.drawPixmap(this->rect(), sprite);
+    }
+    ~text_holder() {
+        delete _linked_text_object;
+    }
+};
+
+class map_player_object: public animated_displayable {
+
+    Q_OBJECT
+
+public:
+    map_player_object(QWidget* parent = nullptr): animated_displayable("map_player", anim_sequence(0, anim("static", 1, 0), anim("moving", 20, 3)), QPoint(0,0), QSize(13,24), false) {
+        this->_disp->setParent(parent);
+    }
+};
+
+class map_poi: public displayable {
+
+    Q_OBJECT
+
+protected:
+    unsigned long long _location_id;
+    QString _location_name;
+public slots:
+    void markdown_poi() {
+        if (_disp->linked_tooltip == nullptr)
+            return;
+
+
+        _disp->linked_tooltip->setText(QString("<center><font size=\"4\">%1</font></center>").arg(_location_name));
+    }
+public:
+    map_poi(const QString& asset, unsigned long long location_id, const QString& location_name = "?"): displayable(asset, QPoint(0,0), QSize(50,50)), _location_id(location_id), _location_name(location_name)
+    {
+        _disp->tooltip = tooltip_types::location_on_map;
+        connect(_disp, &tracked_button::request_tooltip, this, &map_poi::markdown_poi);
+    }
+    void set_name(const QString& name) {
+        _location_name = name;
+    }
+};
+
+class map_grid_tile: public tracked_button {
+    Q_OBJECT
+protected:
+    bool _is_locked = true;
+    biome _biome = biome::none;
+    map_poi* _poi = nullptr;
+    float _difficulty = 0;
+signals:
+    void clicked_tile(map_grid_tile* tile);
+    void clicked_poi(map_grid_tile* tile);
+    void clicked_locked_tile(map_grid_tile* tile);
+public slots:
+    void process_click() {
+        if (this->_is_locked == true) {
+            emit clicked_locked_tile(this);
+            return;
+        }
+        emit clicked_tile(this);
+    }
+    void process_click_poi() {
+        emit clicked_poi(this);
+    }
+public:
+    map_grid_tile() = default;
+    map_grid_tile(unsigned short size, float difficulty = 0.f, biome biome_ = biome::none, bool is_locked = true, map_poi* poi = nullptr) {
+        setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
+        _is_locked = is_locked;
+        _biome = biome_;
+        _difficulty = difficulty;
+        this->setGeometry(0, 0, size, size);
+        connect(this, &QPushButton::clicked, this, &map_grid_tile::process_click);
+        if (_is_locked == true) {
+            this->setStyleSheet(QString("border-image: url(:/pictures/black.png);"));
+        } else {
+            this->setStyleSheet(QString("border-image: url(:/pictures/null.png);"));
+        }
+        if (poi == nullptr)
+            return;
+
+        set_poi(poi);
+    }
+    void unlock() {
+        _is_locked = false;
+        this->setStyleSheet(QString("border-image: url(:/pictures/null.png);"));
+        if (_poi != nullptr) {
+            _poi->_disp->show();
+        }
+    }
+    void set_poi(map_poi* poi_) {
+        delete _poi;
+        _poi = poi_;
+        _poi->setParent(this);
+        _poi->_disp->setParent(this);
+        connect(poi_->_disp, &QPushButton::clicked, this, &map_grid_tile::process_click_poi);
+        if (_is_locked == true)
+            _poi->_disp->hide();
+    }
+    const map_poi* get_poi() {
+        return _poi;
+    }
+    bool get_locked() {
+        return _is_locked;
+    }
+    ~map_grid_tile() {
+        delete _poi;
+    }
+};
+
+class map_grid: public QWidget {
+
+    Q_OBJECT
+
+protected:
+    unsigned short _width = 19;
+    unsigned short _height = 12;
+    unsigned short _tile_size = 50;
+signals:
+    void clicked_child_tile(map_grid_tile* tile);
+    void clicked_child_poi(map_grid_tile* tile);
+    void clicked_child_locked_tile(map_grid_tile* tile);
+public slots:
+    void process_clicked_tile(map_grid_tile* tile) {
+        emit clicked_child_tile(tile);
+    }
+    void process_clicked_poi(map_grid_tile* tile) {
+        emit clicked_child_poi(tile);
+    }
+    void process_clicked_locked_tile(map_grid_tile* tile) {
+        emit clicked_child_locked_tile(tile);
+    }
+public:
+    QGridLayout* layout;
+    std::vector<map_grid_tile*> tiles;
+    map_grid(unsigned short width, unsigned short height, unsigned short tile_size = 50, QWidget* parent = nullptr): QWidget(parent) {
+        _width = width;
+        _height = height;
+        _tile_size = tile_size;
+        this->setGeometry(0, 0, _width * _tile_size, _height * _tile_size);
+        layout = new QGridLayout(this);
+        layout->setContentsMargins(0,0,0,0);
+        layout->setSpacing(0);
+        tiles.reserve(_width * _height);
+        for (unsigned int i = 0; i < _width * _height; ++i) {
+            auto tile = new map_grid_tile(_tile_size);
+            tiles.emplace_back(tile);
+            layout->addWidget(tile, i / _width, i % _width);
+            connect(tile, &map_grid_tile::clicked_tile, this, &map_grid::process_clicked_tile);
+            connect(tile, &map_grid_tile::clicked_locked_tile, this, &map_grid::process_clicked_locked_tile);
+            connect(tile, &map_grid_tile::clicked_poi, this, &map_grid::process_clicked_poi);
+        }
+    }
+    ~map_grid() {
+        for (auto elem : tiles) {
+            elem->deleteLater();
+        }
+    }
+};
+
+class map_widget: public QWidget {
+
+    Q_OBJECT
+
+public slots:
+    void clicked_tile(map_grid_tile* tile) {
+        QPoint start = player_object->_disp->pos();
+        QPoint end = this->mapFromGlobal(QCursor::pos()) - QPoint(player_object->_disp->width() / 2, player_object->_disp->height() / 2);
+        QPoint vec = end - start;
+        qInfo() << start << end << player_object->_disp->mapTo(player_object->_disp,player_object->_disp->geometry().center());
+        unsigned int length = std::sqrtl(QPoint::dotProduct(vec, vec));
+        unsigned int steps = 50 * length * (15 - global::player_->get_entity_stats().agility) / (global::player_->get_entity_stats().survival);
+        qInfo() << steps;
+        player_object->begin_step(end, steps, transpos_algs::linear);
+    }
+    void clicked_locked_tile(map_grid_tile* tile) {
+        tile->unlock();
+    }
+    void clicked_poi(map_grid_tile* tile) {}
+public:
+    map_grid* grid = nullptr;
+    map_player_object* player_object = nullptr;
+    QPixmap sprite;
+    map_widget(QWidget* parent = nullptr): QWidget(parent) {
+        grid = new map_grid(19, 12, 50, this);
+        connect(grid, &map_grid::clicked_child_tile, this, &map_widget::clicked_tile);
+        connect(grid, &map_grid::clicked_child_locked_tile, this, &map_widget::clicked_locked_tile);
+        connect(grid, &map_grid::clicked_child_poi, this, &map_widget::clicked_poi);
+        this->setGeometry(grid->rect());
+        sprite.load(QString(":/pictures/map.jpg"));
+        player_object = new map_player_object(this);
+    }
+    void paintEvent(QPaintEvent *event) {
+        QPainter paint(this);
+        if (sprite.isNull())
+            return;
+
+        paint.drawPixmap(this->rect(), sprite);
+    }
 };

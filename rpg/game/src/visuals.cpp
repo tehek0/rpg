@@ -32,6 +32,11 @@ void animated_displayable::set_current_anim(anim& anim_) {
     _anim_sequence.current_frame = 0;
     _anim_sequence.anims[_anim_sequence.current_anim_id] = anim_;
 }
+void animated_displayable::set_current_anim(unsigned int _current_anim_id) {
+    _anim_sequence.ticks_passed = 0;
+    _anim_sequence.current_frame = 0;
+    _anim_sequence.current_anim_id = _current_anim_id;
+}
 void animated_displayable::set_current_frame(unsigned int current_frame) {
     _anim_sequence.current_frame = current_frame;
     _anim_sequence.ticks_passed = 0;
@@ -68,11 +73,12 @@ void animated_displayable::next_frame() {
             if (_anim_sequence.anims[_anim_sequence.current_anim_id].is_looping == false) {
                 _anim_sequence.paused = true;
                 _anim_sequence.current_frame = 0;
+                emit this->finished_animation();
                 return;
             }
             _anim_sequence.current_frame = 0;
         }
-        _disp->setStyleSheet(QString("border-image: url(:/animated/%1/%2/frame%3.png);").arg(_sprite_family).arg(_anim_sequence.anims[_anim_sequence.current_anim_id].name).arg(_anim_sequence.current_frame));
+        _disp->setStyleSheet(QString("border-image: url(:/pictures/animated/%1/%2/frame%3.png);").arg(_sprite_family).arg(_anim_sequence.anims[_anim_sequence.current_anim_id].name).arg(_anim_sequence.current_frame));
     }
 }
 
@@ -90,8 +96,7 @@ void animated_displayable::next_step() {
             _transpos.final_destination = _transpos.start_destination;
             _transpos.start_destination = temp_destination;
         } else {
-            disconnect(global::timer, &QTimer::timeout, this, &animated_displayable::next_step);
-            _transpos.has_reached_destination = true;
+            this->interrupt();
         }
     }
     int set_x = _transpos.final_destination.x() - _transpos.start_destination.x();
@@ -121,6 +126,17 @@ void animated_displayable::next_step() {
     }
     QPoint new_point = QPoint(_transpos.start_destination.x() + (set_x * coef), _transpos.start_destination.y() + (set_y * coef));
     this->move_to(new_point);
+}
+
+void animated_displayable::interrupt() {
+    disconnect(global::timer, &QTimer::timeout, this, &animated_displayable::next_step);
+    _transpos.has_reached_destination = true;
+    emit this->reached_destination();
+}
+
+void animated_displayable::skip() {
+    this->move_to(_transpos.final_destination);
+    this->interrupt();
 }
 
 float animated_displayable::smoothstep_algorythm(float steps, float required_steps) {
@@ -177,7 +193,7 @@ float animated_displayable::instant_algorythm(float steps, float required_steps)
     return 1.0f;
 }
 
-void animated_displayable::begin_step(QPoint& destination, unsigned int steps, transpos_algs alg) {
+void animated_displayable::begin_step(const QPoint& destination, unsigned int steps, transpos_algs alg) {
     _transpos.step = 0;
     _transpos.required_steps = steps;
     _transpos.start_destination = _disp->pos();
