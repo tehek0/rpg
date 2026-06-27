@@ -30,6 +30,9 @@ public:
     QWidget* get_field() const {return field_;}
     dev::datatype get_field_type() const {return field_type_;}
 
+    //Функуция для бережного использования. (только для структурных типов, где field - QTreeWidget)
+    int calculate_table_hight();
+
     void clear_info_field();
     //Проверяет типы данных и заполняет combo box соответствующими ему значениями
     void fill_combo_box_data(QComboBox* field, dev::datatype type);

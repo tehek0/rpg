@@ -63,6 +63,7 @@ const std::string datatypes_to_string[datatype::total] = {
     "requirement",
     "inventory",
     "armor_bonus",
+    "on_use",
     "item",
 };
 

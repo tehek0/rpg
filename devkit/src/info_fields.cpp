@@ -12,13 +12,11 @@ using js = nlohmann::ordered_json;
 
 
 //INFO_FIELD
+int dev::info_field::calculate_table_hight() {
+    return (dynamic_cast<QTreeWidget*>(field_)->topLevelItemCount()%show_table_k)*any_line_hight;
+}
+
 void dev::info_field::fill_combo_box_data(QComboBox* field, dev::datatype type) {
-    if (type == dev::datatype::erased) {
-        for (int i = dev::datatype::location; i < dev::datatype::item; ++i) {
-            field->addItem(QString::fromStdString(datatypes_to_string[i]));
-        }
-        connect(field, SIGNAL(currentIndexChanged(int)), field->parent(), SLOT(delete_type_chosen()));
-    }
     if (type == dev::datatype::boolean){
         field->addItems({"false", "true"});
     }
@@ -69,20 +67,27 @@ void dev::info_field::fill_combo_box_data(QComboBox* field, dev::datatype type) 
 void dev::info_field::fill_qtable_data(QTreeWidget* field, dev::datatype type) {
     QString path = get_path_to_datatype_folder(type);
 
-    field->setColumnCount(2);
-    field->setColumnWidth(0, button_side/2);
-    field->setColumnWidth(1, field_w);
-    field->setHeaderHidden(true);
-
-    auto lines = dev::lines_present(path);
-    auto ids = dev::read_ids(path);
-    for (size_t i = 0; i < ids.length(); ++i) {
-        QStringList field_line = {ids[i],lines[i]};
-        QTreeWidgetItem* item = new QTreeWidgetItem(field_line);
-        field->addTopLevelItem(item);
+    if (is_directory_empty(path)) {
+        label_->hide();
+        field->hide();
     }
-    field->resize(field_w + button_side, (field->topLevelItemCount()%5)*any_line_hight);
-    connect(field, SIGNAL(itemClicked(QTreeWidgetItem*,int)), field->parent(), SLOT(table_cell_clicked(QTreeWidgetItem*,int)));
+    else {
+        field->setColumnCount(2);
+        field->setColumnWidth(0, button_side/2);
+        field->setColumnWidth(1, field_w);
+        field->setHeaderHidden(true);
+
+        auto lines = dev::lines_present(path);
+        auto ids = dev::read_ids(path);
+        for (size_t i = 0; i < ids.length(); ++i) {
+            QStringList field_line = {ids[i],lines[i]};
+            QTreeWidgetItem* item = new QTreeWidgetItem(field_line);
+            field->addTopLevelItem(item);
+        }
+        field->resize(field_w + button_side, (field->topLevelItemCount()%show_table_k)*any_line_hight);
+        connect(field, SIGNAL(itemClicked(QTreeWidgetItem*,int)), field->parent(), SLOT(table_cell_clicked(QTreeWidgetItem*,int)));
+    }
+
 }
 
 const QRegularExpression num_e("-{0,1}\\d{0,}");
@@ -113,6 +118,9 @@ dev::info_field::info_field(QString key, dev::datatype field_type, QPoint locati
         field_ = temp;
         field_->setGeometry(location.x()+ label_w + gap, location.y(), field_w , any_line_hight);
 
+        label_->show();
+        field_->show();
+
     }
     else if (dev::is_type_struct(field_type)) {
         QTreeWidget* field = new QTreeWidget(parent);
@@ -125,10 +133,10 @@ dev::info_field::info_field(QString key, dev::datatype field_type, QPoint locati
         fill_combo_box_data(field, field_type);
         field_ = field;
         field_->setGeometry(location.x()+ label_w + gap, location.y(), field_w , any_line_hight);
-    }
 
-    label_->show();
-    field_->show();
+        label_->show();
+        field_->show();
+    }
 
 };
 
