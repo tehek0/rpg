@@ -31,7 +31,7 @@ public slots:
     void change_volume(double* source, float value);
     void menu_exit();
     void switch_to_scene(game_scene* scene_);
-
+    void draw_destination_line(QGraphicsLineItem*& line, game_scene* map_);
 private:
 
 };

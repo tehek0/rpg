@@ -1,4 +1,5 @@
 #include "../header/ui.h"
+#include "../header/save.h"
 #include "QSlider"
 #include "QVBoxLayout"
 
@@ -6,7 +7,7 @@ game_scene* throw_menu_scene() {
     game_scene* scene_ = new game_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->setBackgroundBrush(QBrush(QPixmap(":/pictures/testbkg_menu.jpg")));
+    scene_->set_background(":/pictures/testbkg_menu.jpg");
 
     QPushButton* play_button = new QPushButton("Играть");
     play_button->setGeometry(QRect(20, 900, 400, 50));
@@ -25,6 +26,10 @@ game_scene* throw_menu_scene() {
     logo->setPixmap(QPixmap(":/pictures/logo.png"));
     scene_->add(logo);
 
+    auto btn = new QPushButton();
+    scene_->add(btn);
+    global::w.connect(btn, &QPushButton::clicked, &global::w, [=]() {delete global::w.hub_scene; global::w.hub_scene = nullptr;});
+
     global::w.connect(play_button, &QPushButton::clicked, &global::w, &MainWindow::menu_play);
     global::w.connect(settings_button, &QPushButton::clicked, &global::w, &MainWindow::open_settings);
     global::w.connect(exit_button, &QPushButton::clicked, &global::w, &MainWindow::menu_exit);
@@ -35,7 +40,7 @@ disposable_scene* throw_settings_scene() {
     disposable_scene* scene_ = new disposable_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->setBackgroundBrush(QBrush(QPixmap(":/pictures/testbkg_settings.jpg")));
+    scene_->set_background(":/pictures/testbkg_settings.jpg");
 
     QSlider* master_vol = new QSlider(Qt::Horizontal);
     master_vol->setMinimum(0);
@@ -77,14 +82,21 @@ game_scene* throw_hub_scene() {
     game_scene* scene_ = new game_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->setBackgroundBrush(QBrush(QPixmap(":/pictures/testbkg_hub.jpg")));
+    scene_->set_background(":/pictures/testbkg_hub.jpg");
 
     auto button = new QPushButton;
     global::w.connect(button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(global::w.menu_scene);});
     scene_->add(button);
-    auto map = new map_widget();
-    map->move(478, 223);
+    auto map = new map_widget(QPoint(242, 111), scene_);
     scene_->add(map);
-
+    global::w.connect(map->player_object, &map_player_object::link_line, &global::w, [=](QGraphicsLineItem*& line) {global::w.draw_destination_line(line, map);});
+    auto save_btn = new QPushButton("Сохранить");
+    save_btn->move(400, 0);
+    scene_->add(save_btn);
+    auto load_btn = new QPushButton("Загрузить");
+    load_btn->move(500, 0);
+    scene_->add(load_btn);
+    global::w.connect(save_btn, &QPushButton::clicked, &global::w, [=]() {save_map(map, 1);});
+    global::w.connect(load_btn, &QPushButton::clicked, &global::w, [=]() {bool x = load_map(map, 1);});
     return scene_;
 }

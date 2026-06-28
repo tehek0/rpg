@@ -12,6 +12,7 @@
 #include <QWheelEvent>
 #include <QRegularExpression>
 #include <QSoundEffect>
+#include <QGraphicsLineItem>
 #include "global.h"
 #include "character.h"
 #include "data/tooltip_types.h"
@@ -172,6 +173,7 @@ public slots:
 signals:
     void finished_animation();
     void reached_destination();
+    void began_step();
 public:
     animated_displayable() = default;
     animated_displayable(QString sprite_family, const anim_sequence& anim_sequence_ = anim_sequence(), const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable(sprite_family, coord, size, clickable) {
@@ -191,7 +193,7 @@ public:
     void set_swap_destinations(unsigned int amount);
     void add_swap_destinations();
 
-    void move_to(QPoint& coord);
+    virtual void move_to(QPoint& coord);
     void begin_step(const QPoint& destination, unsigned int steps, transpos_algs alg);
     void interrupt();
     void skip();
@@ -662,10 +664,74 @@ public:
 class map_player_object: public animated_displayable {
 
     Q_OBJECT
-
+signals:
+    void check_tiles(int x, int y, short width, short height, bool& locked);
+    void link_line(QGraphicsLineItem*& line);
+    void cant_move_there(QPoint& coord);
+    void call_parent(QWidget*& marker_parent);
+public slots:
+    void stop_running() {
+        this->set_current_anim(0);
+        move_player_marker();
+        player_marker->show();
+        destination_marker->hide();
+        delete line;
+        line = nullptr;
+    }
+    void begin_running() {
+        if (this->get_anim_sequence().current_anim_id != 1) {
+            this->set_current_anim(1);
+        }
+        player_marker->hide();
+        move_destination_marker();
+        destination_marker->show();
+        delete line;
+        link_line(line);
+    }
 public:
-    map_player_object(QWidget* parent = nullptr): animated_displayable("map_player", anim_sequence(0, anim("static", 1, 0), anim("moving", 20, 3)), QPoint(0,0), QSize(13,24), false) {
+    unclickable_button* player_marker = nullptr;
+    unclickable_button* destination_marker = nullptr;
+    QGraphicsLineItem* line = nullptr;
+    map_player_object(QWidget* parent): animated_displayable("map_player", anim_sequence(0, anim("static", 1, 0), anim("moving", 20, 3)), QPoint(0,0), QSize(13,24), false) {
+        if (parent == nullptr) {
+            delete this;
+            return;
+        }
         this->_disp->setParent(parent);
+        connect(this, &map_player_object::began_step, this, &map_player_object::begin_running);
+        connect(this, &map_player_object::reached_destination, this, &map_player_object::stop_running);
+        QWidget* marker_parent = parent->parentWidget();
+        player_marker = new unclickable_button(marker_parent);
+        player_marker->setGeometry(QRect(0, 0, 32, 32));
+        player_marker->setStyleSheet(QString("border-image: url(:/pictures/map_player_marker.png)"));
+        move_player_marker();
+        player_marker->show();
+        destination_marker = new unclickable_button(marker_parent);
+        destination_marker->setGeometry(QRect(0, 0, 32, 32));
+        destination_marker->setStyleSheet(QString("border-image: url(:/pictures/map_player_destination.png)"));
+        destination_marker->hide();
+    }
+    void move_to(QPoint& coord) override {
+        bool locked = false;
+        emit check_tiles(coord.x(), coord.y(), this->_disp->size().width(), this->_disp->size().height(), locked);
+        if (locked == true) {
+            this->interrupt();
+            emit cant_move_there(coord);
+            return;
+        }
+        _disp->move(coord);
+        if (line != nullptr) {
+            line->setLine(coord.x() + this->_disp->width() / 2, coord.y() + this->_disp->height() / 2, this->get_transpos().final_destination.x() + this->_disp->width() / 2,this->get_transpos().final_destination.y() + this->_disp->height() / 2);
+        }
+    }
+    void move_player_marker() {
+        int dx = (player_marker->width() / 2) - (this->_disp->width() / 2);
+        int dy = (player_marker->height() / 2) + (this->_disp->height() / 2) + 3;
+        dx -= (this->_disp->width() / 2);
+        player_marker->move(this->_disp->mapToGlobal(this->_disp->pos() - this->_disp->geometry().center()) - QPoint(dx, dy));
+    }
+    void move_destination_marker() {
+        destination_marker->move(this->_disp->parentWidget()->mapToGlobal(this->get_transpos().final_destination) - QPoint(this->destination_marker->width() / 4, 0));
     }
 };
 
@@ -692,6 +758,15 @@ public:
     }
     void set_name(const QString& name) {
         _location_name = name;
+    }
+    void set_location_id(unsigned long long id) {
+        _location_id = id;
+    }
+    QString get_name() {
+        return _location_name;
+    }
+    unsigned long long get_location_id() {
+        return _location_id;
     }
 };
 
@@ -743,6 +818,13 @@ public:
             _poi->_disp->show();
         }
     }
+    void lock() {
+        _is_locked = true;
+        this->setStyleSheet(QString("border-image: url(:/pictures/black.png);"));
+        if (_poi != nullptr) {
+            _poi->_disp->hide();
+        }
+    }
     void set_poi(map_poi* poi_) {
         delete _poi;
         _poi = poi_;
@@ -752,11 +834,23 @@ public:
         if (_is_locked == true)
             _poi->_disp->hide();
     }
-    const map_poi* get_poi() {
+    void set_biome(biome biome_) {
+        _biome = biome_;
+    }
+    void set_difficulty(float difficulty) {
+        _difficulty = difficulty;
+    }
+    map_poi* get_poi() {
         return _poi;
     }
     bool get_locked() {
         return _is_locked;
+    }
+    biome get_biome() {
+        return _biome;
+    }
+    float get_difficulty() {
+        return _difficulty;
     }
     ~map_grid_tile() {
         delete _poi;
@@ -806,6 +900,15 @@ public:
             connect(tile, &map_grid_tile::clicked_poi, this, &map_grid::process_clicked_poi);
         }
     }
+    map_grid_tile* get_tile_at(QPoint coord) {
+        unsigned int row = coord.y() / _tile_size;
+        unsigned int col = coord.x() / _tile_size;
+        unsigned int index = (row * _width) + col;
+        if (row >= _height || row < 0 || col >= _width || col < 0)
+            return nullptr;
+
+        return tiles[index];
+    }
     ~map_grid() {
         for (auto elem : tiles) {
             elem->deleteLater();
@@ -813,7 +916,7 @@ public:
     }
 };
 
-class map_widget: public QWidget {
+class map_widget: public game_scene {
 
     Q_OBJECT
 
@@ -821,35 +924,45 @@ public slots:
     void clicked_tile(map_grid_tile* tile) {
         QPoint start = player_object->_disp->pos();
         QPoint end = this->mapFromGlobal(QCursor::pos()) - QPoint(player_object->_disp->width() / 2, player_object->_disp->height() / 2);
+        if (start == end)
+            return;
+
         QPoint vec = end - start;
-        qInfo() << start << end << player_object->_disp->mapTo(player_object->_disp,player_object->_disp->geometry().center());
         unsigned int length = std::sqrtl(QPoint::dotProduct(vec, vec));
         unsigned int steps = 50 * length * (15 - global::player_->get_entity_stats().agility) / (global::player_->get_entity_stats().survival);
-        qInfo() << steps;
         player_object->begin_step(end, steps, transpos_algs::linear);
     }
     void clicked_locked_tile(map_grid_tile* tile) {
         tile->unlock();
     }
     void clicked_poi(map_grid_tile* tile) {}
+    void allow_tiles(int x, int y, short width, short height, bool& locked) {
+        map_grid_tile* tile1 = grid->get_tile_at(QPoint(x, y));
+        map_grid_tile* tile2 = grid->get_tile_at(QPoint(x + width, y));
+        map_grid_tile* tile3 = grid->get_tile_at(QPoint(x, y + height));
+        map_grid_tile* tile4 = grid->get_tile_at(QPoint(x + width, y + height));
+        if (tile1 == nullptr || tile2 == nullptr || tile3 == nullptr || tile4 == nullptr) {
+            locked = true;
+            return;
+        }
+
+        locked = (tile1->get_locked() || tile2->get_locked() || tile3->get_locked() || tile4->get_locked());
+    }
 public:
     map_grid* grid = nullptr;
     map_player_object* player_object = nullptr;
-    QPixmap sprite;
-    map_widget(QWidget* parent = nullptr): QWidget(parent) {
-        grid = new map_grid(19, 12, 50, this);
+    map_widget(QPoint pos, QWidget* parent = nullptr): game_scene(new QGraphicsScene(), parent) {
+        grid = new map_grid(19, 12, 75, this);
         connect(grid, &map_grid::clicked_child_tile, this, &map_widget::clicked_tile);
         connect(grid, &map_grid::clicked_child_locked_tile, this, &map_widget::clicked_locked_tile);
         connect(grid, &map_grid::clicked_child_poi, this, &map_widget::clicked_poi);
-        this->setGeometry(grid->rect());
-        sprite.load(QString(":/pictures/map.jpg"));
-        player_object = new map_player_object(this);
-    }
-    void paintEvent(QPaintEvent *event) {
-        QPainter paint(this);
-        if (sprite.isNull())
-            return;
+        this->setGeometry(QRect(pos,grid->rect().size()));
 
-        paint.drawPixmap(this->rect(), sprite);
+        setSceneRect(this->rect());
+        set_background(":/pictures/map.jpg");
+        player_object = new map_player_object(this);
+        player_object->player_marker->setParent(this->parentWidget());
+        player_object->destination_marker->setParent(this->parentWidget());
+        connect(player_object, &map_player_object::check_tiles, this, &map_widget::allow_tiles);
     }
 };

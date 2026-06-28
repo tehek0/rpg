@@ -5,16 +5,19 @@
 #include <ctime>
 #include "game/header/ui.h"
 #include "game/header/config.h"
+#include "game/header/save.h"
 #include <QGridLayout>
 #include <QSizePolicy>
 #include <QFile>
 #include <QAudioOutput>
-int main()
+int main(int argc, char** argv)
 {
+    global::root_path = std::filesystem::path(argv[0]).parent_path();
+    saves_init();
     global::player_ = new player;
     entity_stats stat;
-    stat.survival = 30;
-    stat.agility = 4;
+    stat.survival = 260;
+    stat.agility = 3;
     global::player_->set_entity_stats(stat);
 
     std::srand(std::time(0));
@@ -26,6 +29,7 @@ int main()
     load_cfg();
     global::music->change_volume(global::master_volume * global::music_volume);
     global::music->set_music("menu");
+
     // inter.selected_interaction_tree = 0;
     // inter.execute();
     // inter.execute();
