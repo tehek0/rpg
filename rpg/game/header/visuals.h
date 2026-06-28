@@ -668,6 +668,7 @@ signals:
     void check_tiles(int x, int y, short width, short height, bool& locked);
     void link_line(QGraphicsLineItem*& line);
     void cant_move_there(QPoint& coord);
+    void call_parent(QWidget*& marker_parent);
 public slots:
     void stop_running() {
         this->set_current_anim(0);
@@ -691,16 +692,21 @@ public:
     unclickable_button* player_marker = nullptr;
     unclickable_button* destination_marker = nullptr;
     QGraphicsLineItem* line = nullptr;
-    map_player_object(QWidget* parent = nullptr): animated_displayable("map_player", anim_sequence(0, anim("static", 1, 0), anim("moving", 20, 3)), QPoint(0,0), QSize(13,24), false) {
+    map_player_object(QWidget* parent): animated_displayable("map_player", anim_sequence(0, anim("static", 1, 0), anim("moving", 20, 3)), QPoint(0,0), QSize(13,24), false) {
+        if (parent == nullptr) {
+            delete this;
+            return;
+        }
         this->_disp->setParent(parent);
         connect(this, &map_player_object::began_step, this, &map_player_object::begin_running);
         connect(this, &map_player_object::reached_destination, this, &map_player_object::stop_running);
-        player_marker = new unclickable_button(&global::w);
+        QWidget* marker_parent = parent->parentWidget();
+        player_marker = new unclickable_button(marker_parent);
         player_marker->setGeometry(QRect(0, 0, 32, 32));
         player_marker->setStyleSheet(QString("border-image: url(:/pictures/map_player_marker.png)"));
         move_player_marker();
         player_marker->show();
-        destination_marker = new unclickable_button(&global::w);
+        destination_marker = new unclickable_button(marker_parent);
         destination_marker->setGeometry(QRect(0, 0, 32, 32));
         destination_marker->setStyleSheet(QString("border-image: url(:/pictures/map_player_destination.png)"));
         destination_marker->hide();
@@ -727,10 +733,6 @@ public:
     void move_destination_marker() {
         destination_marker->move(this->_disp->parentWidget()->mapToGlobal(this->get_transpos().final_destination) - QPoint(this->destination_marker->width() / 4, 0));
     }
-    ~map_player_object() {
-        player_marker->deleteLater();
-        destination_marker->deleteLater();
-    }
 };
 
 class map_poi: public displayable {
@@ -756,6 +758,15 @@ public:
     }
     void set_name(const QString& name) {
         _location_name = name;
+    }
+    void set_location_id(unsigned long long id) {
+        _location_id = id;
+    }
+    QString get_name() {
+        return _location_name;
+    }
+    unsigned long long get_location_id() {
+        return _location_id;
     }
 };
 
@@ -807,6 +818,13 @@ public:
             _poi->_disp->show();
         }
     }
+    void lock() {
+        _is_locked = true;
+        this->setStyleSheet(QString("border-image: url(:/pictures/black.png);"));
+        if (_poi != nullptr) {
+            _poi->_disp->hide();
+        }
+    }
     void set_poi(map_poi* poi_) {
         delete _poi;
         _poi = poi_;
@@ -816,11 +834,23 @@ public:
         if (_is_locked == true)
             _poi->_disp->hide();
     }
-    const map_poi* get_poi() {
+    void set_biome(biome biome_) {
+        _biome = biome_;
+    }
+    void set_difficulty(float difficulty) {
+        _difficulty = difficulty;
+    }
+    map_poi* get_poi() {
         return _poi;
     }
     bool get_locked() {
         return _is_locked;
+    }
+    biome get_biome() {
+        return _biome;
+    }
+    float get_difficulty() {
+        return _difficulty;
     }
     ~map_grid_tile() {
         delete _poi;
@@ -935,5 +965,4 @@ public:
         player_object->destination_marker->setParent(this->parentWidget());
         connect(player_object, &map_player_object::check_tiles, this, &map_widget::allow_tiles);
     }
-
 };

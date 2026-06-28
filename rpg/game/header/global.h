@@ -1,12 +1,15 @@
 #pragma once
 #include <QTimer>
 #include <QApplication>
+#include <filesystem>
 #include "music.h"
 #include "mainwindow.h"
 // Тест глобального пространства имён
 class player;
 namespace global {
     inline player* player_;
+    inline unsigned int selected_save;
+    inline std::filesystem::path root_path;
     inline QTimer* timer = new QTimer;
     inline const short tick_timeout = 5;
     inline int argc;
