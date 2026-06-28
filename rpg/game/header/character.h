@@ -170,19 +170,19 @@ public:
 
 struct entity_stats {
 
-    short strength;
-    short agility;
-    short endurance;
-    short intelligence;
-    short luck;
+    short strength = 1;
+    short agility = 1;
+    short endurance = 1;
+    short intelligence = 1;
+    short luck = 1;
 
-    short guns;
-    short big_guns;
-    short unarmed;
-    short science;
-    short speech;
-    short barter;
-    short survival;
+    short guns = 0;
+    short big_guns = 0;
+    short unarmed = 0;
+    short science = 0;
+    short speech = 0;
+    short barter = 0;
+    short survival = 0;
 
 };
 
@@ -190,9 +190,9 @@ struct entity_stats {
 
 struct entity_level {
 
-    unsigned int level;
-    unsigned int experiecne;
-    unsigned int scaling;
+    unsigned int level = 1;
+    unsigned int experiecne = 0;
+    unsigned int scaling = 100;
 
 };
 

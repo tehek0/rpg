@@ -28,6 +28,10 @@ game_scene* throw_menu_scene() {
 
     auto btn = new QPushButton();
     scene_->add(btn);
+
+    auto ccw = new character_creation_widget();
+    scene_->add(ccw);
+    ccw->move(600, 0);
     global::w.connect(btn, &QPushButton::clicked, &global::w, [=]() {delete global::w.hub_scene; global::w.hub_scene = nullptr;});
 
     global::w.connect(play_button, &QPushButton::clicked, &global::w, &MainWindow::menu_play);

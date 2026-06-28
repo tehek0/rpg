@@ -25,6 +25,9 @@ void game_scene::drawBackground(QPainter *painter, const QRectF &rect) {
         painter->drawPixmap(sceneRect(), background, background.rect());
     }
 }
+void game_scene::wheelEvent(QWheelEvent *event) {
+    event->ignore();
+}
 game_scene::~game_scene() {
     this->scene()->deleteLater();
 }

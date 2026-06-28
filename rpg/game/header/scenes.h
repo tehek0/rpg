@@ -5,6 +5,7 @@ class displayable;
 class game_scene: public QGraphicsView {
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect);
+    void wheelEvent(QWheelEvent *event);
 public:
     QPixmap background;
     game_scene(QGraphicsScene* s = new QGraphicsScene(), QWidget* p = nullptr);
