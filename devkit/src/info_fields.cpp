@@ -86,6 +86,8 @@ void dev::info_field::fill_qtable_data(QTreeWidget* field, dev::datatype type) {
         }
         field->resize(field_w + button_side, (field->topLevelItemCount()%show_table_k)*any_line_hight);
         connect(field, SIGNAL(itemClicked(QTreeWidgetItem*,int)), field->parent(), SLOT(table_cell_clicked(QTreeWidgetItem*,int)));
+        label_->show();
+        field->show();
     }
 
 }

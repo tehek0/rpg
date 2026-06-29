@@ -186,6 +186,15 @@ struct entity_stats {
 
 };
 
+enum entity_size_class {
+    tiny,
+    small,
+    medium,
+    big,
+    giant,
+    human,
+    big_human
+} ;
 
 
 struct entity_level {
@@ -198,9 +207,11 @@ struct entity_level {
 
 class entity: public interactable {
 protected:
-    inventory* _inventory = nullptr;
     QString _name;
     QString _asset;
+    inventory* _inventory = nullptr;
+
+    entity_size_class _size_class;
 public:
     entity() = default;
     entity(const QString& name, const QString& asset, inventory* inventory_ = new inventory()): _name(name), _asset(asset), _inventory(inventory_)
@@ -213,6 +224,8 @@ public:
     inventory* get_inventory();
     QString get_name();
     QString get_asset();
+    entity_size_class get_size_class() {return _size_class;}
+    void set_size_class(entity_size_class size_class_) {_size_class = size_class_;};
     void set_inventory(inventory* inventory_);
     void set_name(const QString& name);
     void set_asset(const QString& asset);
@@ -229,23 +242,26 @@ protected:
     int _money;
 public:
     virtual ~living_entity() = default;
+    living_entity() : entity() {;}
     entity_stats get_entity_stats();
     short get_entity_stat(char_type type_);
     short get_entity_stat(skill_type type_);
     entity_level get_entity_level();
-    int get_max_health();
-    int get_health();
+    int get_max_health(){return _max_health;}
+    int get_health() {return _health;}
     int get_base_armor();
     int get_total_armor();
     int get_money();
     void set_entity_stats(entity_stats& entity_stats_);
     void set_entity_level(entity_level& entity_level_);
-    void set_max_health(int max_health);
+
+    void set_max_health(int max_health) {_max_health = max_health;}
     void set_health(int health);
+    void attacked();
+
     void set_base_armor(int base_armor);
     void set_total_armor(int total_armor);
     void regen_health(int amount);
-    void damage_health(int amount);
     void set_money(int money);
     void add_money(int amount);
     bool transaction(living_entity* other, int amount);
@@ -264,11 +280,11 @@ public:
     location* current_location;
     float get_max_weight();
     float get_weight();
-    int get_max_energy();
+    int get_max_energy() {return _max_energy;}
     trait get_trait();
     void set_max_weight(float max_weight);
     void set_weight(float weight);
-    void set_max_energy(int max_energy);
+    void set_max_energy(int max_energy) {_max_energy = max_energy;}
     void set_trait(trait trait_);
     void apply_equipment_bonuses();
     bool add_item(item* item_);
@@ -287,12 +303,14 @@ protected:
     int _base_dmg;
     bool _delete_after_battle = true;
 public:
+    enemy() : living_entity() {};
     enemy_traits get_enemy_traits();
     int get_base_dmg();
     bool get_delete_after_battle();
     void set_enemy_traits(enemy_traits enemy_traits_);
     void set_base_dmg(int base_dmg);
     void set_delete_after_battle(bool delete_after_battle);
+
 };
 
 struct offer {

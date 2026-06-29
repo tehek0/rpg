@@ -1,6 +1,7 @@
 #include "../header/scenes.h"
 #include "../header/visuals.h"
 #include <QGraphicsProxyWidget>
+#include <QCursor>
 game_scene::game_scene(QGraphicsScene* s, QWidget* p): QGraphicsView(s, p) {
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -35,3 +36,8 @@ void disposable_scene::hideEvent(QHideEvent *event) {
     this->deleteLater();
     qInfo() << "scene deleted";
 }
+
+void battle_scene::target_selection_clicked() {
+    global::w.current_scene->_task = mouse_task::target_selection;
+    global::w.current_scene->setCursor(Qt::CursorShape::CrossCursor);
+};

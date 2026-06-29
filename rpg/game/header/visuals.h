@@ -19,6 +19,8 @@
 #include "data/inventory_contexts.h"
 #include "data/biomes.h"
 
+#include <qprogressbar.h>
+
 //визуальные компоненты игровых объектов
 
 class tracked_button : public QPushButton {
@@ -517,24 +519,43 @@ public:
 class entity_object: public animated_displayable {
 
     Q_OBJECT
-
+private:
+    entity* linked_entity;
 public slots:
     void markdown_entity() {
         if (_disp->linked_tooltip == nullptr)
             return;
 
-
         _disp->linked_tooltip->setText(QString("<center><font size=\"4\">%1</font></center>").arg(linked_entity->get_name()));
     }
 public:
-    entity* linked_entity;
-    entity_object(entity* linked_entity_, const anim_sequence& anim_sequence_ = anim_sequence(), const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100))
-        : linked_entity(linked_entity_), animated_displayable(linked_entity_->get_asset(), anim_sequence_, coord, size)
+    entity* get_linked_entity() {return linked_entity;}
+    entity_object(entity* linked_entity_, const anim_sequence& anim_sequence_ = anim_sequence(), const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool needds_tooltip = true)
+        : animated_displayable(linked_entity_->get_asset(), anim_sequence_, coord, size), linked_entity(linked_entity_)
     {
-        _disp->tooltip = tooltip_types::name_display;
-        connect(_disp, &tracked_button::request_tooltip, this, &entity_object::markdown_entity);
+
+        if (needds_tooltip) {
+            _disp->tooltip = tooltip_types::name_display;
+            connect(_disp, &tracked_button::request_tooltip, this, &entity_object::markdown_entity);
+        }
+
     }
 
+};
+
+class enemy_object : public animated_displayable {
+    Q_OBJECT
+private:
+    enemy* _linked_enemy;
+    QProgressBar* _healthbar;
+public:
+    enemy_object(enemy* linked_enemy_, const anim_sequence& anim_sequence_ = anim_sequence(),
+                 const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), QProgressBar* healthbar = nullptr)
+        : animated_displayable(linked_enemy_->get_asset(), anim_sequence_, coord, size), _linked_enemy(linked_enemy_), _healthbar(healthbar) {};
+    enemy* get_linked_enemy() {return _linked_enemy;}
+    QProgressBar* get_healthbar() {return _healthbar;}
+public slots:
+    void enemy_clicked();
 };
 
 class text_object : public QLabel {

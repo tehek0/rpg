@@ -10,6 +10,7 @@ CONFIG += static
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    game/src/battle.cpp \
     game/src/character.cpp \
     game/src/config.cpp \
     game/src/enum_translation.cpp \
