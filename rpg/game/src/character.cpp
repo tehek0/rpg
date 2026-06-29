@@ -132,10 +132,6 @@ void living_entity::set_max_health(int max_health) {
     _max_health = max_health;
 }
 
-void living_entity::set_health(int health) {
-    _health = health;
-}
-
 void living_entity::set_base_armor(int base_armor) {
     _base_armor = base_armor;
 }
@@ -191,7 +187,7 @@ void living_entity::set_health(int health) {
     if (health > _max_health) {
         _health = _max_health;
     }
-    else if (health < 0 && abs(health) >_health) {
+    else if (health < 0) {
         _health = 0;
     }
     else {

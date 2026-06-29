@@ -248,15 +248,15 @@ public:
     living_entity() : entity() {;}
     entity_stats get_entity_stats();
     entity_level get_entity_level();
-    int get_max_health(){return _max_health;}
-    int get_health() {return _health;}
+    int get_max_health();
+    int get_health();
     int get_base_armor();
     int get_total_armor();
     int get_money();
     void set_entity_stats(entity_stats& entity_stats_);
     void set_entity_level(entity_level& entity_level_);
 
-    void set_max_health(int max_health) {_max_health = max_health;}
+    void set_max_health(int max_health);
     void set_health(int health);
     void attacked();
 
@@ -282,13 +282,13 @@ public:
     location* current_location;
     float get_max_weight();
     float get_weight();
-    int get_max_energy() {return _max_energy;}
+    int get_max_energy();
     trait get_trait();
     entity_stats get_bonus_stats();
     entity_stats get_total_stats();
     void set_max_weight(float max_weight);
     void set_weight(float weight);
-    void set_max_energy(int max_energy) {_max_energy = max_energy;}
+    void set_max_energy(int max_energy);
     void set_trait(trait trait_);
     void apply_equipment_bonuses();
     bool add_item(item* item_);
