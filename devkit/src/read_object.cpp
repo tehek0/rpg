@@ -3,7 +3,7 @@
 #include <QDirIterator>
 #include <QRegularExpressionMatch>
 #include "../../header/id_support.hpp"
-
+#include "header/data/general.hpp"
 
 QString dev::get_path_to_datatype_folder(dev::datatype type) {
     QString path = "../../../objects/";
@@ -70,6 +70,6 @@ void dev::delete_object(dev::datatype object_type, QStringList ids) {
                 file.remove();
             }
         }
-
     }
+    ui::inform->setText("Удалено");
 }

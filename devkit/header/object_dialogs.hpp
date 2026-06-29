@@ -18,10 +18,12 @@ class object_dialog_window : public QWidget {
     QPushButton* save_;
     QPushButton* reset_;
     QPushButton* delete_;
+protected:
     int last_y_pos;
     int ypos = 10;
 
 public:
+    object_dialog_window(); //не задуман к использованию
     explicit object_dialog_window(dev::datatype object_type);
     ~object_dialog_window();
 
@@ -42,6 +44,13 @@ public slots:
 
     void type_chosen();
     void table_cell_clicked(QTreeWidgetItem* item, int column);
+};
+
+class help_window : public object_dialog_window {
+private:
+    std::vector<QLabel*> labels_;
+public:
+    help_window();
 };
 }
 

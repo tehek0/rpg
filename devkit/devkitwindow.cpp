@@ -1,15 +1,15 @@
 #include "devkitwindow.h"
 #include "ui_devkitwindow.h"
-//#include "item_dialog.h"
 #include <QLabel>
 #include <QLineEdit>
-
+#include "header/data/general.hpp"
 
 DevkitWindow::DevkitWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::DevkitWindow)
 {
     ui->setupUi(this);
+    dev::ui::inform = ui->inform_l;
 }
 
 DevkitWindow::~DevkitWindow()
@@ -62,5 +62,12 @@ void DevkitWindow::on_createRequirements_pb_2_clicked()
     dev::object_dialog_window* w = new dev::object_dialog_window(dev::datatype::requirement);
     windows.emplace_back(w);
     w->change_subfields(0);
+}
+
+
+void DevkitWindow::on_help_clicked()
+{
+    dev::help_window* w = new dev::help_window();
+    windows.emplace_back(w);
 }
 

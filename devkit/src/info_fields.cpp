@@ -13,7 +13,7 @@ using js = nlohmann::ordered_json;
 
 //INFO_FIELD
 int dev::info_field::calculate_table_hight() {
-    return (dynamic_cast<QTreeWidget*>(field_)->topLevelItemCount()%show_table_k)*any_line_hight;
+    return (reinterpret_cast<QTreeWidget*>(field_)->topLevelItemCount()%show_table_k)*any_line_hight;
 }
 
 void dev::info_field::fill_combo_box_data(QComboBox* field, dev::datatype type) {
@@ -70,7 +70,6 @@ void dev::info_field::fill_qtable_data(QTreeWidget* field, dev::datatype type) {
     if (is_directory_empty(path)) {
         label_->hide();
         field->hide();
-        qInfo() << 'e';
     }
     else {
         field->setColumnCount(2);
@@ -161,16 +160,16 @@ dev::info_field::~info_field() {
 
 void dev::info_field::clear_info_field() {
     if (is_type_linear(field_type_)) {
-        dynamic_cast<QLineEdit*>(field_)->clear();
+        reinterpret_cast<QLineEdit*>(field_)->clear();
     }
     else if (is_type_struct(field_type_)) {
-        QTreeWidget* table = dynamic_cast<QTreeWidget*>(field_);
+        QTreeWidget* table = reinterpret_cast<QTreeWidget*>(field_);
         for (int i = 0; i < table->topLevelItemCount(); ++i) {
             table->topLevelItem(i)->setBackground(1, QBrush());
         }
     }
     else {
-        dynamic_cast<QComboBox*>(field_)->setCurrentIndex(0);
+        reinterpret_cast<QComboBox*>(field_)->setCurrentIndex(0);
     }
 }
 
@@ -179,10 +178,10 @@ void dev::read_from_infoField_to_objectData(const dev::info_field& data, dev::ob
     dev::datatype current_type = data.get_field_type();
     QString current_value;
     if (is_type_linear(current_type)) {
-        current_value = dynamic_cast<QLineEdit*>(data.get_field())->text();
+        current_value = reinterpret_cast<QLineEdit*>(data.get_field())->text();
     }
     else if (is_type_struct(current_type)) {
-        QTreeWidget* field = dynamic_cast<QTreeWidget*>(data.get_field());
+        QTreeWidget* field = reinterpret_cast<QTreeWidget*>(data.get_field());
         for (size_t i = 0; i < field->topLevelItemCount(); ++i) {
             QTreeWidgetItem* item = field->topLevelItem(i);
             if (item->background(1) == check_color) {
@@ -192,7 +191,7 @@ void dev::read_from_infoField_to_objectData(const dev::info_field& data, dev::ob
         }
     }
     else {
-        current_value = QString::number(dynamic_cast<QComboBox*>(data.get_field())->currentIndex());
+        current_value = QString::number(reinterpret_cast<QComboBox*>(data.get_field())->currentIndex());
     }
 
     object.keys_.append(current_key);
