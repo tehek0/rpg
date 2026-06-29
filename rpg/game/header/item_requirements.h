@@ -4,6 +4,8 @@
 #include "data/char_types.h"
 #include "data/skill_types.h"
 
+class entity_stats;
+
 class base_requirement {
 public:
     unsigned int required;
@@ -11,6 +13,9 @@ public:
     {}
     virtual QString text_requirement() = 0;
     virtual base_requirement* clone() = 0;
+    virtual bool match_requirement(entity_stats stats) = 0;
+    virtual bool is_char_requirement();
+    virtual bool is_skill_requirement();
     virtual ~base_requirement() = default;
     virtual bool operator==(base_requirement* other);
     virtual bool operator!=(base_requirement* other);
@@ -23,6 +28,8 @@ public:
     char_type type;
     virtual QString text_requirement();
     virtual base_requirement* clone();
+    virtual bool match_requirement(entity_stats stats);
+    virtual bool is_char_requirement();
     virtual ~char_requirement() = default;
     bool operator==(char_requirement* other);
     bool operator!=(char_requirement* other);
@@ -37,6 +44,8 @@ public:
     skill_type type;
     virtual QString text_requirement();
     virtual base_requirement* clone();
+    virtual bool match_requirement(entity_stats stats);
+    virtual bool is_skill_requirement();
     virtual ~skill_requirement() = default;
     bool operator==(skill_requirement* other);
     bool operator!=(skill_requirement* other);
@@ -49,6 +58,7 @@ struct item_requirements {
     std::vector<base_requirement*> item_requirements_ptrs;
     item_requirements() = default;
     item_requirements(item_requirements& other);
+    bool match_all(entity_stats stats);
     ~item_requirements();
     bool operator==(item_requirements& other);
     bool operator!=(item_requirements& other);

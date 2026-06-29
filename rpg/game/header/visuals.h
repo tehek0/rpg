@@ -15,6 +15,7 @@
 #include <QGraphicsLineItem>
 #include <QLineEdit>
 #include <QCheckBox>
+#include "save.h"
 #include "global.h"
 #include "character.h"
 #include "data/tooltip_types.h"
@@ -932,7 +933,14 @@ public slots:
 
         QPoint vec = end - start;
         unsigned int length = std::sqrtl(QPoint::dotProduct(vec, vec));
-        unsigned int steps = 50 * length * (15 - global::player_->get_entity_stats().agility) / (global::player_->get_entity_stats().survival);
+        short survival_skill = global::player_->get_total_stats().survival;
+        short agility_char = 15 - global::player_->get_total_stats().agility;
+        if (survival_skill <= 9)
+            survival_skill = 10;
+        if (agility_char <= 0) {
+            agility_char = 1;
+        }
+        unsigned int steps = 25 * length * agility_char / survival_skill;
         player_object->begin_step(end, steps, transpos_algs::linear);
     }
     void clicked_locked_tile(map_grid_tile* tile) {
@@ -1168,6 +1176,14 @@ public slots:
         global::player_ = new player();
         global::player_->set_entity_stats(stats);
         global::player_->set_name(player_name);
+        global::player_->set_inventory(new inventory());
+        auto x = new item_requirements();
+        x->item_requirements_ptrs.emplace_back(new char_requirement(3, char_type::intelligence));
+        armor_bonus p;
+        p.bonus = equipment_bonus::change_char_intelligence;
+        p.value = 500;
+        global::player_->get_inventory()->add_item(new armor("Шлем крутой","Очень крутой шлем", "l", 1, 1, 2.f, 50, true, x, armor_slot::head, 5, p));
+        save_player(global::player_, 1);
 
         emit player_created();
     }
@@ -1219,7 +1235,8 @@ public slots:
     }
 
     void cancel_clicked() {
-
+        qInfo() << load_player(global::player_, 1);
+        qInfo() << global::player_->get_name();
     }
 public:
     void paintEvent(QPaintEvent *event) {

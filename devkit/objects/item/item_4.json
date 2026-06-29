@@ -1,0 +1,13 @@
+{
+  "subtype": 3,
+  "name": "броня",
+  "desc": "",
+  "asset": "",
+  "max_stack_size": 4294967295,
+  "base_weight": 4294967295,
+  "base_cost": 4294967295,
+  "sellablle": false,
+  "armor_slot": 0,
+  "armor_points": 0,
+  "armor_bonus": []
+}

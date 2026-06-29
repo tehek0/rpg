@@ -1,0 +1,12 @@
+{
+  "subtype": 2,
+  "name": "патроны",
+  "desc": "",
+  "asset": "",
+  "max_stack_size": 4294967295,
+  "base_weight": 4294967295,
+  "base_cost": 4294967295,
+  "sellablle": false,
+  "base_dmg": 4294967295,
+  "ammo_type": 0
+}

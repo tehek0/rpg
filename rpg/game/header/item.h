@@ -102,6 +102,11 @@ public:
     QString html_desc();
     QString html_weight();
     QString html_cost();
+    virtual bool is_item_with_requirements();
+    virtual bool is_armor_type();
+    virtual bool is_weapon_type();
+    virtual bool is_ammo_type();
+    virtual bool is_consumable_type();
     virtual QString get_tooltip_text();
     virtual bool operator==(item* other);
     virtual bool operator!=(item* other);
@@ -133,6 +138,7 @@ public:
     item_with_requirements(item_with_requirements* copy): item(copy),
         _requirements(new item_requirements(*(copy->_requirements)))
     {}
+    virtual bool is_item_with_requirements();
     virtual ~item_with_requirements();
     item_requirements* get_item_requirements();
     void set_item_requirements(item_requirements* requirements);
@@ -140,8 +146,8 @@ public:
     virtual QString get_tooltip_text() = 0;
     // Этот класс сам использоваться вряд-ли будет, так что ему оператор не определяю
 
-    bool operator==(item* other) final;
-    bool operator!=(item* other) final;
+    virtual bool operator==(item* other) = 0;
+    virtual bool operator!=(item* other) = 0;
 };
 
 class has_base_dmg {
@@ -224,8 +230,11 @@ public:
     void set_damage_type(damage_type damage_type_);
     QString html_base_dmg();
     virtual QString get_tooltip_text();
-    bool operator==(weapon* other);
-    bool operator!=(weapon* other);
+    virtual bool is_weapon_type();
+    virtual bool operator==(item* other);
+    virtual bool operator!=(item* other);
+    virtual bool operator==(weapon* other);
+    virtual bool operator!=(weapon* other);
 };
 
 // Боезапас
@@ -255,10 +264,11 @@ public:
     {}
     virtual QString get_tooltip_text();
     // Виртуальные операторы, на случай, если захочется сделать патроны с требованиями
+    virtual bool is_ammo_type();
     virtual bool operator==(ammo* other);
     virtual bool operator!=(ammo* other);
-    bool operator==(item* other) final;
-    bool operator!=(item* other) final;
+    virtual bool operator==(item* other);
+    virtual bool operator!=(item* other);
 };
 
 
@@ -315,8 +325,11 @@ public:
     QString html_armor_points();
     QString html_armor_bonus();
     virtual QString get_tooltip_text();
-    bool operator==(armor* other);
-    bool operator!=(armor* other);
+    virtual bool is_armor_type();
+    virtual bool operator==(item* other);
+    virtual bool operator!=(item* other);
+    virtual bool operator==(armor* other);
+    virtual bool operator!=(armor* other);
 };
 
 
@@ -371,8 +384,9 @@ public:
     QString html_on_use();
     virtual QString get_tooltip_text();
     // Виртуальные операторы, на случай, если захочется сделать используемые предметы с требованиями
+    virtual bool is_consumable_type();
     virtual bool operator==(consumable* other);
     virtual bool operator!=(consumable* other);
-    bool operator==(item* other) final;
-    bool operator!=(item* other) final;
+    virtual bool operator==(item* other);
+    virtual bool operator!=(item* other);
 };

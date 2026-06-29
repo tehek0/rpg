@@ -1,5 +1,6 @@
 #include "../header/inventory.h"
-
+#include "../header/global.h"
+#include "../header/character.h"
 // Избегаем утечку памяти
 inventory::~inventory() {
     for (size_t i = 0; i < _items.size(); ++i) {
@@ -51,6 +52,15 @@ size_t inventory::get_items_size() {
     return _items.size();
 }
 
+bool inventory::has_item(item *item_) {
+    for (auto const itm: _items) {
+        if (itm == item_) {
+            return true;
+        }
+    }
+    return false;
+}
+
 unsigned int inventory::get_slot(item* item_) {
     unsigned int slot = 0;
     for (auto const itm : _items) {
@@ -89,25 +99,46 @@ void inventory::remove_item(unsigned int slot, unsigned int amount) {
 // Пускаем любое оружие, другие предметы идут в функцию ниже
 // TODO: проверка требований
 void inventory::equip_weapon(weapon* weapon_) {
+    if (!this->has_item(weapon_))
+        return;
+    if (!weapon_->get_item_requirements()->match_all(global::player_->get_total_stats())) {
+        return;
+    }
+    if (_weapon != nullptr) {
+        emit trigger_update(this->get_slot(_weapon), inv_update_context::deequipped);
+    }
     _weapon = weapon_;
+    emit trigger_update(this->get_slot(weapon_), inv_update_context::equipped);
 }
 // TODO: предупреждение о неподходящем слоте
 void inventory::equip_weapon(item* not_suitable) {
-    return;
+    if (not_suitable->is_weapon_type()) {
+        equip_weapon(static_cast<weapon*>(not_suitable));
+    }
 }
 
 // Пускаем любую броню и проверяем, можно ли надеть на голову, другие предметы идут в функцию ниже
 // TODO: проверка требований
 // TODO: бонусы экипировки
 void inventory::equip_armor_head(armor* armor_) {
+    if (!this->has_item(armor_))
+        return;
+    if (!armor_->get_item_requirements()->match_all(global::player_->get_total_stats())) {
+        return;
+    }
     if (armor_->get_armor_slot() != armor_slot::head)
         return;
-
+    if (_armor.head != nullptr) {
+        emit trigger_update(this->get_slot(_armor.head), inv_update_context::deequipped);
+    }
     _armor.head = armor_;
+    emit trigger_update(this->get_slot(armor_), inv_update_context::equipped);
 }
 // TODO: предупреждение о неподходящем слоте
 void inventory::equip_armor_head(item* not_suitable) {
-    return;
+    if (not_suitable->is_armor_type()) {
+        equip_armor_head(static_cast<armor*>(not_suitable));
+    }
 }
 
 // Пускаем любую броню и проверяем, можно ли надеть на тело, другие предметы идут в функцию ниже
@@ -136,6 +167,10 @@ void inventory::equip_armor_legs(armor* armor_) {
 // TODO: предупреждение о неподходящем слоте
 void inventory::equip_armor_legs(item* not_suitable) {
     return;
+}
+
+bool inventory::is_equipped(item* item_) {
+    return (item_ == _armor.head || item_ == _armor.body || item_ == _armor.legs || item_ == _weapon);
 }
 
 armor* inventory::get_armor_head() {

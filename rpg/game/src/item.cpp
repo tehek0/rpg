@@ -142,8 +142,34 @@ QString item::get_tooltip_text() {
     return tooltip;
 }
 
+bool item::is_item_with_requirements() {
+    return false;
+}
+bool item::is_ammo_type() {
+    return false;
+}
+bool item::is_armor_type() {
+    return false;
+}
+bool item::is_consumable_type() {
+    return false;
+}
+bool item::is_weapon_type() {
+    return false;
+}
+
 // Операторы равенства и неравенства для обычных предметов. Сравнивают всё, кроме количества. В наследованных класах переопределяются.
 bool item::operator==(item* other) {
+    if (this->is_ammo_type())
+        return *(static_cast<ammo*>(this)) == other;
+    if (this->is_armor_type())
+        return *(static_cast<armor*>(this)) == other;
+    if (this->is_consumable_type())
+        return *(static_cast<consumable*>(this)) == other;
+    if (this->is_weapon_type())
+        return *(static_cast<weapon*>(this)) == other;
+
+
     if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable)
         return false;
 
@@ -151,6 +177,15 @@ bool item::operator==(item* other) {
 }
 
 bool item::operator!=(item* other) {
+    if (this->is_ammo_type())
+        return *(static_cast<ammo*>(this)) != other;
+    if (this->is_armor_type())
+        return *(static_cast<armor*>(this)) != other;
+    if (this->is_consumable_type())
+        return *(static_cast<consumable*>(this)) != other;
+    if (this->is_weapon_type())
+        return *(static_cast<weapon*>(this)) != other;
+
     if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable)
         return true;
 
@@ -188,11 +223,7 @@ item_with_requirements::~item_with_requirements() {
     delete _requirements;
 }
 
-bool item_with_requirements::operator==(item* other) {
-    return false;
-}
-
-bool item_with_requirements::operator!=(item* other) {
+bool item_with_requirements::is_item_with_requirements() {
     return true;
 }
 
@@ -260,6 +291,24 @@ QString weapon::get_tooltip_text() {
     return html_name() + html_desc() + html_requirements() + html_base_dmg() + html_ammo_type() + html_energy_cost() + html_weight() + html_cost();
 }
 
+bool weapon::is_weapon_type() {
+    return true;
+}
+
+bool weapon::operator==(item* other) {
+    if (!other->is_weapon_type())
+        return false;
+
+    return *this == static_cast<weapon*>(other);
+}
+
+bool weapon::operator!=(item* other) {
+    if (!other->is_weapon_type())
+        return true;
+
+    return *this != static_cast<weapon*>(other);
+}
+
 bool weapon::operator==(weapon* other) {
     if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || this->_requirements != other->_requirements || this->_base_dmg != other->_base_dmg || this->_ammo_type != other->_ammo_type || this->_damage_type != other->_damage_type || this->_energy_cost != other->_energy_cost)
         return false;
@@ -278,12 +327,23 @@ QString ammo::get_tooltip_text() {
     return html_name() + html_desc() + html_base_dmg() + html_ammo_type() + html_weight() + html_cost();
 }
 
+
+bool ammo::is_ammo_type() {
+    return true;
+}
+
 bool ammo::operator==(item* other) {
-    return false;
+    if (!other->is_ammo_type())
+        return false;
+
+    return *this == static_cast<ammo*>(other);
 }
 
 bool ammo::operator!=(item* other) {
-    return true;
+    if (!other->is_ammo_type())
+        return true;
+
+    return *this != static_cast<ammo*>(other);
 }
 
 bool ammo::operator==(ammo* other) {
@@ -363,6 +423,25 @@ void armor::set_armor_bonus(armor_bonus armor_bonus_) {
     _armor_bonus = armor_bonus_;
 }
 
+
+bool armor::is_armor_type() {
+    return true;
+}
+
+bool armor::operator==(item* other) {
+    if (!other->is_armor_type())
+        return false;
+
+    return *this == static_cast<armor*>(other);
+}
+
+bool armor::operator!=(item* other) {
+    if (!other->is_armor_type())
+        return true;
+
+    return *this != static_cast<armor*>(other);
+}
+
 bool armor::operator==(armor* other) {
     if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || this->_requirements != other->_requirements || this->_armor_slot != other->_armor_slot || this->_armor_points != other->_armor_points || this->_armor_bonus != other->_armor_bonus)
         return false;
@@ -423,12 +502,22 @@ void consumable::set_uses_left(unsigned short uses_left) {
     _uses_left = uses_left;
 }
 
+bool consumable::is_consumable_type() {
+    return true;
+}
+
 bool consumable::operator==(item* other) {
-    return false;
+    if (!other->is_consumable_type())
+        return false;
+
+    return *this == static_cast<consumable*>(other);
 }
 
 bool consumable::operator!=(item* other) {
-    return true;
+    if (!other->is_consumable_type())
+        return true;
+
+    return *this != static_cast<consumable*>(other);
 }
 
 bool consumable::operator==(consumable* other) {

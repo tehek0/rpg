@@ -170,11 +170,11 @@ public:
 
 struct entity_stats {
 
-    short strength = 1;
-    short agility = 1;
-    short endurance = 1;
-    short intelligence = 1;
-    short luck = 1;
+    short strength = 0;
+    short agility = 0;
+    short endurance = 0;
+    short intelligence = 0;
+    short luck = 0;
 
     short guns = 0;
     short big_guns = 0;
@@ -184,6 +184,9 @@ struct entity_stats {
     short barter = 0;
     short survival = 0;
 
+    entity_stats operator+(entity_stats other);
+    short get_stat(char_type type_);
+    short get_stat(skill_type type_);
 };
 
 
@@ -199,8 +202,8 @@ struct entity_level {
 class entity: public interactable {
 protected:
     inventory* _inventory = nullptr;
-    QString _name;
-    QString _asset;
+    QString _name = "";
+    QString _asset = "";
 public:
     entity() = default;
     entity(const QString& name, const QString& asset, inventory* inventory_ = new inventory()): _name(name), _asset(asset), _inventory(inventory_)
@@ -222,16 +225,14 @@ class living_entity: public entity {
 protected:
     entity_stats _entity_stats;
     entity_level _entity_level;
-    int _max_health;
-    int _health;
-    int _base_armor;
+    int _max_health = 0;
+    int _health = 0;
+    int _base_armor = 0;
     int _total_armor;
-    int _money;
+    int _money = 0;
 public:
     virtual ~living_entity() = default;
     entity_stats get_entity_stats();
-    short get_entity_stat(char_type type_);
-    short get_entity_stat(skill_type type_);
     entity_level get_entity_level();
     int get_max_health();
     int get_health();
@@ -254,9 +255,10 @@ public:
 
 class player: public living_entity {
 protected:
-    float _max_weight;
+    entity_stats _bonus_stats;
+    float _max_weight = 0.f;
     float _weight;
-    int _max_energy;
+    int _max_energy = 0;
     trait _trait;
 public:
     player() = default;
@@ -266,6 +268,8 @@ public:
     float get_weight();
     int get_max_energy();
     trait get_trait();
+    entity_stats get_bonus_stats();
+    entity_stats get_total_stats();
     void set_max_weight(float max_weight);
     void set_weight(float weight);
     void set_max_energy(int max_energy);
