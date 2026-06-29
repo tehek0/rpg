@@ -7,7 +7,11 @@
 
 QString dev::get_path_to_datatype_folder(dev::datatype type) {
     QString path = "../../../objects/";
+    if (is_type_component(type)) {
+        path += "components/";
+    }
     switch(type) {
+    case dev::datatype::item_requirement: path += "item_requirement"; break;
     case dev::datatype::requirement: path += "requirement"; break;
     case dev::datatype::armor_bonus: path += "armor_bonus"; break;
     case dev::datatype::item: path += "item"; break;

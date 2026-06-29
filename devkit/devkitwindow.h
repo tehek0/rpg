@@ -24,13 +24,16 @@ private slots:
     void on_createItem_pb_clicked();
 
     void on_createEntity_pb_clicked();
-    void on_createRequirements_pb_clicked();
 
     void on_createArmor_bonus_pb_clicked();
 
     void on_createOn_use_pb_clicked();
 
     void on_delete_object_clicked();
+
+    void on_createItemRequirements_pb_clicked();
+
+    void on_createRequirements_pb_2_clicked();
 
 private:
     Ui::DevkitWindow *ui;

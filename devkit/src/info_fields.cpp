@@ -26,7 +26,7 @@ void dev::info_field::fill_combo_box_data(QComboBox* field, dev::datatype type) 
             field->addItems({"none", "weapon", "ammo", "armor", "consumable"});
             break;
         case dev::datatype::requirement_subtypes:
-            field->addItems({"none", "char_type", "skill_type", "item_requirements"});
+            field->addItems({"char_type", "skill_type"});
             break;
         default: break;
         }
@@ -70,6 +70,7 @@ void dev::info_field::fill_qtable_data(QTreeWidget* field, dev::datatype type) {
     if (is_directory_empty(path)) {
         label_->hide();
         field->hide();
+        qInfo() << 'e';
     }
     else {
         field->setColumnCount(2);
