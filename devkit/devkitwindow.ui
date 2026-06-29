@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
-    <height>645</height>
+    <width>576</width>
+    <height>531</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,17 +40,17 @@
      <string>Создать сущность</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="createRequirements_pb">
+   <widget class="QPushButton" name="createItemRequirements_pb">
     <property name="geometry">
      <rect>
-      <x>270</x>
+      <x>200</x>
       <y>80</y>
       <width>161</width>
       <height>24</height>
      </rect>
     </property>
     <property name="text">
-     <string>Создать requirement</string>
+     <string>Создать item_ requirement</string>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -69,20 +69,20 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>310</x>
+      <x>420</x>
       <y>50</y>
-      <width>81</width>
+      <width>141</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>Компоненты</string>
+     <string>Компоненты структур</string>
     </property>
    </widget>
    <widget class="QPushButton" name="createArmor_bonus_pb">
     <property name="geometry">
      <rect>
-      <x>270</x>
+      <x>400</x>
       <y>120</y>
       <width>161</width>
       <height>24</height>
@@ -95,7 +95,7 @@
    <widget class="QPushButton" name="createOn_use_pb">
     <property name="geometry">
      <rect>
-      <x>270</x>
+      <x>400</x>
       <y>160</y>
       <width>161</width>
       <height>24</height>
@@ -108,7 +108,7 @@
    <widget class="QPushButton" name="delete_object">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>30</x>
       <y>10</y>
       <width>101</width>
       <height>31</height>
@@ -118,13 +118,68 @@
      <string>Удалить объект</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="createRequirements_pb_2">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>80</y>
+      <width>161</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Создать requirement</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>40</y>
+      <width>201</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Структуры для итоговых объектов</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="inform_l">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>20</y>
+      <width>411</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(8, 94, 255);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="help">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>10</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>?</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>466</width>
+     <width>576</width>
      <height>21</height>
     </rect>
    </property>

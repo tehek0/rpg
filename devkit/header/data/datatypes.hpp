@@ -24,11 +24,11 @@ enum datatype {
     trade,
     npc,
     entity,
-    requirement,
-    inventory,
+    item_requirement,
+    requirement, //подструктура? компонент
     armor_bonus,
     on_use,
-    item, //КОНЕЦ СТРУКТУР
+    item,//КОНЕЦ СТРУКТУР и компонентов
     ammo_type, // вот тут enum, которые как "всё остальное"
     damage_type,
     char_type,
@@ -57,14 +57,14 @@ const std::string datatypes_to_string[datatype::total] = {
     "sublocation",
     "quest",
     "enemy",
-    "trader",
+    "trade",
     "npc",
     "entity",
+    "item_requirement",
     "requirement",
-    "inventory",
     "armor_bonus",
     "on_use",
-    "item",
+    "item"
 };
 
 // Проверк линейности. Линейным считается тип, для записи которого используются просто QLineEdit (это int, u_int, string и тд. Всё, что не bool и не кастомное)
@@ -75,4 +75,5 @@ bool is_type_struct(int type_index);
 bool is_type_sybtype(int type_index);
 
 bool is_type_unsigned(int type_index);
+bool is_type_component(int type_index);
 }

@@ -21,7 +21,7 @@ public:
     game_scene* hub_scene = nullptr;
     game_scene* dialog_scene = nullptr;
     game_scene* location_scene = nullptr;
-    game_scene* battle_scene = nullptr;
+    battle_scene* battle_scene = nullptr;
     game_scene* current_scene = nullptr;
 
     Ui::MainWindow *ui;

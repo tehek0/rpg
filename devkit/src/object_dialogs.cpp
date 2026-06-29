@@ -28,7 +28,7 @@ void dev::object_dialog_window::delete_subfields() {
         subf.deleteLater();
     }
     info_subfields_.clear();
-    this->ypos = this->last_y_pos;
+    ypos = last_y_pos;
 }
 
 void dev::object_dialog_window::add_subfields(short object_sybtype) {
@@ -49,10 +49,10 @@ void dev::object_dialog_window::add_subfields(short object_sybtype) {
         info_subfields_.emplace_back(whole_field);
 
         if (is_type_struct(current_type)) {
-            this->ypos += whole_field.calculate_table_hight();
+            ypos += whole_field.calculate_table_hight();
         }
         else {
-            this->ypos += any_line_hight + gap;
+            ypos += any_line_hight + gap;
         }
         resize_dependent_on_fields();
     }
@@ -77,8 +77,36 @@ void dev::object_dialog_window::add_delete_button() {
     connect(delete_, SIGNAL(clicked()), this, SLOT(on_delete_clicked()));
 }
 
+dev::object_dialog_window::object_dialog_window() {
+    reset_ = nullptr;
+    save_ = nullptr;
+    delete_ = nullptr;
+}
+
+QStringList help_lines = {"1. [Только что созданного компонента нет в таблице]\n"
+                          "Если у вас открыто окно создания объекта с таблицами среди полей, и вы только что создали компонент для этой таблице в другом окне, "
+                          "компонент сразу не появится в таблице выбора. Переключитете подтип и верните обратно, если интересуюая вас таблица появилась при его выборе, "
+                          "или закройте/откройте заново окно создания для обновление содержания таблицы.",
+                          "2. bop",
+                          "3. beebop"};
+dev::help_window::help_window() {
+    this->setAttribute(Qt::WA_DeleteOnClose);
+    this->setWindowTitle("Help");
+    for (QString line : help_lines) {
+        qInfo() << 'c';
+        QLabel* one = new QLabel(line, this);
+        one->setWordWrap(true);
+        one->setGeometry(gap, ypos, field_w, any_line_hight);
+        one->adjustSize();
+        one->show();
+        labels_.emplace_back(one);
+        ypos += one->height() + gap;
+    }
+    this->show();
+}
 dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWidget(), object_type_(object_type) {
     this->setAttribute(Qt::WA_DeleteOnClose);
+    this->setWindowTitle(QString::fromStdString(datatypes_to_string[object_type]));
 
     if (object_type == dev::erased) {
         add_delete_button();
@@ -90,7 +118,7 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWi
     reset_->setText("Reset");
     reset_->setGeometry(gap*2 + label_w/2, gap, button_side, button_side);
     connect(reset_, SIGNAL(clicked()), this, SLOT(on_reset_clicked()));
-    this->ypos = any_line_hight*2 + gap;
+    ypos = button_side + gap*2;
 
     short amount_of_fields;
     try {
@@ -115,14 +143,14 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWi
         }
 
     }
-    this->last_y_pos = this->ypos;
+    last_y_pos = ypos;
 
     resize_dependent_on_fields();
     this->show();
 }
 
 dev::object_dialog_window::~object_dialog_window() {
-    this->ypos = 10;
+    ypos = 10;
     delete reset_;
     if (object_type_ == dev::datatype::erased) {
         delete delete_;
@@ -144,7 +172,7 @@ void dev::object_dialog_window::on_save_clicked() {
     }
 
     create_object(object_type_, object);
-    qInfo() << "save";
+    ui::inform->setText("Сохранено.");
 }
 void dev::object_dialog_window::on_reset_clicked() {
     for (int i = 0; i < info_fields_.size(); ++i) {
@@ -157,7 +185,7 @@ void dev::object_dialog_window::on_reset_clicked() {
 
 void dev::object_dialog_window::on_delete_clicked() {
     for (info_field& field : info_fields_) {
-        QTreeWidget* table = dynamic_cast<QTreeWidget*>(field.get_field());
+        QTreeWidget* table = reinterpret_cast<QTreeWidget*>(field.get_field());
         for (int i = 0; i < table->topLevelItemCount(); ++i) {
             if (table->topLevelItem(i)->background(1) == check_color) {
                 dev::delete_object(field.get_field_type(), dev::read_ids(dev::get_path_to_datatype_folder(field.get_field_type())));
@@ -169,7 +197,7 @@ void dev::object_dialog_window::on_delete_clicked() {
 }
 
 void dev::object_dialog_window::type_chosen() {
-    short object_sybtype = dynamic_cast<QComboBox*>(this->info_fields_[0].get_field())->currentIndex();
+    short object_sybtype = reinterpret_cast<QComboBox*>(this->info_fields_[0].get_field())->currentIndex();
     change_subfields(object_sybtype);
 }
 

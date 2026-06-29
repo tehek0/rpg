@@ -69,6 +69,7 @@ void animated_displayable::next_frame() {
         }
         return;
     }
+    if (_disp->isHidden() || _anim_sequence.paused) {
     ++_anim_sequence.ticks_passed;
     if (_anim_sequence.ticks_passed > _anim_sequence.anims[_anim_sequence.current_anim_id].ticks_to_move) {
         _anim_sequence.ticks_passed = 0;
@@ -84,8 +85,8 @@ void animated_displayable::next_frame() {
         }
         _disp->setStyleSheet(QString("border-image: url(:/pictures/animated/%1/%2/frame%3.png);").arg(_sprite_family).arg(_anim_sequence.anims[_anim_sequence.current_anim_id].name).arg(_anim_sequence.current_frame));
     }
+    }
 }
-
 void animated_displayable::next_step() {
     if (_disp->linked_tooltip != nullptr) {
         _disp->linked_tooltip->deleteLater();
@@ -253,5 +254,12 @@ void tracked_button::leaveEvent(QEvent *event) {
     if (linked_tooltip != nullptr) {
         linked_tooltip->deleteLater();
         linked_tooltip = nullptr;
+    }
+}
+
+void enemy_object::enemy_clicked() {
+    if (global::w.current_scene->_task == mouse_task::target_selection) {
+        _linked_enemy->attacked();
+        _healthbar->setValue(_linked_enemy->get_health());
     }
 }

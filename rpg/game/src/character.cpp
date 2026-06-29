@@ -10,6 +10,7 @@ QString entity::get_name() {
 QString entity::get_asset() {
     return _asset;
 }
+
 void entity::set_inventory(inventory* inventory_) {
     if (_inventory != nullptr)
         delete _inventory;
@@ -186,8 +187,23 @@ bool skill_check_choice::check() {
 
     return false;
 }
+void living_entity::set_health(int health) {
+    if (health > _max_health) {
+        _health = _max_health;
+    }
+    else if (health < 0 && abs(health) >_health) {
+        _health = 0;
+    }
+    else {
+      _health = health;
+    }
 
-
+}
+void living_entity::attacked() {
+    //Сложную логику рассчёта урона сюда
+    int damage = 10;
+    this->set_health(_health - damage);
+};
 //TODO: реализация ранов
 
 // Здесь будем пихать в диалоговое окно фразу и может быть спрайт

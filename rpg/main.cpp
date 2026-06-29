@@ -10,14 +10,19 @@
 #include <QSizePolicy>
 #include <QFile>
 #include <QAudioOutput>
+
 int main(int argc, char** argv)
 {
+
+
     global::root_path = std::filesystem::path(argv[0]).parent_path();
     saves_init();
     global::player_ = new player;
     entity_stats stat;
     stat.survival = 260;
     stat.agility = 3;
+    global::player_->set_size_class(entity_size_class::human);
+    global::player_->set_max_energy(10);
     global::player_->set_entity_stats(stat);
 
     std::srand(std::time(0));

@@ -2,9 +2,9 @@
 #include "../create_object.hpp"
 
 dev::object_data templates[dev::datatype::total + 1] = {
-    {   {"item", "requirement", "armor_bonus", "on_use"},
+    {   {"item", "item_requirement", "armor_bonus", "on_use"},
         {},
-        {dev::datatype::item, dev::datatype::requirement, dev::datatype::armor_bonus, dev::datatype::on_use}
+        {dev::datatype::item, dev::datatype::item_requirement, dev::datatype::armor_bonus, dev::datatype::on_use}
     },
     {}, {}, {}, {}, {}, {}, {}, {}, {},//bool- linear типы
     { //location
@@ -32,15 +32,15 @@ dev::object_data templates[dev::datatype::total + 1] = {
         {},
         {dev::datatype::qstring, dev::datatype::qstring, dev::datatype::TODO},
     },
-    { //requirement
+    { //item_requirement
+        {"min_level", "requirements"},
+        {},
+        {dev::datatype::u_short, dev::datatype::requirement},
+     },
+    {//requirement
         {"subtype"},
         {},
         {dev::datatype::requirement_subtypes},
-     },
-    {//inventory
-        {},
-        {},
-        {},
      },
     {//armor_bonus
         {"bonus", "value"},
@@ -93,33 +93,28 @@ const std::vector<dev::object_data> subtypes_template[dev::datatype::total + 1] 
     {
      {{},{},{},},
 },
-    {// requirement
-    {},//none = pretty much nothing here actually
-    { //char requirement
-     {"required", "type"},
-     {},
-     {dev::datatype::u_integer, dev::datatype::char_type},
-    },
-    {//skill requirement
-     {"required", "type"},
-     {},
-     {dev::datatype::u_integer, dev::datatype::skill_type},
-     },
     {//item requirement
-     {"min_level", "requirements"},
-     {},
-     {dev::datatype::u_short, dev::datatype::requirement}
-     },
 },
-    {},
+    {//requirement
+    { //char requirement
+      {"required", "type"},
+      {},
+      {dev::datatype::u_integer, dev::datatype::char_type},
+      },
+    {//skill requirement
+      {"required", "type"},
+      {},
+      {dev::datatype::u_integer, dev::datatype::skill_type},
+    },
+},
     {},
     {},
     {// item's
      {},//none
      { //weapon
-      {"base_dmg", "damage_type", "ammo_type", "energy_cost", "requirement"},
+      {"base_dmg", "damage_type", "ammo_type", "energy_cost", "item_requirement"},
       {},
-      {dev::datatype::u_integer, dev::datatype::damage_type, dev::datatype::ammo_type, dev::datatype::u_integer, dev::datatype::requirement},
+      {dev::datatype::u_integer, dev::datatype::damage_type, dev::datatype::ammo_type, dev::datatype::u_integer, dev::datatype::item_requirement},
       },
      { //ammo
       {"base_dmg", "ammo_type"},

@@ -76,7 +76,7 @@ void dev::remove_id(datatype type, unsigned long long id) {
     std::string last = q_last.toStdString();
 
     if (id_info[last].get<unsigned long long>() < id) {
-        qInfo() << QString("[WARN][dev::remove_id] id %1 does not exist").arg(id);
+        ui::inform->setText(QString("[WARN][dev::remove_id] Предмет с id %1 не существует. Возможно был использован [set_ids_default_state()], который стёр его упоминание.").arg(id));
         return;
     }
 

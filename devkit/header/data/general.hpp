@@ -1,6 +1,6 @@
 #pragma once
 #include <QString>
-
+#include <QLabel>
 namespace dev {
 //Величина отступов в json
 const inline short js_indent = 2;
@@ -17,6 +17,10 @@ constexpr short any_line_hight = 25;
 constexpr short gap = 5;
 constexpr short button_side = any_line_hight*2;
 constexpr short show_table_k = 10;
+
+namespace  ui {
+    inline QLabel* inform;
+}
 
 }
 
