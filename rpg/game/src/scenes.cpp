@@ -8,8 +8,6 @@ game_scene::game_scene(QGraphicsScene* s, QWidget* p): QGraphicsView(s, p) {
 }
 void game_scene::add(QWidget* w) {
     w->setParent(this);
-    QGraphicsProxyWidget* p_widget = this->scene()->addWidget(w);
-    p_widget->setZValue(0);
     w->show();
 }
 void game_scene::add(displayable* display) {
@@ -25,6 +23,9 @@ void game_scene::drawBackground(QPainter *painter, const QRectF &rect) {
     if (!background.isNull()) {
         painter->drawPixmap(sceneRect(), background, background.rect());
     }
+}
+void game_scene::wheelEvent(QWheelEvent *event) {
+    event->ignore();
 }
 game_scene::~game_scene() {
     this->scene()->deleteLater();

@@ -170,20 +170,23 @@ public:
 
 struct entity_stats {
 
-    short strength;
-    short agility;
-    short endurance;
-    short intelligence;
-    short luck;
+    short strength = 0;
+    short agility = 0;
+    short endurance = 0;
+    short intelligence = 0;
+    short luck = 0;
 
-    short guns;
-    short big_guns;
-    short unarmed;
-    short science;
-    short speech;
-    short barter;
-    short survival;
+    short guns = 0;
+    short big_guns = 0;
+    short unarmed = 0;
+    short science = 0;
+    short speech = 0;
+    short barter = 0;
+    short survival = 0;
 
+    entity_stats operator+(entity_stats other);
+    short get_stat(char_type type_);
+    short get_stat(skill_type type_);
 };
 
 enum entity_size_class {
@@ -199,9 +202,9 @@ enum entity_size_class {
 
 struct entity_level {
 
-    unsigned int level;
-    unsigned int experiecne;
-    unsigned int scaling;
+    unsigned int level = 1;
+    unsigned int experiecne = 0;
+    unsigned int scaling = 100;
 
 };
 
@@ -235,17 +238,15 @@ class living_entity: public entity {
 protected:
     entity_stats _entity_stats;
     entity_level _entity_level;
-    int _max_health;
-    int _health;
-    int _base_armor;
+    int _max_health = 0;
+    int _health = 0;
+    int _base_armor = 0;
     int _total_armor;
-    int _money;
+    int _money = 0;
 public:
     virtual ~living_entity() = default;
     living_entity() : entity() {;}
     entity_stats get_entity_stats();
-    short get_entity_stat(char_type type_);
-    short get_entity_stat(skill_type type_);
     entity_level get_entity_level();
     int get_max_health(){return _max_health;}
     int get_health() {return _health;}
@@ -270,9 +271,10 @@ public:
 
 class player: public living_entity {
 protected:
-    float _max_weight;
+    entity_stats _bonus_stats;
+    float _max_weight = 0.f;
     float _weight;
-    int _max_energy;
+    int _max_energy = 0;
     trait _trait;
 public:
     player() = default;
@@ -282,6 +284,8 @@ public:
     float get_weight();
     int get_max_energy() {return _max_energy;}
     trait get_trait();
+    entity_stats get_bonus_stats();
+    entity_stats get_total_stats();
     void set_max_weight(float max_weight);
     void set_weight(float weight);
     void set_max_energy(int max_energy) {_max_energy = max_energy;}

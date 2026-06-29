@@ -58,8 +58,15 @@ void animated_displayable::move_to(QPoint &coord) {
 }
 
 void animated_displayable::next_frame() {
-    if (_anim_sequence.anims.size() == 0) {
+    if (this->_anim_sequence.anims.size() == 0) {
         disconnect(global::timer, &QTimer::timeout, this, &animated_displayable::next_frame);
+        return;
+    }
+    if (_disp->isHidden() || _anim_sequence.paused) {
+        if (_anim_sequence.anims[_anim_sequence.current_anim_id].restart_after_pause == true && _anim_sequence.current_frame != 0) {
+            _anim_sequence.current_frame = 0;
+            _anim_sequence.ticks_passed = 0;
+        }
         return;
     }
     if (_disp->isHidden() || _anim_sequence.paused) {

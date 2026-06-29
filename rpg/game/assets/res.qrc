@@ -76,5 +76,8 @@
         <file>pictures/null.png</file>
         <file>pictures/map_player_marker.png</file>
         <file>pictures/map_player_destination.png</file>
+        <file>pictures/char_decrease.png</file>
+        <file>pictures/char_increase.png</file>
+        <file>pictures/testbkg_character_creation.jpg</file>
     </qresource>
 </RCC>

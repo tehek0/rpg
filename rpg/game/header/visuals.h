@@ -13,11 +13,15 @@
 #include <QRegularExpression>
 #include <QSoundEffect>
 #include <QGraphicsLineItem>
+#include <QLineEdit>
+#include <QCheckBox>
+#include "save.h"
 #include "global.h"
 #include "character.h"
 #include "data/tooltip_types.h"
 #include "data/inventory_contexts.h"
 #include "data/biomes.h"
+#include "enum_translation.h"
 
 #include <qprogressbar.h>
 
@@ -950,7 +954,14 @@ public slots:
 
         QPoint vec = end - start;
         unsigned int length = std::sqrtl(QPoint::dotProduct(vec, vec));
-        unsigned int steps = 50 * length * (15 - global::player_->get_entity_stats().agility) / (global::player_->get_entity_stats().survival);
+        short survival_skill = global::player_->get_total_stats().survival;
+        short agility_char = 15 - global::player_->get_total_stats().agility;
+        if (survival_skill <= 9)
+            survival_skill = 10;
+        if (agility_char <= 0) {
+            agility_char = 1;
+        }
+        unsigned int steps = 25 * length * agility_char / survival_skill;
         player_object->begin_step(end, steps, transpos_algs::linear);
     }
     void clicked_locked_tile(map_grid_tile* tile) {
@@ -985,5 +996,412 @@ public:
         player_object->player_marker->setParent(this->parentWidget());
         player_object->destination_marker->setParent(this->parentWidget());
         connect(player_object, &map_player_object::check_tiles, this, &map_widget::allow_tiles);
+    }
+};
+
+class char_selector: public QWidget {
+
+    Q_OBJECT
+
+public slots:
+    void increase_pressed() {
+        emit increase(value);
+        update_display();
+    }
+    void decrease_pressed() {
+        emit decrease(value);
+        update_display();
+    }
+signals:
+    void increase(short& stat);
+    void decrease(short& stat);
+public:
+    char_type type;
+    short value = 1;
+    QLabel* display = nullptr;
+    tracked_button* increase_button = nullptr;
+    tracked_button* decrease_button = nullptr;
+    void update_display() {
+        display->setText(char_type_to_str(type) + ": " + QString::number(value) + (value >= 10 ? " (max)" : ""));
+    }
+    char_selector(char_type type_, QWidget* parent = nullptr): QWidget(parent) {
+        type = type_;
+        this->setGeometry(QRect(0, 0, 250, 50));
+        display = new QLabel(this);
+        display->setGeometry(QRect(30, 0, 200, 50));
+        display->setStyleSheet(QString("font: 16pt \"Arial\";"));
+        update_display();
+        increase_button = new tracked_button(this);
+        increase_button->setGeometry(0, 0, 25, 25);
+        increase_button->setStyleSheet(QString("border-image: url(:/pictures/char_increase.png);"));
+        connect(increase_button, &tracked_button::clicked, this, &char_selector::increase_pressed);
+        decrease_button = new tracked_button(this);
+        decrease_button->setGeometry(0, 25, 25, 25);
+        decrease_button->setStyleSheet(QString("border-image: url(:/pictures/char_decrease.png);"));
+        connect(decrease_button, &tracked_button::clicked, this, &char_selector::decrease_pressed);
+
+    }
+};
+
+class skill_selector: public QWidget {
+
+    Q_OBJECT
+public slots:
+    void click(bool checked) {
+        if (checked == true) {
+            short old_value = value;
+            emit select(value);
+            if (old_value == value) {
+                select_button->setChecked(false);
+            }
+        } else {
+            emit deselect(value);
+        }
+        update_display();
+    }
+signals:
+    void select(short& value);
+    void deselect(short& value);
+public:
+    skill_type type;
+    short value = 10;
+    QLabel* display = nullptr;
+    QCheckBox* select_button = nullptr;
+    void update_display() {
+        display->setText(QString::number(value));
+    }
+    skill_selector(skill_type type_, QWidget* parent = nullptr): QWidget(parent) {
+        type = type_;
+        this->setGeometry(0, 0, 200, 30);
+        display = new QLabel(this);
+        display->setGeometry(150, 0, 50, 30);
+        display->setAlignment(Qt::AlignRight);
+        update_display();
+        select_button = new QCheckBox(this);
+        select_button->setText(skill_type_to_str(type));
+        connect(select_button, &QCheckBox::clicked, this, &skill_selector::click);
+    }
+};
+
+class character_creation_widget: public QWidget {
+
+    Q_OBJECT
+
+signals:
+    void player_created();
+public slots:
+    void increase_stat(short& stat) {
+        if (char_points == 0 || stat >= 10) {
+            return;
+        }
+        --char_points;
+        ++stat;
+        update_char_hint();
+    }
+    void special_increase_strength(short& stat) {
+        if (char_points == 0 || stat >= 10) {
+            return;
+        }
+        --char_points;
+        ++stat;
+        update_char_hint();
+        modify_skill(big_guns, 3);
+        modify_skill(unarmed, 3);
+    }
+    void special_increase_intelligence(short& stat) {
+        if (char_points == 0 || stat >= 10) {
+            return;
+        }
+        --char_points;
+        ++stat;
+        update_char_hint();
+        modify_skill(speech, 3);
+        modify_skill(science, 3);
+    }
+    void decrease_stat(short& stat) {
+        if (stat <= 1) {
+            return;
+        }
+        ++char_points;
+        --stat;
+        update_char_hint();
+    }
+    void special_decrease_strength(short& stat) {
+        if (stat <= 1) {
+            return;
+        }
+        ++char_points;
+        --stat;
+        update_char_hint();
+        modify_skill(big_guns, -3);
+        modify_skill(unarmed, -3);
+    }
+    void special_decrease_intelligence(short& stat) {
+        if (stat <= 1) {
+            return;
+        }
+        ++char_points;
+        --stat;
+        update_char_hint();
+        modify_skill(speech, -3);
+        modify_skill(science, -3);
+    }
+    void set_primary_skill(short& skill) {
+        if (skill_points == 0) {
+            return;
+        }
+        --skill_points;
+        skill += 10;
+        update_skill_hint();
+    }
+    void unset_primary_skill(short& skill) {
+        ++skill_points;
+        skill -= 10;
+        update_skill_hint();
+    }
+
+    void done_clicked() {
+        bool fail = false;
+        if (char_points != 0) {
+            fail = true;
+        }
+
+        if (skill_points != 0) {
+            fail = true;
+        }
+
+        if (fail) {
+            return;
+        }
+        entity_stats stats;
+
+        stats.strength = strength->value;
+        stats.agility = agility->value;
+        stats.endurance = endurance->value;
+        stats.intelligence = intelligence->value;
+        stats.luck = luck->value;
+
+        stats.guns = guns->value;
+        stats.big_guns = big_guns->value;
+        stats.unarmed = unarmed->value;
+        stats.science = science->value;
+        stats.speech = speech->value;
+        stats.barter = barter->value;
+        stats.survival = survival->value;
+
+        QString player_name = name->text();
+        if (player_name.isEmpty() == true) {
+            player_name = "Безымянный";
+        }
+
+        global::player_ = new player();
+        global::player_->set_entity_stats(stats);
+        global::player_->set_name(player_name);
+        global::player_->set_inventory(new inventory());
+        auto x = new item_requirements();
+        x->item_requirements_ptrs.emplace_back(new char_requirement(3, char_type::intelligence));
+        armor_bonus p;
+        p.bonus = equipment_bonus::change_char_intelligence;
+        p.value = 500;
+        global::player_->get_inventory()->add_item(new armor("Шлем крутой","Очень крутой шлем", "l", 1, 1, 2.f, 50, true, x, armor_slot::head, 5, p));
+        save_player(global::player_, 1);
+
+        emit player_created();
+    }
+
+    void reset_clicked() {
+        name->setText(QString(""));
+
+        strength->value = 1;
+        agility->value = 1;
+        endurance->value = 1;
+        intelligence->value = 1;
+        luck->value = 1;
+
+        strength->update_display();
+        agility->update_display();
+        endurance->update_display();
+        intelligence->update_display();
+        luck->update_display();
+
+        char_points = 20;
+        update_char_hint();
+
+        guns->value = 10;
+        big_guns->value = 10;
+        unarmed->value = 10;
+        science->value = 10;
+        speech->value = 10;
+        barter->value = 10;
+        survival->value = 10;
+
+        guns->select_button->setChecked(false);
+        big_guns->select_button->setChecked(false);
+        unarmed->select_button->setChecked(false);
+        science->select_button->setChecked(false);
+        speech->select_button->setChecked(false);
+        barter->select_button->setChecked(false);
+        survival->select_button->setChecked(false);
+
+        guns->update_display();
+        big_guns->update_display();
+        unarmed->update_display();
+        science->update_display();
+        speech->update_display();
+        barter->update_display();
+        survival->update_display();
+
+        skill_points = 3;
+        update_skill_hint();
+    }
+
+    void cancel_clicked() {
+        qInfo() << load_player(global::player_, 1);
+        qInfo() << global::player_->get_name();
+    }
+public:
+    void paintEvent(QPaintEvent *event) {
+        QPainter paint(this);
+        if (background.isNull())
+            return;
+
+        paint.drawPixmap(this->rect(), background);
+    }
+    QPixmap background;
+
+    int char_points = 20;
+    int skill_points = 3;
+
+    QLabel* name_hint = nullptr;
+    QLabel* char_hint = nullptr;
+    QLabel* skill_hint = nullptr;
+
+    QLineEdit* name = nullptr;
+
+    char_selector* strength = nullptr;
+    char_selector* agility = nullptr;
+    char_selector* endurance = nullptr;
+    char_selector* intelligence = nullptr;
+    char_selector* luck = nullptr;
+
+    skill_selector* guns = nullptr;
+    skill_selector* big_guns = nullptr;
+    skill_selector* unarmed = nullptr;
+    skill_selector* science = nullptr;
+    skill_selector* speech = nullptr;
+    skill_selector* barter = nullptr;
+    skill_selector* survival = nullptr;
+
+    tracked_button* done_button = nullptr;
+    tracked_button* cancel_button = nullptr;
+    tracked_button* reset_button = nullptr;
+
+    void update_char_hint() {
+        if (char_points == 0) {
+            char_hint->setText(QString("Очки распределены."));
+            return;
+        }
+        char_hint->setText(QString("Осталось очков: %1").arg(char_points));
+    }
+    void update_skill_hint() {
+        if (skill_points == 0) {
+            skill_hint->setText(QString("Главные навыки выбраны."));
+            return;
+        }
+        skill_hint->setText(QString("Выбрано главных навыков: %1 из 3").arg(3 - skill_points));
+    }
+    void connect_char(char_selector* c) {
+        this->connect(c, &char_selector::increase, this, &character_creation_widget::increase_stat);
+        this->connect(c, &char_selector::decrease, this, &character_creation_widget::decrease_stat);
+    }
+    void connect_special_strength(char_selector* c) {
+        this->connect(c, &char_selector::increase, this, &character_creation_widget::special_increase_strength);
+        this->connect(c, &char_selector::decrease, this, &character_creation_widget::special_decrease_strength);
+    }
+    void connect_special_intelligence(char_selector* c) {
+        this->connect(c, &char_selector::increase, this, &character_creation_widget::special_increase_intelligence);
+        this->connect(c, &char_selector::decrease, this, &character_creation_widget::special_decrease_intelligence);
+    }
+    void connect_skill(skill_selector* s) {
+        this->connect(s, &skill_selector::select, this, &character_creation_widget::set_primary_skill);
+        this->connect(s, &skill_selector::deselect, this, &character_creation_widget::unset_primary_skill);
+    }
+    void modify_skill(skill_selector* s, short amount) {
+        s->value += amount;
+        s->update_display();
+    }
+    character_creation_widget(QWidget* parent = nullptr): QWidget(parent) {
+        this->setGeometry(0, 0, 620, 620);
+        background.load(":/pictures/testbkg_character_creation.jpg");
+
+        name_hint = new QLabel("Имя:", this);
+        name_hint->setGeometry(210, 530, 200, 15);
+
+        name = new QLineEdit(this);
+        name->setGeometry(210, 545, 200, 20);
+
+
+        char_hint = new QLabel(this);
+        char_hint->setGeometry(5, 5, 200, 15);
+        update_char_hint();
+
+        strength = new char_selector(char_type::strength, this);
+        strength->move(5, 45);
+        agility = new char_selector(char_type::agility, this);
+        agility->move(5, 100);
+        endurance = new char_selector(char_type::endurance, this);
+        endurance->move(5, 155);
+        intelligence = new char_selector(char_type::intelligence, this);
+        intelligence->move(5, 210);
+        luck = new char_selector(char_type::luck, this);
+        luck->move(5, 265);
+        this->connect_special_strength(strength);
+        this->connect_char(agility);
+        this->connect_char(endurance);
+        this->connect_special_intelligence(intelligence);
+        this->connect_char(luck);
+
+
+        skill_hint = new QLabel(this);
+        skill_hint->setGeometry(415, 5, 200, 15);
+        update_skill_hint();
+
+        guns = new skill_selector(skill_type::guns, this);
+        guns->move(415, 45);
+        big_guns = new skill_selector(skill_type::big_guns, this);
+        big_guns->move(415, 80);
+        unarmed = new skill_selector(skill_type::unarmed, this);
+        unarmed->move(415, 115);
+        science = new skill_selector(skill_type::science, this);
+        science->move(415, 150);
+        speech = new skill_selector(skill_type::speech, this);
+        speech->move(415, 185);
+        barter = new skill_selector(skill_type::barter, this);
+        barter->move(415, 220);
+        survival = new skill_selector(skill_type::survival, this);
+        survival->move(415, 255);
+        this->connect_skill(guns);
+        this->connect_skill(big_guns);
+        this->connect_skill(unarmed);
+        this->connect_skill(science);
+        this->connect_skill(speech);
+        this->connect_skill(barter);
+        this->connect_skill(survival);
+
+
+        done_button = new tracked_button(this);
+        done_button->setGeometry(5, 595, 200, 20);
+        done_button->setText("Готово");
+        this->connect(done_button, &tracked_button::clicked, this, &character_creation_widget::done_clicked);
+
+        reset_button = new tracked_button(this);
+        reset_button->setGeometry(210, 595, 200, 20);
+        reset_button->setText("Сброс");
+        this->connect(reset_button, &tracked_button::clicked, this, &character_creation_widget::reset_clicked);
+
+        cancel_button = new tracked_button(this);
+        cancel_button->setGeometry(415, 595, 200, 20);
+        cancel_button->setText("Назад");
+        this->connect(cancel_button, &tracked_button::clicked, this, &character_creation_widget::cancel_clicked);
     }
 };

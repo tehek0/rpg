@@ -40,7 +40,9 @@ struct full_armor {
 enum class inv_update_context {
     removed_item,
     added_item,
-    refresh_stack
+    refresh_stack,
+    equipped,
+    deequipped
 };
 
 class inventory : public QObject {
@@ -60,6 +62,7 @@ public:
     void add_item(item* item_);
     item* get_item(unsigned int slot);
     size_t get_items_size();
+    bool has_item(item* item_);
     unsigned int get_slot(item* item_);
     void remove_item(unsigned int slot);
     void remove_item(unsigned int slot, unsigned int amount);
@@ -71,6 +74,7 @@ public:
     void equip_armor_body(item* not_suitable);
     void equip_armor_legs(armor* armor_);
     void equip_armor_legs(item* not_suitable);
+    bool is_equipped(item* item_);
     armor* get_armor_head();
     armor* get_armor_body();
     armor* get_armor_legs();

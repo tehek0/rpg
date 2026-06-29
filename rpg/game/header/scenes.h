@@ -10,6 +10,7 @@ enum mouse_task {
 class game_scene: public QGraphicsView {
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect);
+    void wheelEvent(QWheelEvent *event);
 public:
     mouse_task _task;
     QPixmap background;

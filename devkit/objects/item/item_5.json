@@ -1,0 +1,13 @@
+{
+  "subtype": 4,
+  "name": "консюмэбл",
+  "desc": "",
+  "asset": "",
+  "max_stack_size": 4294967295,
+  "base_weight": 4294967295,
+  "base_cost": 4294967295,
+  "sellablle": false,
+  "on_use": -1,
+  "uses_left": 0,
+  "use_energy_cost": 2147483647
+}
