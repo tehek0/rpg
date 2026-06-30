@@ -400,7 +400,7 @@ void add_ammo_keys(json &j, ammo *ammo_) {
 void add_armor_keys(json &j, armor *armor_) {
     j["subtype"] = static_cast<int>(item_types::armor);
     json bonus = json::object();
-    bonus["equipment_bonus"] = static_cast<int>(armor_->get_armor_bonus().bonus);
+    bonus["bonus"] = static_cast<int>(armor_->get_armor_bonus().bonus);
     bonus["value"] = armor_->get_armor_bonus().value;
     j["armor_slot"] = static_cast<int>(armor_->get_armor_slot());
     j["armor_points"] = armor_->get_armor_points();
@@ -410,7 +410,7 @@ void add_armor_keys(json &j, armor *armor_) {
 void add_consumable_keys(json &j, consumable *consumable_) {
     j["subtype"] = static_cast<int>(item_types::consumable);
     json use = json::object();
-    use["effect"] = static_cast<int>(consumable_->get_on_use().effect);
+    use["use_effects"] = static_cast<int>(consumable_->get_on_use().effect);
     use["value"] = consumable_->get_on_use().value;
     j["energy_cost"] = consumable_->get_energy_cost();
     j["on_use"] = use;
@@ -435,7 +435,10 @@ item* item_from_json(json j) {
     double _base_weight;
     unsigned int _base_cost;
     bool _sellable;
-    if (!j.contains("name") || !j.contains("desc") || !j.contains("asset") || !j.contains("stack") || !j.contains("max_stack_size") || !j.contains("base_weight") || !j.contains("base_cost") || !j.contains("sellable"))
+    if (!j.contains("stack")) {
+        j["stack"] = 1;
+    }
+    if (!j.contains("name") || !j.contains("desc") || !j.contains("asset") || !j.contains("max_stack_size") || !j.contains("base_weight") || !j.contains("base_cost") || !j.contains("sellable"))
         return nullptr;
 
     if (!j["name"].is_string() || !j["desc"].is_string() || !j["asset"].is_string() || !j["stack"].is_number_unsigned() || !j["max_stack_size"].is_number_unsigned() || !j["base_weight"].is_number_float() || !j["base_cost"].is_number_unsigned() || !j["sellable"].is_boolean())
@@ -685,17 +688,17 @@ base_requirement* single_requirement_from_id(unsigned long long id) {
 }
 
 armor_bonus armor_bonus_from_json(json j) {
-    if (!j.contains("equipment_bonus") || !j.contains("value")) {
+    if (!j.contains("bonus") || !j.contains("value")) {
         critical_error("Не удалось загрузить объект типа armor_bonus.");
         return armor_bonus();
     }
-    if (!j["equipment_bonus"].is_number_integer() || !j["value"].is_number_integer()) {
+    if (!j["bonus"].is_number_integer() || !j["value"].is_number_integer()) {
         critical_error("Не удалось загрузить объект типа armor_bonus.");
         return armor_bonus();
     }
     int _equipment_bonus;
     int _value;
-    j["equipment_bonus"].get_to(_equipment_bonus);
+    j["bonus"].get_to(_equipment_bonus);
     j["value"].get_to(_value);
     armor_bonus bonus_;
     bonus_.bonus = equipment_bonus{_equipment_bonus};
@@ -706,6 +709,7 @@ armor_bonus armor_bonus_from_json(json j) {
 armor_bonus armor_bonus_from_id(unsigned long long id) {
     auto path = global::root_path;
     path /= "objects";
+    path /= "components";
     path /= "armor_bonus";
     path /= QString("armor_bonus_%1.json").arg(id).toStdString();
     std::ifstream file(path.string());
@@ -724,17 +728,17 @@ armor_bonus armor_bonus_from_id(unsigned long long id) {
 }
 
 on_use on_use_from_json(json j) {
-    if (!j.contains("effect") || !j.contains("value")) {
+    if (!j.contains("use_effects") || !j.contains("value")) {
         critical_error("Не удалось загрузить объект типа on_use.");
         return on_use();
     }
-    if (!j["effect"].is_number_integer() || !j["value"].is_number_integer()) {
+    if (!j["use_effects"].is_number_integer() || !j["value"].is_number_integer()) {
         critical_error("Не удалось загрузить объект типа on_use.");
         return on_use();
     }
     int _effect;
     int _value;
-    j["effect"].get_to(_effect);
+    j["use_effects"].get_to(_effect);
     j["value"].get_to(_value);
     on_use on_use_;
     on_use_.effect = use_effect{_effect};
@@ -745,6 +749,7 @@ on_use on_use_from_json(json j) {
 on_use on_use_from_id(unsigned long long id) {
     auto path = global::root_path;
     path /= "objects";
+    path /= "components";
     path /= "on_use";
     path /= QString("on_use_%1.json").arg(id).toStdString();
     std::ifstream file(path.string());
