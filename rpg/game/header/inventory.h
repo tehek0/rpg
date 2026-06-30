@@ -55,6 +55,8 @@ protected:
     std::vector<item*> _items;
     full_armor _armor;
     weapon* _weapon = nullptr;
+    ammo* _equipped_ammo = nullptr;
+    consumable* _equipped_consumable = nullptr;
 public:
     ~inventory();
     inventory() = default;
@@ -68,6 +70,10 @@ public:
     void remove_item(unsigned int slot, unsigned int amount);
     void equip_weapon(weapon* weapon_);
     void equip_weapon(item* not_suitable);
+    void equip_ammo(ammo* ammo_);
+    void equip_ammo(item* not_suitable);
+    void equip_consumable(consumable* consumable_);
+    void equip_consumable(item* not_suitable);
     void equip_armor_head(armor* armor_);
     void equip_armor_head(item* not_suitable);
     void equip_armor_body(armor* armor_);
@@ -75,8 +81,15 @@ public:
     void equip_armor_legs(armor* armor_);
     void equip_armor_legs(item* not_suitable);
     bool is_equipped(item* item_);
+    void deequip(item* item_);
+    void deequip_armor(armor* armor_);
+    void equip(item* item_);
+    void equip_armor(armor* armor_);
     armor* get_armor_head();
     armor* get_armor_body();
     armor* get_armor_legs();
+    weapon* get_weapon();
+    ammo* get_equipped_ammo();
+    consumable* get_equipped_consumable();
     short get_total_armor();
 };

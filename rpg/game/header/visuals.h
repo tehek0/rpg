@@ -1204,6 +1204,7 @@ public slots:
         p.bonus = equipment_bonus::change_char_intelligence;
         p.value = 500;
         global::player_->get_inventory()->add_item(new armor("Шлем крутой","Очень крутой шлем", "l", 1, 1, 2.f, 50, true, x, armor_slot::head, 5, p));
+        global::player_->get_inventory()->equip(global::player_->get_inventory()->get_item(0));
         save_player(global::player_, 1);
 
         emit player_created();

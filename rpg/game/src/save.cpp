@@ -229,6 +229,7 @@ bool load_player(player* player_, int slot) {
     j["max_weight"].get_to(_max_weight);
     j["max_energy"].get_to(_max_energy);
     _inventory = new inventory();
+    player_->set_inventory(_inventory);
     for (auto elem : j["inventory"]) {
         item* itm;
         if (elem.is_object()) {
@@ -246,6 +247,9 @@ bool load_player(player* player_, int slot) {
             return false;
         }
         _inventory->add_item(itm);
+        if (elem.contains("is_equipped")) {
+            _inventory->equip(itm);
+        }
     }
     if (player_ == nullptr)
         player_ = new player();
@@ -260,7 +264,7 @@ bool load_player(player* player_, int slot) {
     player_->set_money(_money);
     player_->set_max_weight(_max_weight);
     player_->set_max_energy(_max_energy);
-    player_->set_inventory(_inventory);
+
     return true;
 }
 
