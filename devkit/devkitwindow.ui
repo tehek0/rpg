@@ -17,8 +17,8 @@
    <widget class="QPushButton" name="createItem_pb">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>80</y>
+      <x>10</x>
+      <y>160</y>
       <width>131</width>
       <height>24</height>
      </rect>
@@ -30,8 +30,8 @@
    <widget class="QPushButton" name="createEntity_pb">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>180</y>
+      <x>10</x>
+      <y>260</y>
       <width>131</width>
       <height>24</height>
      </rect>
@@ -43,8 +43,8 @@
    <widget class="QPushButton" name="createItemRequirements_pb">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>80</y>
+      <x>190</x>
+      <y>160</y>
       <width>161</width>
       <height>24</height>
      </rect>
@@ -56,8 +56,8 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>50</y>
+      <x>20</x>
+      <y>120</y>
       <width>111</width>
       <height>16</height>
      </rect>
@@ -69,8 +69,8 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>420</x>
-      <y>50</y>
+      <x>400</x>
+      <y>120</y>
       <width>141</width>
       <height>16</height>
      </rect>
@@ -82,8 +82,8 @@
    <widget class="QPushButton" name="createArmor_bonus_pb">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>120</y>
+      <x>390</x>
+      <y>200</y>
       <width>161</width>
       <height>24</height>
      </rect>
@@ -95,8 +95,8 @@
    <widget class="QPushButton" name="createOn_use_pb">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>160</y>
+      <x>390</x>
+      <y>240</y>
       <width>161</width>
       <height>24</height>
      </rect>
@@ -108,8 +108,8 @@
    <widget class="QPushButton" name="delete_object">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>10</y>
+      <x>10</x>
+      <y>40</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -121,8 +121,8 @@
    <widget class="QPushButton" name="createRequirements_pb_2">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>80</y>
+      <x>390</x>
+      <y>160</y>
       <width>161</width>
       <height>24</height>
      </rect>
@@ -134,8 +134,8 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>190</x>
-      <y>40</y>
+      <x>180</x>
+      <y>110</y>
       <width>201</width>
       <height>41</height>
      </rect>
@@ -147,9 +147,9 @@
    <widget class="QLabel" name="inform_l">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>20</y>
-      <width>411</width>
+      <x>20</x>
+      <y>10</y>
+      <width>471</width>
       <height>20</height>
      </rect>
     </property>
@@ -157,34 +157,77 @@
      <string notr="true">color: rgb(8, 94, 255);</string>
     </property>
     <property name="text">
-     <string/>
+     <string>Информационная строка</string>
     </property>
    </widget>
    <widget class="QPushButton" name="help">
     <property name="geometry">
      <rect>
-      <x>510</x>
+      <x>520</x>
       <y>10</y>
       <width>31</width>
       <height>31</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true">background:rgb(185, 217, 206);
+color: rgb(0, 0, 0);
+</string>
+    </property>
     <property name="text">
      <string>?</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="map_construct">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>40</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Конструктор карты</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>90</y>
+      <width>131</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Создание объектов</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="rebootIds">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>500</y>
+      <width>171</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background: rgb(255, 106, 93);
+color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="text">
+     <string>Сбросить все id</string>
+    </property>
+   </widget>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>576</width>
-     <height>21</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
  <connections/>

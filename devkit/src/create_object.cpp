@@ -81,13 +81,15 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
 
     unsigned long long id = dev::throw_id(object_type);
 
-    QString path = "../../../objects/";
+    QString path = "objects/";
     if (is_type_component(object_type)) {
         path += "components";
     }
     path += "/%1";
     QString folder_path = QString(path).arg(datatypes_to_string[object_type]);
-    std::filesystem::create_directories(folder_path.toStdString());
+    if (!std::filesystem::exists(folder_path.toStdString())) {
+        std::filesystem::create_directories(folder_path.toStdString());
+    }
     QString file_path = (folder_path + QString("/%1_%2.json").arg(datatypes_to_string[object_type]).arg(id));
     std::ofstream file(file_path.toStdString());
     file << data.dump(js_indent);

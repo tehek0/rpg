@@ -6,7 +6,7 @@
 #include "header/data/general.hpp"
 
 QString dev::get_path_to_datatype_folder(dev::datatype type) {
-    QString path = "../../../objects/";
+    QString path = "objects/";
     if (is_type_component(type)) {
         path += "components/";
     }

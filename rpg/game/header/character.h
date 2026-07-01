@@ -283,13 +283,11 @@ public:
     float get_max_weight();
     float get_weight();
     int get_max_energy();
-    trait get_trait();
     entity_stats get_bonus_stats();
     entity_stats get_total_stats();
     void set_max_weight(float max_weight);
     void set_weight(float weight);
     void set_max_energy(int max_energy);
-    void set_trait(trait trait_);
     void apply_equipment_bonuses();
     bool add_item(item* item_);
 };

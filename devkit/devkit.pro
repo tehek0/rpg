@@ -12,21 +12,25 @@ SOURCES += \
     main.cpp \
     devkitwindow.cpp \
     src/create_object.cpp \
+    src/custom_window.cpp \
     src/datatypes.cpp \
     src/id_support.cpp \
     src/info_fields.cpp \
+    src/map_construct.cpp \
     src/object_dialogs.cpp \
     src/read_object.cpp
 
 HEADERS += \
     devkitwindow.h \
     header/create_object.hpp \
+    header/custom_window.h \
     header/data/object_dialog_templates.hpp \
     header/data/datatypes.hpp \
     header/data/general.hpp \
     header/id_support.hpp \
     header/inc/json.hpp \
     header/info_fields.hpp \
+    header/map_construct.hpp \
     header/object_dialogs.hpp \
     header/read_object.hpp
 

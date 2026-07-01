@@ -36,8 +36,12 @@ private slots:
 
     void on_help_clicked();
 
+    void on_map_construct_clicked();
+
+    void on_rebootIds_clicked();
+
 private:
-    std::vector<dev::object_dialog_window*> windows;
+    std::vector<dev::custom_window*> windows;
         Ui::DevkitWindow *ui;
 };
 #endif // DEVKITWINDOW_H
