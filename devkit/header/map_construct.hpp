@@ -28,8 +28,11 @@ public:
     biome biome_ = biome::none;
     map_poi* poi_ = nullptr;
     float difficulty_ = 0;
+
     map_grid_tile(unsigned short size);
     ~map_grid_tile() {delete poi_;}
+
+    void change_tile_tint();
 signals:
     void clicked_tile(map_grid_tile* tile);
     void clicked_poi(map_grid_tile* tile);
@@ -69,15 +72,23 @@ public slots:
 
 };
 
+enum class map_brush {
+    none,
+    locker
+};
+
 class map_construct_window : public custom_window {
     Q_OBJECT
 private:
+    map_brush brush_ = map_brush::none;
     map_grid* grid_;
     QPushButton* save_;
     QPushButton* load_;
+    QPushButton* locked_brush_;
 
     void add_save_button();
     void add_load_button();
+    void add_brushes();
 public:
     map_construct_window();
     ~map_construct_window();
@@ -86,6 +97,8 @@ public:
 public slots:
     void on_save_clicked();
     bool on_load_clicked();
+    void on_locked_brush_clicked();
+
     void clicked_tile(map_grid_tile* tile);
     void clicked_poi(map_grid_tile* tile);
 };

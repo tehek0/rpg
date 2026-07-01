@@ -5,6 +5,15 @@
 #include <fstream>
 using js = nlohmann::ordered_json;
 
+void dev::map_grid_tile::change_tile_tint() {
+    if (is_locked_ == true) {
+        this->setStyleSheet(QString("background: rgba(17, 9, 52, 100);"));
+    } else {
+        this->setStyleSheet(QString("background: rgba(17, 9, 52, 0);"));
+    }
+    qInfo() << 'b';
+}
+
 dev::map_poi::map_poi(QString sprite_family, unsigned long long location_id,QString location_name)
     : location_id_(location_id), location_name_(location_name), sprite_family_(sprite_family) {
     //connect(disp_, &QPushButton::clicked, this, &map_grid_tile::process_click_poi);
@@ -15,6 +24,9 @@ dev::map_grid_tile::map_grid_tile(unsigned short size) {
     this->setGeometry(0, 0, size, size);
     this->setText("-");
     connect(this, &QPushButton::clicked, this, &map_grid_tile::process_click);
+
+    change_tile_tint();
+    qInfo() << '-';
 
 }
 dev::map_grid::map_grid(unsigned short width, unsigned short height, unsigned short tile_size, QWidget* parent): QWidget(parent) {
@@ -72,21 +84,53 @@ void dev::map_construct_window::add_load_button() {
     load_->show();
 }
 
+void dev::map_construct_window::add_brushes() {
+    locked_brush_ = new QPushButton(this);
+    locked_brush_->setText("Открывашка");
+    locked_brush_->setGeometry(1000+button_side+gap, button_side + 3*gap, button_side, button_side);
+    locked_brush_->show();
+    connect(load_, SIGNAL(clicked()), this, SLOT(on_locked_brush_clicked()));
+}
 dev::map_construct_window::map_construct_window() {
     grid_ = new map_grid(19, 12, 50, this);
     this->setGeometry(300,200, 1200,600);
-    add_save_button();
-    add_load_button();
     connect(grid_, &map_grid::clicked_child_tile, this, &map_construct_window::clicked_tile);
     connect(grid_, &map_grid::clicked_child_poi, this, &map_construct_window::clicked_poi);
+
+    add_save_button();
+    add_load_button();
+    add_brushes();
+
 }
 
 void dev::map_construct_window::clicked_tile(map_grid_tile* tile) {
-    qInfo() << "aaa";
+    switch (brush_) {
+    case dev::map_brush::none : {break;}
+    case dev::map_brush::locker : {
+        if (tile->is_locked_ == true) {
+            tile->is_locked_ = false;
+        }
+        else {
+            tile->is_locked_ = true;
+        }
+        break;
+    }
+
+    }
+    tile->change_tile_tint();
 }
 void dev::map_construct_window::clicked_poi(map_grid_tile* tile) {
     qInfo() << "aaa";
 }
+
+void dev::map_construct_window::on_locked_brush_clicked() {
+    if (brush_ == map_brush::locker) {
+        brush_ = map_brush::none;
+    }
+    else {
+        brush_ = map_brush::locker;
+    }
+};
 
 dev::map_construct_window::~map_construct_window() {
     delete grid_;
