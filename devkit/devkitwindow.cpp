@@ -3,6 +3,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include "header/data/general.hpp"
+#include "header/map_construct.hpp"
 
 DevkitWindow::DevkitWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -69,5 +70,17 @@ void DevkitWindow::on_help_clicked()
 {
     dev::help_window* w = new dev::help_window();
     windows.emplace_back(w);
+}
+
+
+void DevkitWindow::on_map_construct_clicked()
+{
+    dev::map_construct_window* w = new dev::map_construct_window();
+    windows.emplace_back(w);
+}
+
+void DevkitWindow::on_rebootIds_clicked()
+{
+    dev::call_reset_id_button_dialog();
 }
 

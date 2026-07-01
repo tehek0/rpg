@@ -7,7 +7,6 @@
 #include <QTreeWidget>
 #include "../header/data/datatypes.hpp"
 #include "create_object.hpp"
-class object_dialog_window;
 
 namespace dev {
 const inline QColor check_color = QColor(96, 230, 156);

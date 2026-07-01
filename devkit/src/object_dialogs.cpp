@@ -5,7 +5,6 @@
 #include "../header/data/general.hpp"
 #include "../header/read_object.hpp"
 
-//object_dialog_window
 void dev::object_dialog_window::resize_dependent_on_fields() {
     short additional = 0;
     for (auto& field : info_fields_) {
@@ -18,7 +17,7 @@ void dev::object_dialog_window::resize_dependent_on_fields() {
             additional += field.calculate_table_hight();
         }
     }
-    this->resize(label_w + field_w + button_side + gap*3, button_side + (info_fields_.size() + info_subfields_.size()) * (any_line_hight + gap) + additional + gap);
+    resize(label_w + field_w + button_side + gap*3, button_side + (info_fields_.size() + info_subfields_.size()) * (any_line_hight + gap) + additional + gap);
 };
 
 void dev::object_dialog_window::delete_subfields() {
@@ -68,6 +67,7 @@ void dev::object_dialog_window::add_save_button() {
     save_->setText("Save");
     save_->setGeometry(gap, gap, button_side, button_side);
     connect(save_, SIGNAL(clicked()), this, SLOT(on_save_clicked()));
+    save_->show();
 }
 
 void dev::object_dialog_window::add_delete_button() {
@@ -75,6 +75,7 @@ void dev::object_dialog_window::add_delete_button() {
     delete_->setText("Delete");
     delete_->setGeometry(gap, gap, button_side, button_side);
     connect(delete_, SIGNAL(clicked()), this, SLOT(on_delete_clicked()));
+    delete_->show();
 }
 
 dev::object_dialog_window::object_dialog_window() {
@@ -83,29 +84,7 @@ dev::object_dialog_window::object_dialog_window() {
     delete_ = nullptr;
 }
 
-QStringList help_lines = {"1. [Только что созданного компонента нет в таблице]\n"
-                          "Если у вас открыто окно создания объекта с таблицами среди полей, и вы только что создали компонент для этой таблице в другом окне, "
-                          "компонент сразу не появится в таблице выбора. Переключитете подтип и верните обратно, если интересуюая вас таблица появилась при его выборе, "
-                          "или закройте/откройте заново окно создания для обновление содержания таблицы.",
-                          "2. bop",
-                          "3. beebop"};
-dev::help_window::help_window() {
-    this->setAttribute(Qt::WA_DeleteOnClose);
-    this->setWindowTitle("Help");
-    for (QString line : help_lines) {
-        qInfo() << 'c';
-        QLabel* one = new QLabel(line, this);
-        one->setWordWrap(true);
-        one->setGeometry(gap, ypos, field_w, any_line_hight);
-        one->adjustSize();
-        one->show();
-        labels_.emplace_back(one);
-        ypos += one->height() + gap;
-    }
-    this->show();
-}
-dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWidget(), object_type_(object_type) {
-    this->setAttribute(Qt::WA_DeleteOnClose);
+dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : custom_window(), object_type_(object_type) {
     this->setWindowTitle(QString::fromStdString(datatypes_to_string[object_type]));
 
     if (object_type == dev::erased) {
@@ -119,6 +98,7 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWi
     reset_->setGeometry(gap*2 + label_w/2, gap, button_side, button_side);
     connect(reset_, SIGNAL(clicked()), this, SLOT(on_reset_clicked()));
     ypos = button_side + gap*2;
+    reset_->show();
 
     short amount_of_fields;
     try {
@@ -146,7 +126,7 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : QWi
     last_y_pos = ypos;
 
     resize_dependent_on_fields();
-    this->show();
+    show();
 }
 
 dev::object_dialog_window::~object_dialog_window() {

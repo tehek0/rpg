@@ -2,9 +2,9 @@
 #include "../create_object.hpp"
 
 dev::object_data templates[dev::datatype::total + 1] = {
-    {   {"item", "item_requirement", "armor_bonus", "on_use"},
+    {   {"item", "item_requirement", "requirement", "armor_bonus", "on_use"},
         {},
-        {dev::datatype::item, dev::datatype::item_requirement, dev::datatype::armor_bonus, dev::datatype::on_use}
+        {dev::datatype::item, dev::datatype::item_requirement, dev::datatype::requirement, dev::datatype::armor_bonus, dev::datatype::on_use}
     },
     {}, {}, {}, {}, {}, {}, {}, {}, {},//bool- linear типы
     { //location
