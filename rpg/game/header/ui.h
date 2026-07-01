@@ -3,13 +3,14 @@
 #include "scenes.h"
 
 enum class save_scene_context {
-    save,
-    load
+    load,
+    save_or_load,
 };
 
 game_scene* throw_menu_scene();
 game_scene* throw_play_scene();
 game_scene* throw_hub_scene();
+game_scene* throw_pause_scene();
 game_scene* throw_dialogue_scene();
 game_scene* throw_location_scene();
 battle_scene* throw_battle_scene(player* player, std::vector<enemy*> enemies);

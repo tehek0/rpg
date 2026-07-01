@@ -79,5 +79,7 @@
         <file>pictures/char_decrease.png</file>
         <file>pictures/char_increase.png</file>
         <file>pictures/testbkg_character_creation.jpg</file>
+        <file>sounds/music/ambience.ogg</file>
+        <file>pictures/testbkg_save_widget.jpg</file>
     </qresource>
 </RCC>

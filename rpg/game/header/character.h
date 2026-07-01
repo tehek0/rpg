@@ -273,7 +273,7 @@ class player: public living_entity {
 protected:
     entity_stats _bonus_stats;
     float _max_weight = 0.f;
-    float _weight;
+    float _weight = 0.f;
     int _max_energy = 0;
     trait _trait;
 public:
