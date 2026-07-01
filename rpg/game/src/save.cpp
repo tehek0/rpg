@@ -3,7 +3,45 @@
 #include "../inc/alias.h"
 #include "../header/visuals.h"
 #include <fstream>
+#include <ctime>
+#include "../header/ui.h"
 #include <QMessageBox>
+
+
+
+void save(int slot_num) {
+    save_init(slot_num);
+    save_map(global::w.hub_scene->findChild<map_widget*>("map"), slot_num);
+    save_player(global::player_, slot_num);
+    save_meta(slot_num);
+}
+
+void load(int slot_num) {
+    delete global::w.hub_scene;
+    delete global::player_;
+    global::w.hub_scene = throw_hub_scene();
+    global::player_ = new player();
+    if (!load_player(global::player_, slot_num)) {
+        critical_error(QString("Не удалось загрузить сохранение %1, данные игрока повреждены").arg(slot_num));
+        return;
+    }
+    if (!load_map(global::w.hub_scene->findChild<map_widget*>("map"), slot_num)) {
+        critical_error(QString("Не удалось загрузить сохранение %1, данные карты повреждены").arg(slot_num));
+        return;
+    }
+    global::w.switch_to_scene(global::w.hub_scene);
+    global::music->set_music("ambience");
+}
+
+void delete_save(int slot_num) {
+    auto path = global::root_path;
+    path /= "saves";
+    path /= QString("slot%1").arg(slot_num).toStdString();
+    std::filesystem::remove_all(path);
+}
+
+
+
 
 enum class item_types {
     none,
@@ -35,6 +73,27 @@ void saves_init(int amount_of_saves) {
             std::filesystem::create_directories(root);
         }
     }
+}
+
+void save_init(int slot_num) {
+    auto root = global::root_path;
+    root /= "saves";
+    root /= QString("slot%1").arg(slot_num).toStdString();
+    if (!std::filesystem::exists(root)) {
+        std::filesystem::create_directories(root);
+    }
+}
+
+bool save_has_data(int slot_num) {
+    auto root = global::root_path;
+    root /= "saves";
+    root /= QString("slot%1").arg(slot_num).toStdString();
+    root /= "meta.json";
+    std::ifstream file(root.string());
+    if (!file.is_open()) {
+        return false;
+    }
+    return true;
 }
 
 void save_map(map_widget* map, int slot) {
@@ -70,8 +129,12 @@ void save_map(map_widget* map, int slot) {
 
 bool load_map(map_widget* map, int slot) {
     auto path = global::root_path;
-    path /= "saves";
-    path /= QString("slot%1").arg(slot).toStdString();
+    if (slot > 0) {
+        path /= "saves";
+        path /= QString("slot%1").arg(slot).toStdString();
+    } else {
+        path /= "objects";
+    }
     path /= "map.json";
     std::ifstream file(path.string());
     json j;
@@ -83,6 +146,7 @@ bool load_map(map_widget* map, int slot) {
     if (!j.is_object()) {
         return false;
     }
+
     json map_j;
     int player_x;
     int player_y;
@@ -229,6 +293,7 @@ bool load_player(player* player_, int slot) {
     j["max_weight"].get_to(_max_weight);
     j["max_energy"].get_to(_max_energy);
     _inventory = new inventory();
+    player_->set_inventory(_inventory);
     for (auto elem : j["inventory"]) {
         item* itm;
         if (elem.is_object()) {
@@ -246,6 +311,9 @@ bool load_player(player* player_, int slot) {
             return false;
         }
         _inventory->add_item(itm);
+        if (elem.contains("is_equipped")) {
+            _inventory->equip(itm);
+        }
     }
     if (player_ == nullptr)
         player_ = new player();
@@ -260,11 +328,46 @@ bool load_player(player* player_, int slot) {
     player_->set_money(_money);
     player_->set_max_weight(_max_weight);
     player_->set_max_energy(_max_energy);
-    player_->set_inventory(_inventory);
+
     return true;
 }
 
+void save_meta(int slot) {
+    auto path = global::root_path;
+    path /= "saves";
+    path /= QString("slot%1").arg(slot).toStdString();
+    path /= "meta.json";
+    std::ofstream file(path.string());
+    file.clear();
+    json j = json::object();
+    time_t time_;
+    std::tm* timeinfo;
+    std::time(&time_);
+    timeinfo = std::localtime(&time_);
+    QString day_str = QString::number(timeinfo->tm_mday);
+    format_time_data(day_str);
+    QString month_str = QString::number(timeinfo->tm_mon + 1);
+    format_time_data(month_str);
+    QString year_str = QString::number(1900 + timeinfo->tm_year);
+    QString hour_str = QString::number(timeinfo->tm_hour);
+    format_time_data(hour_str);
+    QString min_str = QString::number(timeinfo->tm_min);
+    format_time_data(min_str);
+    QString sec_str = QString::number(timeinfo->tm_sec);
+    format_time_data(sec_str);
+    QString result_time = day_str + "." + month_str + "." + year_str + ", " + hour_str + ":" + min_str + ":" + sec_str;
+    j["player_name"] = global::player_->get_name().toStdString();
+    j["player_level"] = global::player_->get_entity_level().level;
+    j["save_time"] = result_time.toStdString();
+    qInfo() << "saved at" << result_time;
+    file << j.dump(4);
+}
 
+void format_time_data(QString &data) {
+    if (data.size() == 1) {
+        data = "0" + data;
+    }
+}
 json json_from_entity_stats(entity_stats stats) {
     json j = json::object();
 
@@ -396,7 +499,7 @@ void add_ammo_keys(json &j, ammo *ammo_) {
 void add_armor_keys(json &j, armor *armor_) {
     j["subtype"] = static_cast<int>(item_types::armor);
     json bonus = json::object();
-    bonus["equipment_bonus"] = static_cast<int>(armor_->get_armor_bonus().bonus);
+    bonus["bonus"] = static_cast<int>(armor_->get_armor_bonus().bonus);
     bonus["value"] = armor_->get_armor_bonus().value;
     j["armor_slot"] = static_cast<int>(armor_->get_armor_slot());
     j["armor_points"] = armor_->get_armor_points();
@@ -406,7 +509,7 @@ void add_armor_keys(json &j, armor *armor_) {
 void add_consumable_keys(json &j, consumable *consumable_) {
     j["subtype"] = static_cast<int>(item_types::consumable);
     json use = json::object();
-    use["effect"] = static_cast<int>(consumable_->get_on_use().effect);
+    use["use_effects"] = static_cast<int>(consumable_->get_on_use().effect);
     use["value"] = consumable_->get_on_use().value;
     j["energy_cost"] = consumable_->get_energy_cost();
     j["on_use"] = use;
@@ -431,7 +534,10 @@ item* item_from_json(json j) {
     double _base_weight;
     unsigned int _base_cost;
     bool _sellable;
-    if (!j.contains("name") || !j.contains("desc") || !j.contains("asset") || !j.contains("stack") || !j.contains("max_stack_size") || !j.contains("base_weight") || !j.contains("base_cost") || !j.contains("sellable"))
+    if (!j.contains("stack")) {
+        j["stack"] = 1;
+    }
+    if (!j.contains("name") || !j.contains("desc") || !j.contains("asset") || !j.contains("max_stack_size") || !j.contains("base_weight") || !j.contains("base_cost") || !j.contains("sellable"))
         return nullptr;
 
     if (!j["name"].is_string() || !j["desc"].is_string() || !j["asset"].is_string() || !j["stack"].is_number_unsigned() || !j["max_stack_size"].is_number_unsigned() || !j["base_weight"].is_number_float() || !j["base_cost"].is_number_unsigned() || !j["sellable"].is_boolean())
@@ -522,6 +628,8 @@ item* item_from_json(json j) {
             if (requirements == nullptr) {
                 return nullptr;
             }
+        } else {
+            requirements = new item_requirements();
         }
         return new weapon(QString::fromStdString(_name), QString::fromStdString(_desc), QString::fromStdString(_asset), _stack, _max_stack_size, _base_weight, _base_cost, _sellable, requirements, _base_dmg, damage_type{_damage_type}, ammo_type{_ammo_type}, _energy_cost);
     } else if (subtype_ == item_types::armor) {
@@ -558,6 +666,8 @@ item* item_from_json(json j) {
             if (requirements == nullptr) {
                 return nullptr;
             }
+        } else {
+            requirements = new item_requirements();
         }
         return new armor(QString::fromStdString(_name), QString::fromStdString(_desc), QString::fromStdString(_asset), _stack, _max_stack_size, _base_weight, _base_cost, _sellable, requirements, armor_slot{_armor_slot}, _armor_points, _armor_bonus);
     } else {
@@ -681,17 +791,17 @@ base_requirement* single_requirement_from_id(unsigned long long id) {
 }
 
 armor_bonus armor_bonus_from_json(json j) {
-    if (!j.contains("equipment_bonus") || !j.contains("value")) {
+    if (!j.contains("bonus") || !j.contains("value")) {
         critical_error("Не удалось загрузить объект типа armor_bonus.");
         return armor_bonus();
     }
-    if (!j["equipment_bonus"].is_number_integer() || !j["value"].is_number_integer()) {
+    if (!j["bonus"].is_number_integer() || !j["value"].is_number_integer()) {
         critical_error("Не удалось загрузить объект типа armor_bonus.");
         return armor_bonus();
     }
     int _equipment_bonus;
     int _value;
-    j["equipment_bonus"].get_to(_equipment_bonus);
+    j["bonus"].get_to(_equipment_bonus);
     j["value"].get_to(_value);
     armor_bonus bonus_;
     bonus_.bonus = equipment_bonus{_equipment_bonus};
@@ -702,6 +812,7 @@ armor_bonus armor_bonus_from_json(json j) {
 armor_bonus armor_bonus_from_id(unsigned long long id) {
     auto path = global::root_path;
     path /= "objects";
+    path /= "components";
     path /= "armor_bonus";
     path /= QString("armor_bonus_%1.json").arg(id).toStdString();
     std::ifstream file(path.string());
@@ -720,17 +831,17 @@ armor_bonus armor_bonus_from_id(unsigned long long id) {
 }
 
 on_use on_use_from_json(json j) {
-    if (!j.contains("effect") || !j.contains("value")) {
+    if (!j.contains("use_effects") || !j.contains("value")) {
         critical_error("Не удалось загрузить объект типа on_use.");
         return on_use();
     }
-    if (!j["effect"].is_number_integer() || !j["value"].is_number_integer()) {
+    if (!j["use_effects"].is_number_integer() || !j["value"].is_number_integer()) {
         critical_error("Не удалось загрузить объект типа on_use.");
         return on_use();
     }
     int _effect;
     int _value;
-    j["effect"].get_to(_effect);
+    j["use_effects"].get_to(_effect);
     j["value"].get_to(_value);
     on_use on_use_;
     on_use_.effect = use_effect{_effect};
@@ -741,6 +852,7 @@ on_use on_use_from_json(json j) {
 on_use on_use_from_id(unsigned long long id) {
     auto path = global::root_path;
     path /= "objects";
+    path /= "components";
     path /= "on_use";
     path /= QString("on_use_%1.json").arg(id).toStdString();
     std::ifstream file(path.string());
@@ -756,4 +868,171 @@ on_use on_use_from_id(unsigned long long id) {
         return on_use();
     }
     return on_use_from_json(j);
+}
+
+slot::slot(int slot_num, QWidget* parent): QPushButton(parent) {
+    this->resize(350, 100);
+    this->setCheckable(true);
+    this->setStyleSheet("QPushButton { background-color: lightgray; }"
+                        "QPushButton:checked { background-color: #55FF55; }");
+    save_slot = new QLabel(this);
+    save_slot->setGeometry(5, 0, 350, 50);
+    save_slot->setStyleSheet("font: 17pt \"Arial\"");
+    player_info = new QLabel(this);
+    player_info->setGeometry(5, 0, 350, 75);
+    player_info->setAlignment(Qt::AlignBottom);
+    save_date = new QLabel(this);
+    save_date->setGeometry(5, 0, 350, 95);
+    save_date->setAlignment(Qt::AlignBottom);
+    connect(this, &slot::clicked, this, &slot::on_click);
+    set_slot(slot_num);
+}
+void slot::set_slot(int slot_num) {
+    slot_number = slot_num;
+    save_slot->setText(QString("Слот %1").arg(slot_number));
+    if (save_has_data(slot_number)) {
+        this->setText("");
+        is_empty = false;
+
+        auto root = global::root_path;
+        root /= "saves";
+        root /= QString("slot%1").arg(slot_number).toStdString();
+        root /= "meta.json";
+        json j;
+        try {
+            j = json::parse(std::ifstream(root.string()));
+        } catch (...) {
+            player_info->setText("Неизвестные данные игрока");
+            save_date->setText("Неизвестная дата сохранения");
+        }
+
+        std::string player_name;
+        int player_level;
+        if (!j.contains("player_name") || !j.contains("player_level")) {
+            player_info->setText("Неизвестные данные игрока");
+        } else if (!j["player_name"].is_string() || !j["player_level"].is_number_unsigned()) {
+            player_info->setText("Неизвестные данные игрока");
+        } else {
+            j["player_name"].get_to(player_name);
+            j["player_level"].get_to(player_level);
+            player_info->setText(QString("%1, Уровень %2").arg(player_name).arg(player_level));
+        }
+        std::string save_time;
+        if (!j.contains("save_time")) {
+            save_date->setText("Неизвестная дата сохранения");
+        } else if (!j["save_time"].is_string()) {
+            save_date->setText("Неизвестная дата сохранения");
+        } else {
+            j["save_time"].get_to(save_time);
+            save_date->setText(QString::fromStdString(save_time));
+        }
+    } else {
+        this->setText("Пустой слот");
+        player_info->setText("");
+        save_date->setText("");
+        is_empty = true;
+    }
+}
+
+void slot::on_click() {
+    emit select(this);
+}
+
+void save_widget::wheelEvent(QWheelEvent *event)  {
+    scrolled(event->angleDelta().y());
+    event->accept();
+}
+
+void save_widget::paintEvent(QPaintEvent *event) {
+    QPainter paint(this);
+    if (sprite.isNull())
+        return;
+
+    paint.drawTiledPixmap(this->rect(), sprite);
+}
+
+save_widget::save_widget(QWidget *parent): QWidget(parent) {
+    this->resize(360, 360);
+    sprite.load(":/pictures/testbkg_save_widget.jpg");
+    slot1 = new slot(1, this);
+    slot1->move(5, 5);
+    connect(slot1, &slot::select, this, &save_widget::select_slot);
+    slot2 = new slot(2, this);
+    slot2->move(5, 110);
+    connect(slot2, &slot::select, this, &save_widget::select_slot);
+    slot3 = new slot(3, this);
+    slot3->move(5, 215);
+    connect(slot3, &slot::select, this, &save_widget::select_slot);
+    load_button = new QPushButton("Загрузить", this);
+    load_button->setDisabled(true);
+    load_button->setGeometry(125,335,110,20);
+    connect(load_button, &QPushButton::clicked, this, &save_widget::load_selected);
+    save_button = new QPushButton("Сохранить", this);
+    save_button->setDisabled(true);
+    save_button->setGeometry(10, 335, 110, 20);
+    connect(save_button, &QPushButton::clicked, this, &save_widget::save_selected);
+    delete_button = new QPushButton("Удалить", this);
+    delete_button->setDisabled(true);
+    delete_button->setGeometry(240, 335, 110, 20);
+    connect(delete_button, &QPushButton::clicked, this, &save_widget::delete_selected);
+}
+
+void save_widget::scrolled(int delta) {
+    if (delta > 0) {
+        if (scrolled_past > 0) {
+            scrolled_past -= 3;
+        }
+    } else {
+        scrolled_past += 3;
+    }
+    slot1->set_slot(1 + scrolled_past);
+    slot2->set_slot(2 + scrolled_past);
+    slot3->set_slot(3 + scrolled_past);
+    deselect_slot();
+}
+
+void save_widget::select_slot(slot *slot_) {
+    deselect_slot();
+    selected_slot = slot_;
+    slot_->setChecked(true);
+    save_button->setDisabled(is_save_perma_locked);
+    if (!selected_slot->is_empty) {
+        load_button->setDisabled(is_load_perma_locked);
+        delete_button->setDisabled(is_delete_perma_locked);
+    }
+}
+
+void save_widget::load_selected() {
+    if (selected_slot == nullptr)
+        return;
+
+    load(selected_slot->slot_number);
+}
+
+void save_widget::save_selected() {
+    if (selected_slot == nullptr)
+        return;
+
+    save(selected_slot->slot_number);
+    selected_slot->set_slot(selected_slot->slot_number);
+    select_slot(selected_slot);
+}
+
+void save_widget::delete_selected() {
+    if (selected_slot == nullptr)
+        return;
+
+    delete_save(selected_slot->slot_number);
+    selected_slot->set_slot(selected_slot->slot_number);
+    deselect_slot();
+}
+
+void save_widget::deselect_slot() {
+    if (selected_slot == nullptr)
+        return;
+    selected_slot->setChecked(false);
+    save_button->setDisabled(true);
+    load_button->setDisabled(true);
+    delete_button->setDisabled(true);
+    selected_slot = nullptr;
 }

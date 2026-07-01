@@ -1198,13 +1198,15 @@ public slots:
         global::player_->set_entity_stats(stats);
         global::player_->set_name(player_name);
         global::player_->set_inventory(new inventory());
-        auto x = new item_requirements();
-        x->item_requirements_ptrs.emplace_back(new char_requirement(3, char_type::intelligence));
-        armor_bonus p;
-        p.bonus = equipment_bonus::change_char_intelligence;
-        p.value = 500;
-        global::player_->get_inventory()->add_item(new armor("Шлем крутой","Очень крутой шлем", "l", 1, 1, 2.f, 50, true, x, armor_slot::head, 5, p));
-        save_player(global::player_, 1);
+        // auto x = new item_requirements();
+        // x->item_requirements_ptrs.emplace_back(new char_requirement(3, char_type::intelligence));
+        // armor_bonus p;
+        // p.bonus = equipment_bonus::change_char_intelligence;
+        // p.value = 500;
+        // global::player_->get_inventory()->add_item(new armor("Шлем крутой","Очень крутой шлем", "l", 1, 1, 2.f, 50, true, x, armor_slot::head, 5, p));
+        // global::player_->get_inventory()->equip(global::player_->get_inventory()->get_item(0));
+        // save_player(global::player_, 1);
+        // save_meta(1);
 
         emit player_created();
     }
@@ -1255,10 +1257,6 @@ public slots:
         update_skill_hint();
     }
 
-    void cancel_clicked() {
-        qInfo() << load_player(global::player_, 1);
-        qInfo() << global::player_->get_name();
-    }
 public:
     void paintEvent(QPaintEvent *event) {
         QPainter paint(this);
@@ -1297,6 +1295,7 @@ public:
     tracked_button* reset_button = nullptr;
 
     void update_char_hint() {
+        try_character_ready();
         if (char_points == 0) {
             char_hint->setText(QString("Очки распределены."));
             return;
@@ -1304,11 +1303,23 @@ public:
         char_hint->setText(QString("Осталось очков: %1").arg(char_points));
     }
     void update_skill_hint() {
+        try_character_ready();
         if (skill_points == 0) {
             skill_hint->setText(QString("Главные навыки выбраны."));
             return;
         }
         skill_hint->setText(QString("Выбрано главных навыков: %1 из 3").arg(3 - skill_points));
+    }
+    void try_character_ready() {
+        if (this->done_button == nullptr)
+            return;
+
+
+        if (skill_points == 0 && char_points == 0) {
+            this->done_button->setEnabled(true);
+            return;
+        }
+        this->done_button->setEnabled(false);
     }
     void connect_char(char_selector* c) {
         this->connect(c, &char_selector::increase, this, &character_creation_widget::increase_stat);
@@ -1390,6 +1401,7 @@ public:
 
 
         done_button = new tracked_button(this);
+        done_button->setDisabled(true);
         done_button->setGeometry(5, 595, 200, 20);
         done_button->setText("Готово");
         this->connect(done_button, &tracked_button::clicked, this, &character_creation_widget::done_clicked);
@@ -1402,6 +1414,7 @@ public:
         cancel_button = new tracked_button(this);
         cancel_button->setGeometry(415, 595, 200, 20);
         cancel_button->setText("Назад");
-        this->connect(cancel_button, &tracked_button::clicked, this, &character_creation_widget::cancel_clicked);
+        auto current = global::w.current_scene;
+        this->connect(cancel_button, &tracked_button::clicked, this, [=]() {global::w.switch_to_scene(current);});
     }
 };

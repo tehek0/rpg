@@ -31,15 +31,86 @@ game_scene* throw_menu_scene() {
 
     auto btn = new QPushButton();
     scene_->add(btn);
-
-    auto ccw = new character_creation_widget();
-    scene_->add(ccw);
-    ccw->move(600, 0);
     global::w.connect(btn, &QPushButton::clicked, &global::w, [=]() {delete global::w.hub_scene; global::w.hub_scene = nullptr;});
 
     global::w.connect(play_button, &QPushButton::clicked, &global::w, &MainWindow::menu_play);
     global::w.connect(settings_button, &QPushButton::clicked, &global::w, &MainWindow::open_settings);
     global::w.connect(exit_button, &QPushButton::clicked, &global::w, &MainWindow::menu_exit);
+    return scene_;
+}
+
+game_scene* throw_play_scene() {
+    auto scene_ = new game_scene(new QGraphicsScene(), &global::w);
+    auto current = global::w.current_scene;
+    global::w.switch_to_scene(scene_);
+    scene_->setGeometry(0, 0, global::window_width, global::window_height);
+    scene_->setSceneRect(scene_->rect());
+    scene_->set_background(":/pictures/testbkg_menu.jpg");
+
+    auto new_game_button = new QPushButton("Новая игра");
+    new_game_button->setGeometry(810, 385, 300, 100);
+    global::w.connect(new_game_button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(throw_character_creation_scene());});
+    scene_->add(new_game_button);
+
+    auto load_button = new QPushButton("Загрузить сохранение");
+    load_button->setGeometry(810, 490, 300, 100);
+    global::w.connect(load_button, &QPushButton::clicked, &global::w, [=]() {auto scene = throw_select_save_scene(save_scene_context::load); global::w.switch_to_scene(scene);});
+    scene_->add(load_button);
+
+    auto cancel_button = new QPushButton("Назад");
+    cancel_button->setGeometry(810, 595, 300, 100);
+    global::w.connect(cancel_button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(current); delete scene_;});
+    scene_->add(cancel_button);
+    return scene_;
+}
+
+disposable_scene* throw_select_save_scene(save_scene_context context) {
+    auto scene_ = new disposable_scene(new QGraphicsScene(), &global::w);
+    scene_->setGeometry(0, 0, global::window_width, global::window_height);
+    scene_->setSceneRect(scene_->rect());
+    scene_->set_background(":/pictures/black.png");
+    save_widget* save_w = new save_widget();
+    save_w->move(780, 360);
+    scene_->add(save_w);
+
+    QLabel* x = new QLabel("Используйте колёсико мыши, чтобы переключить страницу");
+    x->setGeometry(780, 340, 350, 15);
+    x->setStyleSheet("color: rgb(255,255,255);");
+    scene_->add(x);
+
+    switch(context) {
+        case save_scene_context::load: {
+            save_w->is_save_perma_locked = true;
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+
+    auto cancel_button = new QPushButton("Назад");
+    cancel_button->resize(180, 60);
+    cancel_button->move(870, 725);
+    auto current = global::w.current_scene;
+    global::w.connect(cancel_button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(current);});
+    scene_->add(cancel_button);
+
+    return scene_;
+}
+
+disposable_scene* throw_character_creation_scene() {
+    auto scene_ = new disposable_scene(new QGraphicsScene(), &global::w);
+    scene_->setGeometry(0, 0, global::window_width, global::window_height);
+    scene_->setSceneRect(scene_->rect());
+    scene_->set_background(":/pictures/black.png");
+    auto creation_widget = new character_creation_widget();
+    creation_widget->move(650, 230);
+    global::w.connect(creation_widget, &character_creation_widget::player_created, &global::w, &MainWindow::new_game);
+    scene_->add(creation_widget);
+    QLabel* x = new QLabel("Распределите очки характеристик, установите главные навыки и выберите имя, чтобы начать игру");
+    x->setGeometry(650, 210, 620, 15);
+    x->setStyleSheet("color: rgb(255,255,255);");
+    scene_->add(x);
     return scene_;
 }
 
@@ -95,20 +166,21 @@ game_scene* throw_hub_scene() {
     scene_->setSceneRect(scene_->rect());
     scene_->set_background(":/pictures/testbkg_hub.jpg");
 
-    auto button = new QPushButton;
-    global::w.connect(button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(global::w.menu_scene);});
-    scene_->add(button);
+    auto pause_button = new QPushButton;
+    global::w.connect(pause_button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(throw_pause_scene());});
+    scene_->add(pause_button);
     auto map = new map_widget(QPoint(242, 111), scene_);
+    map->setObjectName("map");
     scene_->add(map);
     global::w.connect(map->player_object, &map_player_object::link_line, &global::w, [=](QGraphicsLineItem*& line) {global::w.draw_destination_line(line, map);});
-    auto save_btn = new QPushButton("Сохранить");
-    save_btn->move(400, 0);
-    scene_->add(save_btn);
-    auto load_btn = new QPushButton("Загрузить");
-    load_btn->move(500, 0);
-    scene_->add(load_btn);
-    global::w.connect(save_btn, &QPushButton::clicked, &global::w, [=]() {save_map(map, 1);});
-    global::w.connect(load_btn, &QPushButton::clicked, &global::w, [=]() {bool x = load_map(map, 1);});
+    // auto save_btn = new QPushButton("Сохранить");
+    // save_btn->move(400, 0);
+    // scene_->add(save_btn);
+    // auto load_btn = new QPushButton("Загрузить");
+    // load_btn->move(500, 0);
+    // scene_->add(load_btn);
+    // global::w.connect(save_btn, &QPushButton::clicked, &global::w, [=]() {save_map(map, 1);});
+    // global::w.connect(load_btn, &QPushButton::clicked, &global::w, [=]() {bool x = load_map(map, 1);});
 
     auto interact_btn = new QPushButton("Зайти");
     interact_btn->resize(instrument_side,instrument_side);
@@ -117,6 +189,37 @@ game_scene* throw_hub_scene() {
     scene_->add(interact_btn);
 
 
+    return scene_;
+}
+
+game_scene* throw_pause_scene() {
+    game_scene* scene_ = new game_scene(new QGraphicsScene(), &global::w);
+    scene_->setGeometry(0, 0, global::window_width, global::window_height);
+    scene_->setSceneRect(scene_->rect());
+    scene_->set_background(":/pictures/black.png");
+    auto current = global::w.current_scene;
+    global::w.switch_to_scene(scene_);
+
+    QPushButton* back_button = new QPushButton("Вернуться");
+    back_button->setGeometry(QRect(20, 840, 400, 50));
+    scene_->add(back_button);
+
+    QPushButton* saves_button = new QPushButton("Сохранения");
+    saves_button->setGeometry(QRect(20, 900, 400, 50));
+    scene_->add(saves_button);
+
+    QPushButton* settings_button = new QPushButton("Настройки");
+    settings_button->setGeometry(QRect(20, 960, 400, 50));
+    scene_->add(settings_button);
+
+    QPushButton* exit_button = new QPushButton("В меню");
+    exit_button->setGeometry(QRect(20, 1020, 400, 50));
+    scene_->add(exit_button);
+
+    global::w.connect(back_button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(current); delete scene_;});
+    global::w.connect(saves_button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(throw_select_save_scene(save_scene_context::save_or_load));});
+    global::w.connect(settings_button, &QPushButton::clicked, &global::w, &MainWindow::open_settings);
+    global::w.connect(exit_button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(global::w.menu_scene); delete scene_; global::music->set_music("menu"); delete global::w.hub_scene; global::w.hub_scene = nullptr;});
     return scene_;
 }
 

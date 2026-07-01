@@ -26,34 +26,49 @@ MainWindow::~MainWindow()
 
 void MainWindow::menu_play() {
 
-    std::vector<enemy*> test_enemies;
-    enemy* one = new enemy();
-    enemy* two = new enemy();
-    enemy* three = new enemy();
-    one->set_size_class(entity_size_class::small);
-    two->set_size_class(entity_size_class::tiny);
-    three->set_size_class(entity_size_class::medium);
-    one->set_max_health(40);
-    two->set_max_health(10);
-    three->set_max_health(40);
-    one->set_health(20);
-    two->set_health(4);
-    three->set_health(40);
-    test_enemies.emplace_back(one);
-    test_enemies.emplace_back(two);
-    test_enemies.emplace_back(three);
-    qInfo() << one->get_health();
-    qInfo() << two->get_health();
-    qInfo() << three->get_health();
+    // std::vector<enemy*> test_enemies;
+    // enemy* one = new enemy();
+    // enemy* two = new enemy();
+    // enemy* three = new enemy();
+    // one->set_size_class(entity_size_class::small);
+    // two->set_size_class(entity_size_class::tiny);
+    // three->set_size_class(entity_size_class::medium);
+    // one->set_max_health(40);
+    // two->set_max_health(10);
+    // three->set_max_health(40);
+    // one->set_health(20);
+    // two->set_health(4);
+    // three->set_health(40);
+    // test_enemies.emplace_back(one);
+    // test_enemies.emplace_back(two);
+    // test_enemies.emplace_back(three);
+    // qInfo() << one->get_health();
+    // qInfo() << two->get_health();
+    // qInfo() << three->get_health();
 
+    // if (hub_scene == nullptr) {
+    //     hub_scene = throw_hub_scene();
+    // }
+    // if (battle_scene == nullptr) {
+    //     battle_scene = throw_battle_scene(global::player_, test_enemies);
+    // }
+    // switch_to_scene(hub_scene);
+
+    auto scene = throw_play_scene();
+    switch_to_scene(scene);
+}
+
+void MainWindow::new_game() {
     if (hub_scene == nullptr) {
         hub_scene = throw_hub_scene();
     }
-    if (battle_scene == nullptr) {
-        battle_scene = throw_battle_scene(global::player_, test_enemies);
+    bool is_map_loaded = load_map(hub_scene->findChild<map_widget*>("map"), 0);
+    if (!is_map_loaded) {
+        critical_error("Не удалось загрузить стандартную карту.");
+        return;
     }
     switch_to_scene(hub_scene);
-
+    global::music->set_music("ambience");
 }
 
 void MainWindow::open_settings() {
