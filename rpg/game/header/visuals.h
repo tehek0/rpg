@@ -99,7 +99,7 @@ public:
     }
 
     QString get_sprite_family();
-    void set_sprite_family(QString& sprite_family);
+    void set_sprite_family(const QString& sprite_family);
 };
 
 struct anim {
@@ -218,14 +218,17 @@ public slots:
     void markdown_item() {
         if (_disp->linked_tooltip == nullptr)
             return;
-
+        if (linked_item == nullptr) {
+            _disp->linked_tooltip->setText("Пустой слот экипировки");
+            return;
+        }
         _disp->linked_tooltip->setText(linked_item->get_tooltip_text());
     }
     virtual void clicked() {
-        emit click_send_to_parent();
+        emit click_send_to_parent(linked_item);
     }
 signals:
-    void click_send_to_parent(); // нужно запрашивать контекст инвентаря у списка предметов, чтобы вызывать правильный попап
+    void click_send_to_parent(item* linked_item_); // нужно запрашивать контекст инвентаря у списка предметов, чтобы вызывать правильный попап
 public:
     item* linked_item;
     QLabel* stack_label;
@@ -233,7 +236,7 @@ public:
     item_object() {
         is_dummy = true;
     } // это обязательно
-    item_object(item* linked_item_, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable(linked_item_->get_asset(), coord, size, clickable), linked_item(linked_item_)
+    item_object(item* linked_item_, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable((linked_item_ == nullptr ? "null" : linked_item_->get_asset()), coord, size, clickable), linked_item(linked_item_)
     {
         is_dummy = false;
         stack_label = new QLabel(_disp);
@@ -246,13 +249,28 @@ public:
         connect(_disp, &tracked_button::clicked, this, &item_object::clicked);
     }
     void refresh_stack() {
+        if (linked_item == nullptr) {
+            stack_label->clear();
+            return;
+        }
+
         if (linked_item->get_stack() > 1) {
             stack_label->setText(QString("x%1").arg(linked_item->get_stack()));
             return;
         }
 
         stack_label->clear();
-    };
+    }
+    void change_item(item* item_) {
+        linked_item = item_;
+        if (item_ == nullptr) {
+            this->set_sprite_family("null");
+            refresh_stack();
+            return;
+        }
+        this->set_sprite_family(item_->get_asset());
+        refresh_stack();
+    }
 };
 
 class inventory_background : public QWidget {
@@ -280,16 +298,29 @@ public:
     }
 };
 
-class inventory_object : public QObject {
+class inventory_object : public QWidget {
 
     Q_OBJECT
-
+signals:
+    void send_equipped(item* item_);
+    void send_deequipped(item* item_);
 public slots:
     void process_item_click(item_object* item_obj) {
-        linked_inventory->remove_item(linked_inventory->get_slot(item_obj->linked_item), 1);
-        // linked_inventory->add_item(new item("Имя","Фамилия", "icon_inv_armor_pot", 1, 10, 1.0f, 1, true));
+        if (linked_inventory->is_equipped(item_obj->linked_item)) {
+            linked_inventory->deequip(item_obj->linked_item);
+            return;
+        }
+        linked_inventory->equip(item_obj->linked_item);
     }
     void update(unsigned int slot, inv_update_context context_) {
+        if (context_ == inv_update_context::equipped) {
+            emit send_equipped(linked_inventory->get_item(slot));
+            return;
+        }
+        if (context_ == inv_update_context::deequipped) {
+            emit send_deequipped(linked_inventory->get_item(slot));
+            return;
+        }
         unsigned int lower_boundry = _scrolled_cols * _cols;
         unsigned int upper_boundry = lower_boundry + (_cols * _displayed_rows) - 1;
         if (context_ == inv_update_context::removed_item) {
@@ -493,14 +524,15 @@ public:
     QGridLayout* layout;
     std::vector<item_object*> item_objects;
     inventory_object() = default;
-    inventory_object(inventory* link_inventory, inventory_context inventory_context_ = inventory_context::container_self, unsigned short columns = 3, unsigned short rows = 10, unsigned int item_size = 150, const QPoint& coord = QPoint(0,0)) {
+    inventory_object(inventory* link_inventory, inventory_context inventory_context_ = inventory_context::container_self, unsigned short columns = 3, unsigned short rows = 10, unsigned int item_size = 150, const QPoint& coord = QPoint(0,0), QWidget* parent = nullptr): QWidget(parent) {
         _cols = columns;
         _displayed_rows = rows;
         _item_size = item_size;
         context = inventory_context_;
         linked_inventory = link_inventory;
-        base = new inventory_background("inventory_background_tile",&global::w);
-        base->setGeometry(QRect(coord, QSize(_cols*_item_size, _displayed_rows*_item_size)));
+        base = new inventory_background("inventory_background_tile",this);
+        this->setGeometry(QRect(coord, QSize(_cols*_item_size, _displayed_rows*_item_size)));
+        base->setGeometry(0, 0, this->width(), this->height());
         base->sprite = base->sprite.scaled(_item_size, _item_size);
         base->repaint();
         layout_widget = new QWidget(base);
@@ -519,6 +551,117 @@ public:
     }
 };
 
+class player_inventory_widget: public QWidget {
+
+    Q_OBJECT
+
+public slots:
+    void equip_item_in_slot(item* item_) {
+        if (item_ == nullptr)
+            return;
+
+        if (item_->is_armor_type()) {
+            switch(static_cast<armor*>(item_)->get_armor_slot()) {
+            case armor_slot::head: {
+                change_slot(armor_head_slot, item_);
+                return;
+            }
+            case armor_slot::body: {
+                change_slot(armor_body_slot, item_);
+                return;
+            }
+            case armor_slot::legs: {
+                change_slot(armor_legs_slot, item_);
+                return;
+            }
+            }
+        }
+        if (item_->is_weapon_type()) {
+            change_slot(weapon_slot, item_);
+            return;
+        }
+        if (item_->is_ammo_type()) {
+            change_slot(ammo_slot, item_);
+            return;
+        }
+        if (item_->is_consumable_type()) {
+            change_slot(consumable_slot, item_);
+            return;
+        }
+    }
+    void deequip_item_in_slot(item* item_) {
+        if (item_ == nullptr)
+            return;
+
+        if (item_->is_armor_type()) {
+            switch(static_cast<armor*>(item_)->get_armor_slot()) {
+            case armor_slot::head: {
+                change_slot(armor_head_slot, nullptr);
+                return;
+            }
+            case armor_slot::body: {
+                change_slot(armor_body_slot, nullptr);
+                return;
+            }
+            case armor_slot::legs: {
+                change_slot(armor_legs_slot, nullptr);
+                return;
+            }
+            }
+        }
+        if (item_->is_weapon_type()) {
+            change_slot(weapon_slot, nullptr);
+            return;
+        }
+        if (item_->is_ammo_type()) {
+            change_slot(ammo_slot, nullptr);
+            return;
+        }
+        if (item_->is_consumable_type()) {
+            change_slot(consumable_slot, nullptr);
+            return;
+        }
+    }
+protected:
+    void change_slot(item_object*& slot_, item* item_) {
+        slot_->change_item(item_);
+    }
+    void paintEvent(QPaintEvent *event) {
+        QPainter paint(this);
+        if (sprite.isNull())
+            return;
+
+        paint.drawPixmap(this->rect(), sprite);
+    }
+public:
+    QPixmap sprite;
+    inventory_object* player_inventory = nullptr;
+    item_object* armor_head_slot = nullptr;
+    item_object* armor_body_slot = nullptr;
+    item_object* armor_legs_slot = nullptr;
+    item_object* weapon_slot = nullptr;
+    item_object* ammo_slot = nullptr;
+    item_object* consumable_slot = nullptr;
+    player_inventory_widget(QWidget* parent = nullptr): QWidget(parent) {
+        this->resize(1425, 900);
+        sprite.load(":/pictures/black.png");
+        player_inventory = new inventory_object(global::player_->get_inventory(), inventory_context::player_inventory, 4, 6, 125, QPoint(70,70), this);
+        connect(player_inventory, &inventory_object::send_equipped, this, &player_inventory_widget::equip_item_in_slot);
+        connect(player_inventory, &inventory_object::send_deequipped, this, &player_inventory_widget::deequip_item_in_slot);
+        armor_head_slot = new item_object(player_inventory->linked_inventory->get_armor_head(), QPoint(1170, 70), QSize(125,125));
+        armor_head_slot->_disp->setParent(this);
+        armor_body_slot = new item_object(player_inventory->linked_inventory->get_armor_body(), QPoint(1170, 195), QSize(125,125));
+        armor_body_slot->_disp->setParent(this);
+        armor_legs_slot = new item_object(player_inventory->linked_inventory->get_armor_legs(), QPoint(1170, 320), QSize(125,125));
+        armor_legs_slot->_disp->setParent(this);
+        weapon_slot = new item_object(player_inventory->linked_inventory->get_weapon(), QPoint(920, 450), QSize(125,125));
+        weapon_slot->_disp->setParent(this);
+        ammo_slot = new item_object(player_inventory->linked_inventory->get_equipped_ammo(), QPoint(920, 575), QSize(125,125));
+        ammo_slot->_disp->setParent(this);
+        consumable_slot = new item_object(player_inventory->linked_inventory->get_equipped_consumable(), QPoint(1075, 450), QSize(125,125));
+        consumable_slot->_disp->setParent(this);
+    }
+};
 
 class entity_object: public animated_displayable {
 
@@ -614,7 +757,7 @@ protected:
         }
     }
     void final() {
-        _processed_string = text_source + QString(" <img src=\":/pictures/ui_text_go_next.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\">");
+        _processed_string = text_source; /*+ QString(" <img src=\":/pictures/ui_text_go_next.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\">");*/
         this->setText(_processed_string);
         disconnect(global::timer, &QTimer::timeout, this, &text_object::tick);
         _currently_writing = false;
@@ -727,6 +870,7 @@ public:
         connect(this, &map_player_object::reached_destination, this, &map_player_object::stop_running);
         QWidget* marker_parent = parent->parentWidget();
         player_marker = new unclickable_button(marker_parent);
+        player_marker->setObjectName("player_marker");
         player_marker->setGeometry(QRect(0, 0, 32, 32));
         player_marker->setStyleSheet(QString("border-image: url(:/pictures/map_player_marker.png)"));
         move_player_marker();
@@ -965,7 +1109,8 @@ public slots:
         player_object->begin_step(end, steps, transpos_algs::linear);
     }
     void clicked_locked_tile(map_grid_tile* tile) {
-        tile->unlock();
+        // tile->unlock();
+        clicked_tile(tile);
     }
     void clicked_poi(map_grid_tile* tile) {}
     void allow_tiles(int x, int y, short width, short height, bool& locked) {
@@ -977,8 +1122,19 @@ public slots:
             locked = true;
             return;
         }
-
-        locked = (tile1->get_locked() || tile2->get_locked() || tile3->get_locked() || tile4->get_locked());
+        if (tile1->get_locked()) {
+            tile1->unlock();
+        }
+        if (tile2->get_locked()) {
+            tile2->unlock();
+        }
+        if (tile3->get_locked()) {
+            tile3->unlock();
+        }
+        if (tile4->get_locked()) {
+            tile4->unlock();
+        }
+        // locked = (tile1->get_locked() || tile2->get_locked() || tile3->get_locked() || tile4->get_locked());
     }
 public:
     map_grid* grid = nullptr;

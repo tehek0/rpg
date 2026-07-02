@@ -8,8 +8,9 @@ QString displayable::get_sprite_family() {
     return _sprite_family;
 }
 
-void displayable::set_sprite_family(QString& sprite_family) {
+void displayable::set_sprite_family(const QString& sprite_family) {
     _sprite_family = sprite_family;
+    _disp->setStyleSheet(QString("border-image: url(:/pictures/%1.png);").arg(_sprite_family));
 }
 
 

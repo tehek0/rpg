@@ -81,5 +81,7 @@
         <file>pictures/testbkg_character_creation.jpg</file>
         <file>sounds/music/ambience.ogg</file>
         <file>pictures/testbkg_save_widget.jpg</file>
+        <file>sounds/key1.wav</file>
+        <file>sounds/key2.wav</file>
     </qresource>
 </RCC>

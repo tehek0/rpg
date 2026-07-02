@@ -292,6 +292,20 @@ bool load_player(player* player_, int slot) {
     j["money"].get_to(_money);
     j["max_weight"].get_to(_max_weight);
     j["max_energy"].get_to(_max_energy);
+
+    if (player_ == nullptr)
+        player_ = new player();
+
+    player_->set_name(QString::fromStdString(_name));
+    player_->set_asset(QString::fromStdString(_asset));
+    player_->set_entity_stats(_entity_stats);
+    player_->set_entity_level(_entity_level);
+    player_->set_max_health(_max_health);
+    player_->set_health(_health);
+    player_->set_base_armor(_base_armor);
+    player_->set_money(_money);
+    player_->set_max_weight(_max_weight);
+    player_->set_max_energy(_max_energy);
     _inventory = new inventory();
     player_->set_inventory(_inventory);
     for (auto elem : j["inventory"]) {
@@ -315,19 +329,6 @@ bool load_player(player* player_, int slot) {
             _inventory->equip(itm);
         }
     }
-    if (player_ == nullptr)
-        player_ = new player();
-
-    player_->set_name(QString::fromStdString(_name));
-    player_->set_asset(QString::fromStdString(_asset));
-    player_->set_entity_stats(_entity_stats);
-    player_->set_entity_level(_entity_level);
-    player_->set_max_health(_max_health);
-    player_->set_health(_health);
-    player_->set_base_armor(_base_armor);
-    player_->set_money(_money);
-    player_->set_max_weight(_max_weight);
-    player_->set_max_energy(_max_energy);
 
     return true;
 }

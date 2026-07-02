@@ -73,7 +73,7 @@ disposable_scene* throw_select_save_scene(save_scene_context context) {
     save_w->move(780, 360);
     scene_->add(save_w);
 
-    QLabel* x = new QLabel("Используйте колёсико мыши, чтобы переключить страницу");
+    text_object* x = new text_object("Используйте колёсико мыши, чтобы переключить страницу", "typing", false, 13);
     x->setGeometry(780, 340, 350, 15);
     x->setStyleSheet("color: rgb(255,255,255);");
     scene_->add(x);
@@ -107,9 +107,11 @@ disposable_scene* throw_character_creation_scene() {
     creation_widget->move(650, 230);
     global::w.connect(creation_widget, &character_creation_widget::player_created, &global::w, &MainWindow::new_game);
     scene_->add(creation_widget);
-    QLabel* x = new QLabel("Распределите очки характеристик, установите главные навыки и выберите имя, чтобы начать игру");
+
+    text_object* x = new text_object("Распределите очки характеристик, установите главные навыки и выберите имя, чтобы начать игру", "typing", false, 8);
     x->setGeometry(650, 210, 620, 15);
     x->setStyleSheet("color: rgb(255,255,255);");
+
     scene_->add(x);
     return scene_;
 }
@@ -173,14 +175,18 @@ game_scene* throw_hub_scene() {
     map->setObjectName("map");
     scene_->add(map);
     global::w.connect(map->player_object, &map_player_object::link_line, &global::w, [=](QGraphicsLineItem*& line) {global::w.draw_destination_line(line, map);});
-    // auto save_btn = new QPushButton("Сохранить");
-    // save_btn->move(400, 0);
-    // scene_->add(save_btn);
-    // auto load_btn = new QPushButton("Загрузить");
-    // load_btn->move(500, 0);
-    // scene_->add(load_btn);
-    // global::w.connect(save_btn, &QPushButton::clicked, &global::w, [=]() {save_map(map, 1);});
-    // global::w.connect(load_btn, &QPushButton::clicked, &global::w, [=]() {bool x = load_map(map, 1);});
+
+    auto inv_button = new QPushButton("Инвентарь");
+    inv_button->resize(instrument_side, instrument_side);
+    inv_button->move(instruments_width, instruments_panel_hight_start + 100);
+    global::w.connect(inv_button, &QPushButton::clicked, &global::w, [=]() {scene_->findChild<map_widget*>("map")->hide(); auto chars = scene_->findChild<QWidget*>("chars"); if (chars != nullptr) {chars->hide();} auto pinv = scene_->findChild<player_inventory_widget*>("inventory"); if (pinv == nullptr) {pinv = new player_inventory_widget(); pinv->move(242,111); pinv->setObjectName("inventory"); scene_->add(pinv);} else {pinv->show();}});
+    scene_->add(inv_button);
+
+    auto map_button = new QPushButton("Карта");
+    map_button->resize(instrument_side, instrument_side);
+    map_button->move(instruments_width, instruments_panel_hight_start + 200);
+    global::w.connect(map_button, &QPushButton::clicked, &global::w, [=]() {scene_->findChild<map_widget*>("map")->show(); auto pinv = scene_->findChild<player_inventory_widget*>("inventory"); if (pinv != nullptr) {pinv->hide();} auto chars = scene_->findChild<QWidget*>("chars"); if (chars != nullptr) {chars->hide();}});
+    scene_->add(map_button);
 
     auto interact_btn = new QPushButton("Зайти");
     interact_btn->resize(instrument_side,instrument_side);
