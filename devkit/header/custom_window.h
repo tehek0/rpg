@@ -20,4 +20,5 @@ public:
 };
 
 void call_reset_id_button_dialog();
+void call_choose_exe_path();
 }

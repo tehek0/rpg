@@ -4,7 +4,7 @@
 #include <QDebug>
 #include <QFileDialog>
 
-std::string path("");
+std::string path = dev::path_to_rpg_exe.toStdString();
 
 void dev::set_ids_default_state() {
     std::ofstream default_ids(path + "ids.json");

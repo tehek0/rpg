@@ -117,7 +117,7 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
 
     unsigned long long id = dev::throw_id(object_type);
 
-    QString path = "objects/";
+    QString path = path_to_rpg_exe + "/objects/";
     if (is_type_component(object_type)) {
         path += "components";
     }

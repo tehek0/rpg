@@ -3,6 +3,7 @@
 #include "header/id_support.hpp"
 #include "qdialog.h"
 #include "qpushbutton.h"
+#include "QFileDialog"
 
 dev::custom_window::custom_window() : QWidget(){
     this->setAttribute(Qt::WA_DeleteOnClose);
@@ -53,4 +54,12 @@ void dev::call_reset_id_button_dialog() {
     QAbstractButton::connect(cancel, &QPushButton::clicked, [ask]() {ask->close();});
     ask->show();
 
+}
+
+void dev::call_choose_exe_path() {
+    QString path = QFileDialog::getExistingDirectory(nullptr, "Выберите папку с .exe файлом игры","/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (path_to_rpg_exe.isEmpty()) {
+        ui::inform->setText("Путь не считан.");
+    }
+    path_to_rpg_exe = path;
 }

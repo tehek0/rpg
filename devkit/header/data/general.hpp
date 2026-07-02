@@ -22,6 +22,7 @@ namespace  ui {
     inline QLabel* inform;
 }
 
+inline QString path_to_rpg_exe = "../../../../rpg/build/Unnamed_Debug/debug/";
 }
 
 

@@ -11,6 +11,8 @@ DevkitWindow::DevkitWindow(QWidget *parent)
 {
     ui->setupUi(this);
     dev::ui::inform = ui->inform_l;
+    dev::call_choose_exe_path();
+
 }
 
 DevkitWindow::~DevkitWindow()
