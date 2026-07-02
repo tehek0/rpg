@@ -3,6 +3,7 @@
 #include <QPoint>
 #include "../header/inc/json.hpp"
 #include <fstream>
+#include "../header/id_support.hpp"
 using js = nlohmann::ordered_json;
 
 void dev::map_grid_tile::change_tile_tint() {
@@ -11,7 +12,6 @@ void dev::map_grid_tile::change_tile_tint() {
     } else {
         this->setStyleSheet(QString("background: rgba(17, 9, 52, 0);"));
     }
-    qInfo() << 'b';
 }
 
 dev::map_poi::map_poi(QString sprite_family, unsigned long long location_id,QString location_name)
@@ -26,7 +26,6 @@ dev::map_grid_tile::map_grid_tile(unsigned short size) {
     connect(this, &QPushButton::clicked, this, &map_grid_tile::process_click);
 
     change_tile_tint();
-    qInfo() << '-';
 
 }
 dev::map_grid::map_grid(unsigned short width, unsigned short height, unsigned short tile_size, QWidget* parent): QWidget(parent) {
@@ -76,20 +75,20 @@ void dev::map_construct_window::add_save_button() {
     save_->show();
 }
 
-void dev::map_construct_window::add_load_button() {
-    load_ = new QPushButton(this);
-    load_->setText("Load");
-    load_->setGeometry(1000+button_side+gap , gap, button_side, button_side);
-    connect(load_, SIGNAL(clicked()), this, SLOT(on_load_clicked()));
-    load_->show();
-}
+// void dev::map_construct_window::add_load_button() {
+//     load_ = new QPushButton(this);
+//     load_->setText("Load");
+//     load_->setGeometry(1000+button_side+gap , gap, button_side, button_side);
+//     connect(load_, SIGNAL(clicked()), this, SLOT(on_load_clicked()));
+//     load_->show();
+// }
 
 void dev::map_construct_window::add_brushes() {
     locked_brush_ = new QPushButton(this);
     locked_brush_->setText("Открывашка");
-    locked_brush_->setGeometry(1000+button_side+gap, button_side + 3*gap, button_side, button_side);
+    locked_brush_->setGeometry(1000, button_side + 3*gap, button_side*2, button_side);
     locked_brush_->show();
-    connect(load_, SIGNAL(clicked()), this, SLOT(on_locked_brush_clicked()));
+    connect(locked_brush_, SIGNAL(clicked()), this, SLOT(on_locked_brush_clicked()));
 }
 dev::map_construct_window::map_construct_window() {
     grid_ = new map_grid(19, 12, 50, this);
@@ -98,21 +97,17 @@ dev::map_construct_window::map_construct_window() {
     connect(grid_, &map_grid::clicked_child_poi, this, &map_construct_window::clicked_poi);
 
     add_save_button();
-    add_load_button();
+    //add_load_button();
     add_brushes();
 
 }
 
 void dev::map_construct_window::clicked_tile(map_grid_tile* tile) {
+    qInfo() << tile->is_locked_;
     switch (brush_) {
     case dev::map_brush::none : {break;}
     case dev::map_brush::locker : {
-        if (tile->is_locked_ == true) {
-            tile->is_locked_ = false;
-        }
-        else {
-            tile->is_locked_ = true;
-        }
+        tile->is_locked_ = !tile->is_locked_;
         break;
     }
 
@@ -135,16 +130,25 @@ void dev::map_construct_window::on_locked_brush_clicked() {
 dev::map_construct_window::~map_construct_window() {
     delete grid_;
     delete save_;
-    delete load_;
+    //delete load_;
+    delete locked_brush_;
 }
 
 
+void dev::map_construct_window::on_save_clicked() {
+    unsigned long long id = dev::throw_id(dev::datatype::map);
 
-void dev::map_construct_window::on_save_clicked(){
-    std::string path = "objects/maps.json";
-    std::ofstream file(path);
-    file.clear();
+    QString path = "objects/";
+    path += "/%1";
+    QString folder_path = QString(path).arg(datatypes_to_string[dev::datatype::map]);
+    if (!std::filesystem::exists(folder_path.toStdString())) {
+        std::filesystem::create_directories(folder_path.toStdString());
+    }
+    QString file_path = (folder_path + QString("/%1_%2.json").arg(datatypes_to_string[dev::datatype::map]).arg(id));
+    std::ofstream file(file_path.toStdString());
     js j = js::object();
+    j["player_x"] = player_object.x();
+    j["player_y"] = player_object.y();
     j["map"];
     js map_j = js::array();
     for (int i = 0; i < grid_->get_tiles().size(); ++i) {
@@ -164,78 +168,102 @@ void dev::map_construct_window::on_save_clicked(){
     }
     j["map"] = map_j;
     file << j.dump(js_indent);
-    qInfo() << 's';
 }
-bool dev::map_construct_window::on_load_clicked(){
-    std::string path = "objects/maps.json";
-    std::ifstream file(path);
-    js j;
-    try {
-        j = js::parse(file);
-    } catch (...) {
-        return false;
-    }
-    if (!j.is_object()) {
-        return false;
-    }
-    js map_j;
-    if (j.contains("map")) {
-        map_j = j["map"];
-    } else {
-        return false;
-    }
-    if (!map_j.is_array()) {
-        return false;
-    }
-    if (map_j.size() != grid_->get_tiles().size()) {
-        return false;
-    }
-    for (int i = 0; i < grid_->get_tiles().size(); ++i) {
-        map_grid_tile* tile_obj = grid_->get_tiles()[i];
-        js tile = map_j[i];
-        if (!tile.contains("locked") || !tile.contains("difficulty") || !tile.contains("biome")) {
-            return false;
-        }
-        if (!tile["locked"].is_boolean() || !tile["difficulty"].is_number_float() || !tile["biome"].is_number_unsigned()) {
-            return false;
-        }
-        bool locked;
-        int biome_;
-        float difficulty;
-        tile["locked"].get_to(locked);
-        tile["biome"].get_to(biome_);
-        tile["difficulty"].get_to(difficulty);
-        if (!locked) {
-            tile_obj->is_locked_ = false;
-        } else {
-            tile_obj->is_locked_ = true;
-        }
-        tile_obj->biome_ = biome{biome_};
-        tile_obj->difficulty_ = difficulty;
-        if (tile.contains("poi")) {
-            js tile_poi = tile["poi"];
+// void dev::map_construct_window::on_save_clicked(){
+//     unsigned long long id = dev::throw_id(dev::datatype::map);
+//     std::string path = "objects/maps" + QString("/%1_%2").arg(datatypes_to_string[dev::datatype::map]).arg(id).toStdString();
+//     std::ofstream file(path);
+//     js j = js::object();
+//     j["map"];
+//     js map_j = js::array();
+//     for (int i = 0; i < grid_->get_tiles().size(); ++i) {
+//         js tile = js::object();
+//         map_grid_tile* tile_obj = grid_->get_tiles()[i];
+//         tile["locked"] = tile_obj->is_locked_;
+//         if (!(tile_obj->poi_ == nullptr)) {
+//             js poi = js::object();
+//             poi["name"] = tile_obj->poi_->location_name_.toStdString();
+//             poi["location_id"] = tile_obj->poi_->location_id_;
+//             poi["sprite"] = tile_obj->poi_->sprite_family_.toStdString();
+//             tile["poi"] = poi;
+//         }
+//         tile["difficulty"] = tile_obj->difficulty_;
+//         tile["biome"] = static_cast<int>(tile_obj->biome_);
+//         map_j.emplace_back(tile);
+//     }
+//     j["map"] = map_j;
+//     file << j.dump(js_indent);
+//}
+// bool dev::map_construct_window::on_load_clicked(){
+//     std::string path = QString("objects/maps/map_%1.json").arg(dev::get_la(dev::datatype::map)).toStdString();
+//     std::ifstream file(path);
+//     js j;
+//     try {
+//         j = js::parse(file);
+//     } catch (...) {
+//         return false;
+//     }
+//     if (!j.is_object()) {
+//         return false;
+//     }
+//     js map_j;
+//     if (j.contains("map")) {
+//         map_j = j["map"];
+//     } else {
+//         return false;
+//     }
+//     if (!map_j.is_array()) {
+//         return false;
+//     }
+//     if (map_j.size() != grid_->get_tiles().size()) {
+//         return false;
+//     }
+//     for (int i = 0; i < grid_->get_tiles().size(); ++i) {
+//         map_grid_tile* tile_obj = grid_->get_tiles()[i];
+//         js tile = map_j[i];
+//         if (!tile.contains("locked") || !tile.contains("difficulty") || !tile.contains("biome")) {
+//             return false;
+//         }
+//         if (!tile["locked"].is_boolean() || !tile["difficulty"].is_number_float() || !tile["biome"].is_number_unsigned()) {
+//             return false;
+//         }
+//         bool locked;
+//         int biome_;
+//         float difficulty;
+//         tile["locked"].get_to(locked);
+//         tile["biome"].get_to(biome_);
+//         tile["difficulty"].get_to(difficulty);
+//         if (!locked) {
+//             tile_obj->is_locked_ = false;
+//         } else {
+//             tile_obj->is_locked_ = true;
+//         }
+//         tile_obj->biome_ = biome{biome_};
+//         tile_obj->difficulty_ = difficulty;
+//         if (tile.contains("poi")) {
+//             js tile_poi = tile["poi"];
 
-            if (!tile_poi.is_object())
-                return false;
+//             if (!tile_poi.is_object())
+//                 return false;
 
-            if (!tile_poi.contains("sprite") || !tile_poi.contains("name") || !tile_poi.contains("location_id"))
-                return false;
+//             if (!tile_poi.contains("sprite") || !tile_poi.contains("name") || !tile_poi.contains("location_id"))
+//                 return false;
 
-            if (!tile_poi["sprite"].is_string() || !tile_poi["name"].is_string() || !tile_poi["location_id"].is_number_unsigned())
-                return false;
+//             if (!tile_poi["sprite"].is_string() || !tile_poi["name"].is_string() || !tile_poi["location_id"].is_number_unsigned())
+//                 return false;
 
-            std::string sprite;
-            std::string name;
-            unsigned long long location_id;
+//             std::string sprite;
+//             std::string name;
+//             unsigned long long location_id;
 
-            tile_poi["sprite"].get_to(sprite);
-            tile_poi["name"].get_to(name);
-            tile_poi["location_id"].get_to(location_id);
+//             tile_poi["sprite"].get_to(sprite);
+//             tile_poi["name"].get_to(name);
+//             tile_poi["location_id"].get_to(location_id);
 
-            map_poi* poi = new map_poi(QString::fromStdString(sprite), location_id, QString::fromStdString(name));
-            tile_obj->poi_ = poi;
-        }
-    }
-    qInfo() << 'l';
-    return true;
-}
+//             map_poi* poi = new map_poi(QString::fromStdString(sprite), location_id, QString::fromStdString(name));
+//             tile_obj->poi_ = poi;
+//         }
+//     }
+//     qInfo() << 'l';
+//     return true;
+// }

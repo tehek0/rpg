@@ -15,6 +15,7 @@ struct map_poi : public QObject{
     Q_OBJECT
 public:
     map_poi(QString sprite_family, unsigned long long location_id,QString location_name);
+    ~map_poi() {if (disp_->parent() == nullptr) {delete disp_;}};
     unsigned long long location_id_;
     QString location_name_;
     QString sprite_family_;
@@ -80,6 +81,7 @@ enum class map_brush {
 class map_construct_window : public custom_window {
     Q_OBJECT
 private:
+    QPoint player_object = {10,10};
     map_brush brush_ = map_brush::none;
     map_grid* grid_;
     QPushButton* save_;
@@ -96,7 +98,7 @@ public:
     map_grid* get_grid() {return grid_;}
 public slots:
     void on_save_clicked();
-    bool on_load_clicked();
+    //bool on_load_clicked();
     void on_locked_brush_clicked();
 
     void clicked_tile(map_grid_tile* tile);

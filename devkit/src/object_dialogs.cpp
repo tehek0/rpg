@@ -131,13 +131,9 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : cus
 
 dev::object_dialog_window::~object_dialog_window() {
     ypos = 10;
-    delete reset_;
-    if (object_type_ == dev::datatype::erased) {
-        delete delete_;
-    }
-    else {
-        delete save_;
-    }
+    if (reset_ != nullptr) {delete reset_;}
+    if (save_ != nullptr) {delete save_;}
+    if (delete_ != nullptr) {delete delete_;}
 }
 
 //SLOTS

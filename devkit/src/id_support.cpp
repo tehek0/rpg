@@ -4,14 +4,14 @@
 #include <QDebug>
 #include <QFileDialog>
 
-std::string path("../../../");
+std::string path("");
 
 void dev::set_ids_default_state() {
     std::ofstream default_ids(path + "ids.json");
     js default_object = js::object();
     short index = 0;
     for (const auto& str : datatypes_to_string) {
-        if (index >= dev::datatype::location){
+        if (index >= dev::datatype::map){
             QString q_last = QString(q_last_ptrn).arg(str);
             std::string last = q_last.toStdString();
             default_object[last] = 0;
