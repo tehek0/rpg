@@ -3,6 +3,7 @@
 #include "header/id_support.hpp"
 #include "qdialog.h"
 #include "qpushbutton.h"
+#include "QFileDialog"
 
 dev::custom_window::custom_window() : QWidget(){
     this->setAttribute(Qt::WA_DeleteOnClose);
@@ -36,10 +37,10 @@ void dev::call_reset_id_button_dialog() {
     QDialog* ask = new QDialog();
     ask->setWindowTitle("Вы уверены?");
     ask->resize(340,200);
-    QLabel* label = new QLabel("[Использовать только при расширении функционала\n девкита для добавления нового типа данных.]\n"
+    QLabel* label = new QLabel("[Использовать только при расширении функционала\nдевкита для добавления нового типа данных.]\n"
                                "Это действие очистит историю созданных id.\nВсе текущие объекты выпадут из системы.\n"
-                               "Это не фатально, но такого допускать не стоит.\n"
-                               "Если у вас есть объекты 1 и 2, придётся нажать сохранение трижды,\n чтобы создался объект.\n", ask);
+                               "Это не фатально, но такого допускать не стоит.\nЭто приведёт к некорректной работе удаления объектов\n"
+                               "Если у вас есть объекты 1 и 2, придётся нажать сохранение трижды,\nчтобы создался объект.\n", ask);
     QPushButton* ok = new QPushButton("ОК", ask);
     QPushButton* cancel = new QPushButton("Отмена", ask);
     label->setGeometry(gap, gap, field_w, any_line_hight);
@@ -53,4 +54,12 @@ void dev::call_reset_id_button_dialog() {
     QAbstractButton::connect(cancel, &QPushButton::clicked, [ask]() {ask->close();});
     ask->show();
 
+}
+
+void dev::call_choose_exe_path() {
+    QString path = QFileDialog::getExistingDirectory(nullptr, "Выберите папку с .exe файлом игры","/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (path_to_rpg_exe.isEmpty()) {
+        ui::inform->setText("Путь не считан.");
+    }
+    path_to_rpg_exe = path;
 }

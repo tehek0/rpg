@@ -10,13 +10,13 @@ namespace dev {
 //Окно создание предмета для заданного типа. В общем то заложена универсальная сборочная программа для полей ввода разного типа
 class object_dialog_window : public custom_window {
     Q_OBJECT
-
+protected:
     std::vector<info_field> info_fields_;
     std::vector<info_field> info_subfields_;
     dev::datatype object_type_;
-    QPushButton* save_;
-    QPushButton* reset_;
-    QPushButton* delete_;
+    QPushButton* save_ = nullptr;
+    QPushButton* reset_ = nullptr;
+    QPushButton* delete_ = nullptr;
     int last_y_pos;
 
     void add_save_button();
@@ -24,7 +24,7 @@ class object_dialog_window : public custom_window {
 public:
     object_dialog_window(); //не задуман к использованию
     explicit object_dialog_window(dev::datatype object_type);
-    ~object_dialog_window();
+    virtual ~object_dialog_window();
 
     std::vector<info_field> get_info_fields() {return info_fields_;}
 

@@ -28,7 +28,7 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
         else if (dev::is_type_struct(type)) {
             js::array_t array;
             for (QRegularExpressionMatch elem : cut_id_out_of_line_e.globalMatch(value)) {
-                array.emplace_back(elem.captured().toStdString());
+                array.emplace_back(elem.captured().toULongLong());
             }
             data[key] = array;
         }
@@ -40,32 +40,68 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
             case dev::datatype::qstring:
                 data[key] = value.toStdString(); break;
             case dev::datatype::integer:
-                if (value.toInt(&right)) {
+                if(value.isEmpty()) {
+                    data[key] = 0;
+                }
+                else if (value.toInt(&right)) {
                     data[key] = value.toInt();
                 }
                 else {
-                    data[key] = INT_MAX;
+                    if (data[key][0] == '-') {
+                        data[key] = INT_MIN;
+                    }
+                    else {
+                        data[key] = INT_MAX;
+                    }
                 }
                 break;
             case dev::datatype::u_integer:
-                if (value.toUInt(&right)) {
+                if(value.isEmpty()) {
+                    data[key] = 0;
+                }
+                else if (value.toUInt(&right)) {
                     data[key] = value.toUInt();
                 }
                 else {
                     data[key] = UINT_MAX;
                 }
                 break;
-            case dev::datatype::short_t:
-                if (value.toShort(&right)) {
-                    data[key] = value.toShort();
+            case dev::datatype::u_short:
+                if(value.isEmpty()) {
+                    data[key] = 0;
+                }
+                else if (value.toUInt(&right)) {
+                    data[key] = value.toUShort();
                 }
                 else {
                     data[key] = SHRT_MAX;
                 }
                 break;
+            case dev::datatype::short_t:
+                if(value.isEmpty()) {
+                    data[key] = 0;
+                }
+                else if (value.toShort(&right)) {
+                    data[key] = value.toShort();
+                }
+                else {
+                    if (data[key][0] == '-') {
+                        data[key] = SHRT_MIN;
+                    }
+                    else {
+                        data[key] = SHRT_MAX;
+                    }
+                }
+                break;
             case dev::datatype::double_t:
+                if(value.isEmpty()) {
+                    data[key] = 0.1;
+                }
                 data[key] = value.toDouble(); break;
             case dev::datatype::u_long_long:
+                if(value.isEmpty()) {
+                    data[key] = 0;
+                }
                 data[key] = value.toULongLong(); break;
             default: data[key] = value.toShort(); break;
             }
@@ -81,7 +117,7 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
 
     unsigned long long id = dev::throw_id(object_type);
 
-    QString path = "objects/";
+    QString path = path_to_rpg_exe + "/objects/";
     if (is_type_component(object_type)) {
         path += "components";
     }

@@ -12,6 +12,7 @@ dev::object_data templates[dev::datatype::total + 1] = {
         {},
         {dev::datatype::TODO, dev::datatype::qstring, dev::datatype::qstring},
     },
+    {}, //map
     { //sublocation
         {},{},{},}
     ,
@@ -71,6 +72,7 @@ const std::vector<dev::object_data> subtypes_template[dev::datatype::total + 1] 
         {},
         },
 },
+    {}, //map
     { //sublocation's
      {{},{},{},},
 },

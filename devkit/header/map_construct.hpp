@@ -1,5 +1,6 @@
 #pragma once
 #include "custom_window.h"
+#include "qlineedit.h"
 #include <QGridLayout>
 #include <QPushButton>
 
@@ -14,10 +15,14 @@ enum class biome {
 struct map_poi : public QObject{
     Q_OBJECT
 public:
+    map_poi() {disp_ = new QPushButton();};
     map_poi(QString sprite_family, unsigned long long location_id,QString location_name);
+    ~map_poi() {if (disp_->parent() == nullptr) {delete disp_;}};
+
     unsigned long long location_id_;
     QString location_name_;
     QString sprite_family_;
+
     QPushButton* disp_;
 };
 
@@ -27,9 +32,13 @@ public:
     bool is_locked_ = true;
     biome biome_ = biome::none;
     map_poi* poi_ = nullptr;
+    bool is_poi_real = false;
     float difficulty_ = 0;
+
     map_grid_tile(unsigned short size);
     ~map_grid_tile() {delete poi_;}
+
+    void change_tile_tint();
 signals:
     void clicked_tile(map_grid_tile* tile);
     void clicked_poi(map_grid_tile* tile);
@@ -69,15 +78,25 @@ public slots:
 
 };
 
+enum class map_brush {
+    none,
+    locker,
+    player,
+    poi,
+};
+
 class map_construct_window : public custom_window {
     Q_OBJECT
 private:
+    map_brush brush_ = map_brush::none;
     map_grid* grid_;
-    QPushButton* save_;
-    QPushButton* load_;
+    std::vector<QPushButton*> buttons_;
+    std::vector<QLabel*> labels_;
+    std::vector<QLineEdit*> edits_;
 
     void add_save_button();
     void add_load_button();
+    void add_brushes();
 public:
     map_construct_window();
     ~map_construct_window();
@@ -85,7 +104,11 @@ public:
     map_grid* get_grid() {return grid_;}
 public slots:
     void on_save_clicked();
-    bool on_load_clicked();
+    //bool on_load_clicked();
+    void on_locked_brush_clicked();
+    void on_player_brush_clicked();
+    void on_poi_brush_clicked();
+
     void clicked_tile(map_grid_tile* tile);
     void clicked_poi(map_grid_tile* tile);
 };

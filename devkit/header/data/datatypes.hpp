@@ -17,6 +17,7 @@ enum datatype {
     u_short, // *линейные unsigned
     u_integer,
     u_long_long,
+    map, //тут сидит
     location, // СТРУКТУРЫ
     sublocation,
     quest,
@@ -53,6 +54,7 @@ const std::string datatypes_to_string[datatype::total] = {
     "u_short",
     "u_integer",
     "u_long_long",
+    "map",
     "location",
     "sublocation",
     "quest",
