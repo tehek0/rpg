@@ -921,7 +921,7 @@ public slots:
         _disp->linked_tooltip->setText(QString("<center><font size=\"4\">%1</font></center>").arg(_location_name));
     }
 public:
-    map_poi(const QString& asset, unsigned long long location_id, const QString& location_name = "?"): displayable(asset, QPoint(0,0), QSize(50,50)), _location_id(location_id), _location_name(location_name)
+    map_poi(const QString& asset, unsigned long long location_id, const QString& location_name = "?"): displayable(asset, QPoint(0,0), QSize(75,75)), _location_id(location_id), _location_name(location_name)
     {
         _disp->tooltip = tooltip_types::location_on_map;
         connect(_disp, &tracked_button::request_tooltip, this, &map_poi::markdown_poi);

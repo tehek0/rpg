@@ -6,19 +6,21 @@
 #include "header/data/general.hpp"
 
 QString dev::get_path_to_datatype_folder(dev::datatype type) {
-    QString path = "objects/";
+    QString path = dev::path_to_rpg_exe;
+    std::filesystem::path root = std::filesystem::path(path.toStdString());
+    root /= "objects";
     if (is_type_component(type)) {
-        path += "components/";
+        root /= "components";
     }
     switch(type) {
-    case dev::datatype::item_requirement: path += "item_requirement"; break;
-    case dev::datatype::requirement: path += "requirement"; break;
-    case dev::datatype::armor_bonus: path += "armor_bonus"; break;
-    case dev::datatype::item: path += "item"; break;
-    case dev::datatype::on_use: path += "on_use"; break;
+    case dev::datatype::item_requirement: root /= "item_requirement"; break;
+    case dev::datatype::requirement: root /= "requirement"; break;
+    case dev::datatype::armor_bonus: root /= "armor_bonus"; break;
+    case dev::datatype::item: root /= "item"; break;
+    case dev::datatype::on_use: root /= "on_use"; break;
     default: break;
     }
-    return path;
+    return QString::fromStdString(root.string());
 }
 
 bool dev::is_directory_empty(QString path) {

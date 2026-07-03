@@ -127,13 +127,13 @@ QString item::html_desc() {
 
 QString item::html_weight() {
     double total_weight = get_total_weight();
-    QString html_weight = QString("<p><img src=\":/pictures/ui_weight_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> Вес: %1%2</font><\p>").arg(_base_weight).arg((total_weight == _base_weight ? QString("") : QString(" (%1)").arg(total_weight)));
+    QString html_weight = QString("<p><img src=\"assets:/pictures/ui_weight_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> Вес: %1%2</font><\p>").arg(_base_weight).arg((total_weight == _base_weight ? QString("") : QString(" (%1)").arg(total_weight)));
     return html_weight;
 }
 
 QString item::html_cost() {
     unsigned int total_cost = _stack * _base_cost;
-    QString html_cost = QString("<p><img src=\":/pictures/ui_base_cost_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> Стоимость: %1%2</font></p>").arg(_base_cost).arg((total_cost == _base_cost ? QString("") : QString(" (%1)").arg(total_cost)));
+    QString html_cost = QString("<p><img src=\"assets:/pictures/ui_base_cost_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> Стоимость: %1%2</font></p>").arg(_base_cost).arg((total_cost == _base_cost ? QString("") : QString(" (%1)").arg(total_cost)));
     return html_cost;
 }
 
@@ -261,7 +261,7 @@ void has_energy_cost::set_energy_cost(short energy_cost) {
 
 QString has_base_dmg::html_base_dmg() {
     QString str_insert = QString("Базовый урон: %1").arg(_base_dmg);
-    QString html_base_dmg = QString("<p><img src=\":/pictures/ui_damage_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
+    QString html_base_dmg = QString("<p><img src=\"assets:/pictures/ui_damage_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
     return html_base_dmg;
 }
 
@@ -270,7 +270,7 @@ QString weapon::html_base_dmg() {
     if (_damage_type != damage_type::non_specified) {
         str_insert += QString(" (%1)").arg(damage_type_to_str(_damage_type));
     }
-    QString html_base_dmg = QString("<p><img src=\":/pictures/ui_damage_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
+    QString html_base_dmg = QString("<p><img src=\"assets:/pictures/ui_damage_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
     return html_base_dmg;
 }
 
@@ -278,12 +278,12 @@ QString has_ammo_type::html_ammo_type() {
     if (_ammo_type == ammo_type::none) {
         return "";
     }
-    QString html_ammo_type = QString("<p><img src=\":/pictures/ui_ammo_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> Тип боезапаса: %1</font></p>").arg(ammo_type_to_str(_ammo_type));
+    QString html_ammo_type = QString("<p><img src=\"assets:/pictures/ui_ammo_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> Тип боезапаса: %1</font></p>").arg(ammo_type_to_str(_ammo_type));
     return html_ammo_type;
 }
 
 QString has_energy_cost::html_energy_cost() {
-    QString html_energy_cost = QString("<p><img src=\":/pictures/ui_energy_cost_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> Стоимость хода: %1</font></p>").arg(_energy_cost);
+    QString html_energy_cost = QString("<p><img src=\"assets:/pictures/ui_energy_cost_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> Стоимость хода: %1</font></p>").arg(_energy_cost);
     return html_energy_cost;
 }
 
@@ -383,13 +383,13 @@ armor_bonus armor::get_armor_bonus() {
 
 QString armor::html_armor_points() {
     QString str_insert = QString("Броня: ") + armor_slot_to_str(_armor_slot) + ", " + value_to_colored_text(_armor_points);
-    QString html_armor_points = QString("<p><img src=\":/pictures/ui_armor_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
+    QString html_armor_points = QString("<p><img src=\"assets:/pictures/ui_armor_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
     return html_armor_points;
 }
 
 QString armor::html_armor_bonus() {
     QString str_insert = QString("Когда надето: %1").arg(_armor_bonus.text_armor_bonus());
-    QString html_armor_bonus = QString("<p><img src=\":/pictures/ui_armor_bonus_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
+    QString html_armor_bonus = QString("<p><img src=\"assets:/pictures/ui_armor_bonus_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
     return html_armor_bonus;
 }
 
@@ -464,7 +464,7 @@ QString on_use::text_use_effect() {
 
 QString consumable::html_on_use() {
     QString str_insert = QString("Когда использовано: %1 (Осталось: %2)").arg(_on_use.text_use_effect()).arg(_uses_left);
-    QString html_on_use = QString("<p><img src=\":/pictures/ui_use_effect_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
+    QString html_on_use = QString("<p><img src=\"assets:/pictures/ui_use_effect_icon.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\"><font size=\"2\"> %1</font></p>").arg(str_insert);
     return html_on_use;
 }
 

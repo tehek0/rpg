@@ -57,9 +57,10 @@ void dev::call_reset_id_button_dialog() {
 }
 
 void dev::call_choose_exe_path() {
-    QString path = QFileDialog::getExistingDirectory(nullptr, "Выберите папку с .exe файлом игры","/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString path = QFileDialog::getExistingDirectory(nullptr, "Выберите папку с .exe файлом игры","", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (path_to_rpg_exe.isEmpty()) {
         ui::inform->setText("Путь не считан.");
     }
     path_to_rpg_exe = path;
+    qInfo() << path_to_rpg_exe;
 }

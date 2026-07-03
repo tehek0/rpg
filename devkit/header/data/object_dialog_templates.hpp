@@ -57,7 +57,7 @@ dev::object_data templates[dev::datatype::total + 1] = {
         {"subtype", "name","desc","asset","max_stack_size","base_weight","base_cost","sellablle"},
         {},
         {dev::datatype::item_subtypes, dev::datatype::qstring, dev::datatype::qstring, dev::datatype::qstring,
-        dev::datatype::u_integer, dev::datatype::u_integer,dev::datatype::u_integer, dev::datatype::boolean},
+        dev::datatype::u_integer, dev::datatype::double_t,dev::datatype::u_integer, dev::datatype::boolean},
     },
 };
 
@@ -131,7 +131,7 @@ const std::vector<dev::object_data> subtypes_template[dev::datatype::total + 1] 
      { //consumable
      {"on_use", "uses_left", "use_energy_cost"},
       {},
-      {dev::datatype::TODO, dev::datatype::u_short, dev::datatype::integer},
+      {dev::datatype::on_use, dev::datatype::u_short, dev::datatype::integer},
       },
      {},
 },

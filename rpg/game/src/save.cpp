@@ -536,12 +536,12 @@ item* item_from_json(json j) {
     unsigned int _base_cost;
     bool _sellable;
     if (!j.contains("stack")) {
-        j["stack"] = 1;
+        j["stack"] = 1u;
     }
     if (!j.contains("name") || !j.contains("desc") || !j.contains("asset") || !j.contains("max_stack_size") || !j.contains("base_weight") || !j.contains("base_cost") || !j.contains("sellable"))
         return nullptr;
 
-    if (!j["name"].is_string() || !j["desc"].is_string() || !j["asset"].is_string() || !j["stack"].is_number_unsigned() || !j["max_stack_size"].is_number_unsigned() || !j["base_weight"].is_number_float() || !j["base_cost"].is_number_unsigned() || !j["sellable"].is_boolean())
+    if (!j["name"].is_string() || !j["desc"].is_string() || !j["asset"].is_string() || !j["stack"].is_number_integer() || !j["max_stack_size"].is_number_unsigned() || !j["base_weight"].is_number_float() || !j["base_cost"].is_number_unsigned() || !j["sellable"].is_boolean())
         return nullptr;
 
     j["name"].get_to(_name);
