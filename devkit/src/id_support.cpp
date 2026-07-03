@@ -7,7 +7,9 @@
 std::string path = dev::path_to_rpg_exe.toStdString();
 
 void dev::set_ids_default_state() {
-    std::ofstream default_ids(path + "ids.json");
+    std::filesystem::path root = std::filesystem::path(path);
+    root /= "ids.json";
+    std::ofstream default_ids(root.string());
     js default_object = js::object();
     short index = 0;
     for (const auto& str : datatypes_to_string) {
@@ -27,16 +29,19 @@ void dev::set_ids_default_state() {
 }
 
 unsigned long long dev::throw_id(datatype type) {
-    std::ifstream in_ids(path + "ids.json");
+    std::filesystem::path root = std::filesystem::path(path);
+    root /= "ids.json";
+    std::ifstream in_ids(root.string());
     if (!in_ids.is_open()) {
         in_ids.close();
         set_ids_default_state();
-        in_ids.open(path + "ids.json");
+        in_ids.open(root.string());
     }
     js id_info;
     try {
         id_info = js::parse(in_ids);
     } catch (...) {
+        qInfo() << root.string();
         qInfo() << "[FATAL][dev::throw_id] ids.json is unparsable";
         exit(-1);
     }
@@ -56,7 +61,7 @@ unsigned long long dev::throw_id(datatype type) {
         id_info[last].swap(temp_obj);
     }
 
-    std::ofstream out_ids(path + "ids.json");
+    std::ofstream out_ids(root.string());
     out_ids.clear();
     out_ids << id_info.dump(js_indent);
 
@@ -64,7 +69,9 @@ unsigned long long dev::throw_id(datatype type) {
 }
 
 void dev::remove_id(datatype type, unsigned long long id) {
-    std::ifstream in_ids(path + "ids.json");
+    std::filesystem::path root = std::filesystem::path(path);
+    root /= "ids.json";
+    std::ifstream in_ids(root.string());
     js id_info;
     try {
         id_info = js::parse(in_ids);
@@ -84,7 +91,7 @@ void dev::remove_id(datatype type, unsigned long long id) {
     std::string dangling = q_dangling.toStdString();
     id_info[dangling].emplace_back(id);
 
-    std::ofstream out_ids(path + "ids.json");
+    std::ofstream out_ids(root.string());
     out_ids.clear();
     out_ids << id_info.dump(js_indent);
 }

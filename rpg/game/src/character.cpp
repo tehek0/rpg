@@ -12,8 +12,7 @@ QString entity::get_asset() {
 }
 
 void entity::set_inventory(inventory* inventory_) {
-    if (_inventory != nullptr)
-        delete _inventory;
+    delete _inventory;
     _inventory = inventory_;
 }
 void entity::set_name(const QString& name) {
@@ -175,6 +174,16 @@ void player::set_max_weight(float max_weight) {
 
 void player::set_max_energy(int max_energy) {
     _max_energy = max_energy;
+}
+
+void player::set_inventory(inventory* inventory_) {
+    delete _inventory;
+    _inventory = inventory_;
+    connect(_inventory, &inventory::change_weight, this, &player::change_weight);
+}
+
+void player::change_weight(float weight) {
+    _weight += weight;
 }
 
 // Эта функция возвращает успех выбора данного варианта диалога. Для скилл чеков в этой функции будут проверяться характеристики игрока.

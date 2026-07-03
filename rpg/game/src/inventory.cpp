@@ -16,6 +16,7 @@ std::vector<item*> inventory::get_items() {
 // TODO: изменение общего веса
 void inventory::add_item(item* item_) {
     // Пробегаем по вектору в поисках предмета, к которому можно присосаться
+    emit change_weight(item_->get_base_weight() * item_->get_stack());
     for (size_t i = 0; i < _items.size(); ++i) {
         // Не имеет смысла искать, если максимальный стак = 1
         if (item_->get_max_stack_size() == 1) {
@@ -78,6 +79,7 @@ void inventory::remove_item(unsigned int slot) {
     if (is_equipped(_items[slot])) {
         deequip(_items[slot]);
     }
+    emit change_weight(_items[slot]->get_base_weight() * _items[slot]->get_stack() * (-1));
     delete _items[slot];
     _items.erase(_items.begin() + slot);
     _items.shrink_to_fit();
@@ -92,12 +94,14 @@ void inventory::remove_item(unsigned int slot, unsigned int amount) {
         if (is_equipped(_items[slot])) {
             deequip(_items[slot]);
         }
+        emit change_weight(_items[slot]->get_base_weight() * _items[slot]->get_stack() * (-1));
         delete _items[slot];
         _items.erase(_items.begin() + slot);
         _items.shrink_to_fit();
         emit trigger_update(slot, inv_update_context::removed_item);
         return;
     }
+    emit change_weight(_items[slot]->get_base_weight() * amount * (-1));
     _items[slot]->remove(amount);
     emit trigger_update(slot, inv_update_context::refresh_stack);
 }
@@ -173,6 +177,7 @@ void inventory::equip_armor_head(armor* armor_) {
     if (!armor_->get_item_requirements()->match_all(global::player_->get_total_stats())) {
         return;
     }
+
     if (armor_->get_armor_slot() != armor_slot::head)
         return;
     if (_armor.head != nullptr) {
@@ -278,8 +283,9 @@ void inventory::deequip_armor(armor *armor_) {
 }
 
 void inventory::equip(item *item_) {
-    if (!has_item(item_) || is_equipped(item_))
+    if (!has_item(item_) || is_equipped(item_)) {
         return;
+    }
     if (item_->is_weapon_type()) {
         equip_weapon(static_cast<weapon*>(item_));
     } else if (item_->is_ammo_type()) {

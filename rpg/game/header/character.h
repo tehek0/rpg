@@ -208,7 +208,7 @@ struct entity_level {
 
 };
 
-class entity: public interactable {
+class entity: public interactable, public QObject {
 protected:
     QString _name;
     QString _asset;
@@ -229,7 +229,7 @@ public:
     QString get_asset();
     entity_size_class get_size_class() {return _size_class;}
     void set_size_class(entity_size_class size_class_) {_size_class = size_class_;};
-    void set_inventory(inventory* inventory_);
+    virtual void set_inventory(inventory* inventory_);
     void set_name(const QString& name);
     void set_asset(const QString& asset);
 };
@@ -270,6 +270,9 @@ public:
 
 
 class player: public living_entity {
+    Q_OBJECT
+public slots:
+    void change_weight(float weight);
 protected:
     entity_stats _bonus_stats;
     float _max_weight = 0.f;
@@ -286,6 +289,7 @@ public:
     entity_stats get_bonus_stats();
     entity_stats get_total_stats();
     void set_max_weight(float max_weight);
+    void set_inventory(inventory* inventory_);
     void set_weight(float weight);
     void set_max_energy(int max_energy);
     void apply_equipment_bonuses();

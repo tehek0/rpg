@@ -10,20 +10,23 @@
 #include <QSizePolicy>
 #include <QFile>
 #include <QAudioOutput>
+#include <QDir>
 
 int main(int argc, char** argv)
 {
-
-
     global::root_path = std::filesystem::path(argv[0]).parent_path();
-    saves_init();
+    auto assets_path = global::root_path;
+    assets_path /= "assets";
+    if (!std::filesystem::exists(assets_path)) {
+        critical_error("Не удалось загрузить ассеты.");
+        return -1;
+    }
+    QDir::setSearchPaths("assets", QStringList() << QString::fromStdString(assets_path.string()));
+
     global::player_ = new player;
-    entity_stats stat;
-    stat.survival = 260;
-    stat.agility = 3;
+
     global::player_->set_size_class(entity_size_class::human);
     global::player_->set_max_energy(10);
-    global::player_->set_entity_stats(stat);
 
     std::srand(std::time(0));
     global::w.showFullScreen();

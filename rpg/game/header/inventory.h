@@ -51,6 +51,7 @@ class inventory : public QObject {
 
 signals:
     void trigger_update(unsigned int slot, inv_update_context context_);
+    void change_weight(float weight);
 protected:
     std::vector<item*> _items;
     full_armor _armor;

@@ -10,7 +10,7 @@ game_scene* throw_menu_scene() {
     game_scene* scene_ = new game_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/testbkg_menu.jpg");
+    scene_->set_background("assets:/pictures/testbkg_menu.jpg");
 
     QPushButton* play_button = new QPushButton("Играть");
     play_button->setGeometry(QRect(20, 900, 400, 50));
@@ -26,7 +26,7 @@ game_scene* throw_menu_scene() {
 
     QLabel* logo = new QLabel();
     logo->setGeometry(QRect(10, 450, 768, 450));
-    logo->setPixmap(QPixmap(":/pictures/logo.png"));
+    logo->setPixmap(QPixmap("assets:/pictures/logo.png"));
     scene_->add(logo);
 
     auto btn = new QPushButton();
@@ -45,7 +45,7 @@ game_scene* throw_play_scene() {
     global::w.switch_to_scene(scene_);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/testbkg_menu.jpg");
+    scene_->set_background("assets:/pictures/testbkg_menu.jpg");
 
     auto new_game_button = new QPushButton("Новая игра");
     new_game_button->setGeometry(810, 385, 300, 100);
@@ -68,12 +68,12 @@ disposable_scene* throw_select_save_scene(save_scene_context context) {
     auto scene_ = new disposable_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/black.png");
+    scene_->set_background("assets:/pictures/black.png");
     save_widget* save_w = new save_widget();
     save_w->move(780, 360);
     scene_->add(save_w);
 
-    QLabel* x = new QLabel("Используйте колёсико мыши, чтобы переключить страницу");
+    text_object* x = new text_object("Используйте колёсико мыши, чтобы переключить страницу", "typing", false, 13);
     x->setGeometry(780, 340, 350, 15);
     x->setStyleSheet("color: rgb(255,255,255);");
     scene_->add(x);
@@ -102,14 +102,16 @@ disposable_scene* throw_character_creation_scene() {
     auto scene_ = new disposable_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/black.png");
+    scene_->set_background("assets:/pictures/black.png");
     auto creation_widget = new character_creation_widget();
     creation_widget->move(650, 230);
     global::w.connect(creation_widget, &character_creation_widget::player_created, &global::w, &MainWindow::new_game);
     scene_->add(creation_widget);
-    QLabel* x = new QLabel("Распределите очки характеристик, установите главные навыки и выберите имя, чтобы начать игру");
+
+    text_object* x = new text_object("Распределите очки характеристик, установите главные навыки и выберите имя, чтобы начать игру", "typing", false, 8);
     x->setGeometry(650, 210, 620, 15);
     x->setStyleSheet("color: rgb(255,255,255);");
+
     scene_->add(x);
     return scene_;
 }
@@ -118,7 +120,7 @@ disposable_scene* throw_settings_scene() {
     disposable_scene* scene_ = new disposable_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/testbkg_settings.jpg");
+    scene_->set_background("assets:/pictures/testbkg_settings.jpg");
 
     QSlider* master_vol = new QSlider(Qt::Horizontal);
     master_vol->setMinimum(0);
@@ -164,7 +166,7 @@ game_scene* throw_hub_scene() {
     game_scene* scene_ = new game_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/testbkg_hub.jpg");
+    scene_->set_background("assets:/pictures/testbkg_hub.jpg");
 
     auto pause_button = new QPushButton;
     global::w.connect(pause_button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(throw_pause_scene());});
@@ -173,14 +175,18 @@ game_scene* throw_hub_scene() {
     map->setObjectName("map");
     scene_->add(map);
     global::w.connect(map->player_object, &map_player_object::link_line, &global::w, [=](QGraphicsLineItem*& line) {global::w.draw_destination_line(line, map);});
-    // auto save_btn = new QPushButton("Сохранить");
-    // save_btn->move(400, 0);
-    // scene_->add(save_btn);
-    // auto load_btn = new QPushButton("Загрузить");
-    // load_btn->move(500, 0);
-    // scene_->add(load_btn);
-    // global::w.connect(save_btn, &QPushButton::clicked, &global::w, [=]() {save_map(map, 1);});
-    // global::w.connect(load_btn, &QPushButton::clicked, &global::w, [=]() {bool x = load_map(map, 1);});
+
+    auto inv_button = new QPushButton("Инвентарь");
+    inv_button->resize(instrument_side, instrument_side);
+    inv_button->move(instruments_width, instruments_panel_hight_start + 100);
+    global::w.connect(inv_button, &QPushButton::clicked, &global::w, [=]() {scene_->findChild<map_widget*>("map")->hide(); auto chars = scene_->findChild<QWidget*>("chars"); if (chars != nullptr) {chars->hide();} auto pinv = scene_->findChild<player_inventory_widget*>("inventory"); if (pinv == nullptr) {pinv = new player_inventory_widget(); pinv->move(242,111); pinv->setObjectName("inventory"); scene_->add(pinv);} else {pinv->show();}});
+    scene_->add(inv_button);
+
+    auto map_button = new QPushButton("Карта");
+    map_button->resize(instrument_side, instrument_side);
+    map_button->move(instruments_width, instruments_panel_hight_start + 200);
+    global::w.connect(map_button, &QPushButton::clicked, &global::w, [=]() {scene_->findChild<map_widget*>("map")->show(); auto pinv = scene_->findChild<player_inventory_widget*>("inventory"); if (pinv != nullptr) {pinv->hide();} auto chars = scene_->findChild<QWidget*>("chars"); if (chars != nullptr) {chars->hide();}});
+    scene_->add(map_button);
 
     auto interact_btn = new QPushButton("Зайти");
     interact_btn->resize(instrument_side,instrument_side);
@@ -196,7 +202,7 @@ game_scene* throw_pause_scene() {
     game_scene* scene_ = new game_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/black.png");
+    scene_->set_background("assets:/pictures/black.png");
     auto current = global::w.current_scene;
     global::w.switch_to_scene(scene_);
 
@@ -256,7 +262,7 @@ battle_scene* throw_battle_scene(player* player, std::vector<enemy*> enemies) {
     battle_scene* scene_ = new battle_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/testbkg_fight.jpg");
+    scene_->set_background("assets:/pictures/testbkg_fight.jpg");
 
     auto button_b = new QPushButton;
     button_b->resize(50,50);
