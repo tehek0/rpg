@@ -88,4 +88,7 @@ void apply_cfg(std::ifstream& config) {
         }
         ++argument_id;
     }
+    if (argument_id != 3) {
+        abort_cfg();
+    }
 }

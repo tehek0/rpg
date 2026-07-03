@@ -10,7 +10,7 @@ QString displayable::get_sprite_family() {
 
 void displayable::set_sprite_family(const QString& sprite_family) {
     _sprite_family = sprite_family;
-    _disp->setStyleSheet(QString("border-image: url(:/pictures/%1.png);").arg(_sprite_family));
+    _disp->setStyleSheet(QString("border-image: url(assets:/pictures/%1.png);").arg(_sprite_family));
 }
 
 
@@ -84,7 +84,7 @@ void animated_displayable::next_frame() {
             }
             _anim_sequence.current_frame = 0;
         }
-        _disp->setStyleSheet(QString("border-image: url(:/pictures/animated/%1/%2/frame%3.png);").arg(_sprite_family).arg(_anim_sequence.anims[_anim_sequence.current_anim_id].name).arg(_anim_sequence.current_frame));
+        _disp->setStyleSheet(QString("border-image: url(assets:/pictures/animated/%1/%2/frame%3.png);").arg(_sprite_family).arg(_anim_sequence.anims[_anim_sequence.current_anim_id].name).arg(_anim_sequence.current_frame));
 
     }
 }

@@ -25,7 +25,7 @@ public:
         if (_player->isPlaying())
             stop();
 
-        _player->setSource(QUrl(QString("qrc:/sounds/music/%1.ogg").arg(string)));
+        _player->setSource(QUrl(QString("assets:/sounds/music/%1.ogg").arg(string)));
         _player->setLoops(QMediaPlayer::Loops::Infinite);
         _player->play();
     }

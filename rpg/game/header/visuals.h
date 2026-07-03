@@ -15,6 +15,7 @@
 #include <QGraphicsLineItem>
 #include <QLineEdit>
 #include <QCheckBox>
+#include <QFileInfo>
 #include "save.h"
 #include "global.h"
 #include "character.h"
@@ -86,7 +87,7 @@ public:
     displayable(QString sprite_family, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true) : displayable() {
         _sprite_family = sprite_family;
         _disp = (clickable ? new tracked_button() : new unclickable_button());
-        _disp->setStyleSheet(QString("border-image: url(:/pictures/%1.png);").arg(_sprite_family));
+        _disp->setStyleSheet(QString("border-image: url(assets:/pictures/%1.png);").arg(_sprite_family));
         _disp->setGeometry(coord.x(),coord.y(), size.width(), size.height());
         _disp->setParent(&global::w);
         _disp->setEnabled(clickable);
@@ -184,7 +185,7 @@ public:
     animated_displayable() = default;
     animated_displayable(QString sprite_family, const anim_sequence& anim_sequence_ = anim_sequence(), const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable(sprite_family, coord, size, clickable) {
         _anim_sequence = anim_sequence_;
-        _disp->setStyleSheet(QString("border-image: url(:/pictures/animated/%1/base_sprite.png);").arg(_sprite_family));
+        _disp->setStyleSheet(QString("border-image: url(assets:/pictures/animated/%1/base_sprite.png);").arg(_sprite_family));
         connect(global::timer, &QTimer::timeout, this, &animated_displayable::next_frame);
     }
     anim_sequence get_anim_sequence();
@@ -283,7 +284,7 @@ signals:
 public:
     QPixmap sprite;
     inventory_background(const QString& asset, QWidget* parent = nullptr): QWidget(parent) {
-        sprite.load(QString(":/pictures/%1.png").arg(asset));
+        sprite.load(QString("assets:/pictures/%1.png").arg(asset));
     }
     void paintEvent(QPaintEvent *event) {
         QPainter paint(this);
@@ -644,7 +645,7 @@ public:
     item_object* consumable_slot = nullptr;
     player_inventory_widget(QWidget* parent = nullptr): QWidget(parent) {
         this->resize(1425, 900);
-        sprite.load(":/pictures/black.png");
+        sprite.load("assets:/pictures/black.png");
         player_inventory = new inventory_object(global::player_->get_inventory(), inventory_context::player_inventory, 4, 6, 125, QPoint(70,70), this);
         connect(player_inventory, &inventory_object::send_equipped, this, &player_inventory_widget::equip_item_in_slot);
         connect(player_inventory, &inventory_object::send_deequipped, this, &player_inventory_widget::deequip_item_in_slot);
@@ -757,7 +758,7 @@ protected:
         }
     }
     void final() {
-        _processed_string = text_source; /*+ QString(" <img src=\":/pictures/ui_text_go_next.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\">");*/
+        _processed_string = text_source; /*+ QString(" <img src=\"assets:/pictures/ui_text_go_next.png\" width=\"15\" height=\"15\" style=\"vertical-align: middle;\">");*/
         this->setText(_processed_string);
         disconnect(global::timer, &QTimer::timeout, this, &text_object::tick);
         _currently_writing = false;
@@ -772,7 +773,7 @@ public:
         this->setAlignment(Qt::AlignLeft | Qt::AlignTop);
         if (symbol_sound.isEmpty() == false) {
             _sfx = new QSoundEffect(this);
-            _sfx->setSource(QUrl(QString("qrc:/sounds/%1.wav").arg(symbol_sound)));
+            _sfx->setSource(QUrl::fromLocalFile(QFileInfo(QString("assets:sounds/%1.wav").arg(symbol_sound)).absoluteFilePath()));
         }
         if (text_source_.isEmpty()) {
             return;
@@ -804,7 +805,7 @@ protected:
 public:
     QPixmap sprite;
     text_holder(const QString& asset, QSize size = QSize(1920,300), QPoint point = QPoint(0,0), QWidget* parent = &global::w): tracked_button(parent) {
-        sprite.load(QString(":/pictures/%1.png").arg(asset));
+        sprite.load(QString("assets:/pictures/%1.png").arg(asset));
         this->setGeometry(QRect(point, size));
     }
     text_holder(const QString& asset, text_object* linked_text_object, QSize size = QSize(1920,300), QPoint point = QPoint(0,0), QWidget* parent = &global::w): text_holder(asset, size, point, parent) {
@@ -872,12 +873,12 @@ public:
         player_marker = new unclickable_button(marker_parent);
         player_marker->setObjectName("player_marker");
         player_marker->setGeometry(QRect(0, 0, 32, 32));
-        player_marker->setStyleSheet(QString("border-image: url(:/pictures/map_player_marker.png)"));
+        player_marker->setStyleSheet(QString("border-image: url(assets:/pictures/map_player_marker.png)"));
         move_player_marker();
         player_marker->show();
         destination_marker = new unclickable_button(marker_parent);
         destination_marker->setGeometry(QRect(0, 0, 32, 32));
-        destination_marker->setStyleSheet(QString("border-image: url(:/pictures/map_player_destination.png)"));
+        destination_marker->setStyleSheet(QString("border-image: url(assets:/pictures/map_player_destination.png)"));
         destination_marker->hide();
     }
     void move_to(QPoint& coord) override {
@@ -971,9 +972,9 @@ public:
         this->setGeometry(0, 0, size, size);
         connect(this, &QPushButton::clicked, this, &map_grid_tile::process_click);
         if (_is_locked == true) {
-            this->setStyleSheet(QString("border-image: url(:/pictures/black.png);"));
+            this->setStyleSheet(QString("border-image: url(assets:/pictures/black.png);"));
         } else {
-            this->setStyleSheet(QString("border-image: url(:/pictures/null.png);"));
+            this->setStyleSheet(QString("border-image: url(assets:/pictures/null.png);"));
         }
         if (poi == nullptr)
             return;
@@ -982,14 +983,14 @@ public:
     }
     void unlock() {
         _is_locked = false;
-        this->setStyleSheet(QString("border-image: url(:/pictures/null.png);"));
+        this->setStyleSheet(QString("border-image: url(assets:/pictures/null.png);"));
         if (_poi != nullptr) {
             _poi->_disp->show();
         }
     }
     void lock() {
         _is_locked = true;
-        this->setStyleSheet(QString("border-image: url(:/pictures/black.png);"));
+        this->setStyleSheet(QString("border-image: url(assets:/pictures/black.png);"));
         if (_poi != nullptr) {
             _poi->_disp->hide();
         }
@@ -1147,7 +1148,7 @@ public:
         this->setGeometry(QRect(pos,grid->rect().size()));
 
         setSceneRect(this->rect());
-        set_background(":/pictures/map.jpg");
+        set_background("assets:/pictures/map.jpg");
         player_object = new map_player_object(this);
         player_object->player_marker->setParent(this->parentWidget());
         player_object->destination_marker->setParent(this->parentWidget());
@@ -1189,11 +1190,11 @@ public:
         update_display();
         increase_button = new tracked_button(this);
         increase_button->setGeometry(0, 0, 25, 25);
-        increase_button->setStyleSheet(QString("border-image: url(:/pictures/char_increase.png);"));
+        increase_button->setStyleSheet(QString("border-image: url(assets:/pictures/char_increase.png);"));
         connect(increase_button, &tracked_button::clicked, this, &char_selector::increase_pressed);
         decrease_button = new tracked_button(this);
         decrease_button->setGeometry(0, 25, 25, 25);
-        decrease_button->setStyleSheet(QString("border-image: url(:/pictures/char_decrease.png);"));
+        decrease_button->setStyleSheet(QString("border-image: url(assets:/pictures/char_decrease.png);"));
         connect(decrease_button, &tracked_button::clicked, this, &char_selector::decrease_pressed);
 
     }
@@ -1499,7 +1500,7 @@ public:
     }
     character_creation_widget(QWidget* parent = nullptr): QWidget(parent) {
         this->setGeometry(0, 0, 620, 620);
-        background.load(":/pictures/testbkg_character_creation.jpg");
+        background.load("assets:/pictures/testbkg_character_creation.jpg");
 
         name_hint = new QLabel("Имя:", this);
         name_hint->setGeometry(210, 530, 200, 15);

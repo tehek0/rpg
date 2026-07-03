@@ -10,7 +10,7 @@ game_scene* throw_menu_scene() {
     game_scene* scene_ = new game_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/testbkg_menu.jpg");
+    scene_->set_background("assets:/pictures/testbkg_menu.jpg");
 
     QPushButton* play_button = new QPushButton("Играть");
     play_button->setGeometry(QRect(20, 900, 400, 50));
@@ -26,7 +26,7 @@ game_scene* throw_menu_scene() {
 
     QLabel* logo = new QLabel();
     logo->setGeometry(QRect(10, 450, 768, 450));
-    logo->setPixmap(QPixmap(":/pictures/logo.png"));
+    logo->setPixmap(QPixmap("assets:/pictures/logo.png"));
     scene_->add(logo);
 
     auto btn = new QPushButton();
@@ -45,7 +45,7 @@ game_scene* throw_play_scene() {
     global::w.switch_to_scene(scene_);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/testbkg_menu.jpg");
+    scene_->set_background("assets:/pictures/testbkg_menu.jpg");
 
     auto new_game_button = new QPushButton("Новая игра");
     new_game_button->setGeometry(810, 385, 300, 100);
@@ -68,7 +68,7 @@ disposable_scene* throw_select_save_scene(save_scene_context context) {
     auto scene_ = new disposable_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/black.png");
+    scene_->set_background("assets:/pictures/black.png");
     save_widget* save_w = new save_widget();
     save_w->move(780, 360);
     scene_->add(save_w);
@@ -102,7 +102,7 @@ disposable_scene* throw_character_creation_scene() {
     auto scene_ = new disposable_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/black.png");
+    scene_->set_background("assets:/pictures/black.png");
     auto creation_widget = new character_creation_widget();
     creation_widget->move(650, 230);
     global::w.connect(creation_widget, &character_creation_widget::player_created, &global::w, &MainWindow::new_game);
@@ -120,7 +120,7 @@ disposable_scene* throw_settings_scene() {
     disposable_scene* scene_ = new disposable_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/testbkg_settings.jpg");
+    scene_->set_background("assets:/pictures/testbkg_settings.jpg");
 
     QSlider* master_vol = new QSlider(Qt::Horizontal);
     master_vol->setMinimum(0);
@@ -166,7 +166,7 @@ game_scene* throw_hub_scene() {
     game_scene* scene_ = new game_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/testbkg_hub.jpg");
+    scene_->set_background("assets:/pictures/testbkg_hub.jpg");
 
     auto pause_button = new QPushButton;
     global::w.connect(pause_button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(throw_pause_scene());});
@@ -202,7 +202,7 @@ game_scene* throw_pause_scene() {
     game_scene* scene_ = new game_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/black.png");
+    scene_->set_background("assets:/pictures/black.png");
     auto current = global::w.current_scene;
     global::w.switch_to_scene(scene_);
 
@@ -262,7 +262,7 @@ battle_scene* throw_battle_scene(player* player, std::vector<enemy*> enemies) {
     battle_scene* scene_ = new battle_scene(new QGraphicsScene(), &global::w);
     scene_->setGeometry(0, 0, global::window_width, global::window_height);
     scene_->setSceneRect(scene_->rect());
-    scene_->set_background(":/pictures/testbkg_fight.jpg");
+    scene_->set_background("assets:/pictures/testbkg_fight.jpg");
 
     auto button_b = new QPushButton;
     button_b->resize(50,50);
