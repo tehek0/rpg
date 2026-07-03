@@ -6,11 +6,15 @@
 
 namespace dev {
 
-enum class biome {
+enum biome {
     none,
     desert,
     city,
-    swamp
+    swamp,
+    plateau,
+    forest,
+    mutant_forest,
+    crater,
 };
 struct map_poi : public QObject{
     Q_OBJECT
@@ -39,6 +43,7 @@ public:
     ~map_grid_tile() {delete poi_;}
 
     void change_tile_tint();
+    void change_tile_text();
 signals:
     void clicked_tile(map_grid_tile* tile);
     void clicked_poi(map_grid_tile* tile);
@@ -83,6 +88,7 @@ enum class map_brush {
     locker,
     player,
     poi,
+    biome,
 };
 
 class map_construct_window : public custom_window {
@@ -93,6 +99,7 @@ private:
     std::vector<QPushButton*> buttons_;
     std::vector<QLabel*> labels_;
     std::vector<QLineEdit*> edits_;
+    std::vector<QComboBox*> boxes_;
 
     void add_save_button();
     void add_load_button();
@@ -108,6 +115,7 @@ public slots:
     void on_locked_brush_clicked();
     void on_player_brush_clicked();
     void on_poi_brush_clicked();
+    void on_biome_brush_clicked();
 
     void clicked_tile(map_grid_tile* tile);
     void clicked_poi(map_grid_tile* tile);
