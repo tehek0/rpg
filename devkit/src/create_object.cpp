@@ -30,7 +30,12 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
             for (QRegularExpressionMatch elem : cut_id_out_of_line_e.globalMatch(value)) {
                 array.emplace_back(elem.captured().toULongLong());
             }
-            data[key] = array;
+            if (array.size() == 1) {
+                data[key] = array[0];
+            }
+            else {
+              data[key] = array;
+            }
         }
         else if(dev::is_type_linear(type)) {
             bool right;

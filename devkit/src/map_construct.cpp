@@ -4,6 +4,7 @@
 #include "../header/inc/json.hpp"
 #include <fstream>
 #include "../header/id_support.hpp"
+#include "qcombobox.h"
 using js = nlohmann::ordered_json;
 
 void dev::map_grid_tile::change_tile_tint() {
@@ -11,6 +12,20 @@ void dev::map_grid_tile::change_tile_tint() {
         this->setStyleSheet(QString("background: rgba(17, 9, 52, 100);"));
     } else {
         this->setStyleSheet(QString("background: rgba(17, 9, 52, 0);"));
+    }
+}
+
+void dev::map_grid_tile::change_tile_text() {
+    switch(biome_) {
+    case biome::none: setText("-"); setStyleSheet("color: rgb(0,0,0)"); break;
+    case biome::desert: setText("desert"); setStyleSheet("color: rgb(235, 136, 38)"); break;
+    case biome::city: setText("city"); setStyleSheet("color: rgb(90, 105, 110)"); break;
+    case biome::swamp: setText("swamp"); setStyleSheet("color: rgb(10, 15, 51)"); break;
+    case biome::plateau: setText("plateau"); setStyleSheet("color: rgb(117, 46, 7)"); break;
+    case biome::forest: setText("forest"); setStyleSheet("color: rgb(34, 153, 26)"); break;
+    case biome::mutant_forest: setText("mutant_forest"); setStyleSheet("color: rgb(108, 21, 148)"); break;
+    case biome::crater: setText("crater"); setStyleSheet("color: rgb(148, 143, 40)"); break;
+
     }
 }
 
@@ -101,12 +116,12 @@ void dev::map_construct_window::add_brushes() {
     locked_brush->show();
     connect(locked_brush, SIGNAL(clicked()), this, SLOT(on_locked_brush_clicked()));
 
-    QPushButton * player_brush = new QPushButton("Сдвинуть игрока", this);
+    QPushButton* player_brush = new QPushButton("Сдвинуть игрока", this);
     player_brush->setGeometry(1000, button_side*2 + 5*gap + any_line_hight, button_side*2, button_side);
     player_brush->show();
     connect(player_brush, SIGNAL(clicked()), this, SLOT(on_player_brush_clicked()));
 
-    QPushButton * poi_brush = new QPushButton("Поставить poi", this);
+    QPushButton* poi_brush = new QPushButton("Поставить poi", this);
     poi_brush->setGeometry(1000, button_side*3 + 7*gap + any_line_hight, button_side*2, button_side);
     poi_brush->show();
     connect(poi_brush, SIGNAL(clicked()), this, SLOT(on_poi_brush_clicked()));
@@ -114,12 +129,32 @@ void dev::map_construct_window::add_brushes() {
     QLineEdit* poi_id = new QLineEdit("poi id", this);
     QLineEdit* poi_name = new QLineEdit("poi name",this);
     QLineEdit* poi_sprite_family = new QLineEdit("poi sprite family", this);
-    poi_id->setGeometry(1000, button_side*4 + 9*gap + any_line_hight, field_w, any_line_hight);
-    poi_name->setGeometry(1000, button_side*4 + 11*gap + any_line_hight*2, field_w, any_line_hight);
-    poi_sprite_family->setGeometry(1000, button_side*4 + 13*gap + any_line_hight*3, field_w, any_line_hight);
+    poi_id->setGeometry(1000, button_side*4 + 9*gap + any_line_hight, label_w, any_line_hight);
+    poi_name->setGeometry(1000, button_side*4 + 11*gap + any_line_hight*2, label_w, any_line_hight);
+    poi_sprite_family->setGeometry(1000, button_side*4 + 13*gap + any_line_hight*3, label_w, any_line_hight);
     poi_id->show();
     poi_name->show();
     poi_sprite_family->show();
+
+    QPushButton* biome_brush = new QPushButton("Кисть биомов", this);
+    biome_brush->setGeometry(1000, button_side*4 + 15*gap + any_line_hight*4, button_side*2, button_side);
+    biome_brush->show();
+    connect(biome_brush, SIGNAL(clicked()), this, SLOT(on_biome_brush_clicked()));
+
+    QComboBox* choose_biome = new QComboBox(this);
+    choose_biome->addItems({
+        "none",
+        "desert",
+        "city",
+        "swamp",
+        "plateau",
+        "forest",
+        "mutant_forest",
+        "crater"
+    });
+    choose_biome->setGeometry(1000, button_side*5 + 17*gap + any_line_hight*4, label_w, any_line_hight);
+    choose_biome->show();
+    boxes_.emplace_back(choose_biome);
 
     edits_.emplace_back(poi_id);
     edits_.emplace_back(poi_name);
@@ -141,16 +176,17 @@ dev::map_construct_window::map_construct_window() {
 }
 
 void dev::map_construct_window::clicked_poi(map_grid_tile* tile) {
-    tile->poi_->location_id_ = edits_[0]->text().toULongLong();
-    tile->poi_->location_name_ = edits_[1]->text();
-    tile->poi_->sprite_family_ = edits_[2]->text();
-    tile->poi_->disp_->setStyleSheet("background: rgb(30,30,0);");
+    if (brush_ == dev::map_brush::poi) {
+        tile->poi_->disp_->hide();
+        tile->is_poi_real = false;
+    }
 }
 void dev::map_construct_window::clicked_tile(map_grid_tile* tile) {
     switch (brush_) {
     case dev::map_brush::none : break;
     case dev::map_brush::locker :
         tile->is_locked_ = !tile->is_locked_;
+        tile->change_tile_tint();
         break;
     case dev::map_brush::player :
         labels_[0]->move(tile->pos().x() + 25, tile->pos().y() + 25);
@@ -160,9 +196,16 @@ void dev::map_construct_window::clicked_tile(map_grid_tile* tile) {
         tile->poi_->disp_->setGeometry(tile->pos().x() + 25, tile->pos().y() + 25, button_side/2, button_side/2);
         tile->poi_->disp_->show();
         tile->is_poi_real = true;
+
+        tile->poi_->location_id_ = edits_[0]->text().toULongLong();
+        tile->poi_->location_name_ = edits_[1]->text();
+        tile->poi_->sprite_family_ = edits_[2]->text();
+        tile->poi_->disp_->setStyleSheet("background: rgb(130,130,0);");
         break;
+    case dev::map_brush::biome :
+        tile->biome_ = static_cast<dev::biome>(boxes_[0]->currentIndex());
+        tile->change_tile_text();
     }
-    tile->change_tile_tint();
 }
 
 void dev::map_construct_window::on_player_brush_clicked() {
@@ -189,6 +232,15 @@ void dev::map_construct_window::on_poi_brush_clicked() {
     }
     else {
         brush_ = map_brush::poi;
+    }
+};
+
+void dev::map_construct_window::on_biome_brush_clicked() {
+    if (brush_ == map_brush::biome) {
+        brush_ = map_brush::none;
+    }
+    else {
+        brush_ = map_brush::biome;
     }
 };
 
