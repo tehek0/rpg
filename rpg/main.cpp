@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QAudioOutput>
 #include <QDir>
+#include "game/header/message.h"
 
 int main(int argc, char** argv)
 {
@@ -21,6 +22,7 @@ int main(int argc, char** argv)
         critical_error("Не удалось загрузить ассеты.");
         return -1;
     }
+    saves_init(1);
     QDir::setSearchPaths("assets", QStringList() << QString::fromStdString(assets_path.string()));
 
     global::player_ = new player;
@@ -37,6 +39,8 @@ int main(int argc, char** argv)
     load_cfg();
     global::music->change_volume(global::master_volume * global::music_volume);
     global::music->set_music("menu");
+
+
 
     // inter.selected_interaction_tree = 0;
     // inter.execute();

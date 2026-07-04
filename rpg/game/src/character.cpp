@@ -182,6 +182,21 @@ void player::set_inventory(inventory* inventory_) {
     connect(_inventory, &inventory::change_weight, this, &player::change_weight);
 }
 
+void player::set_base_stats() {
+    this->_max_health = 45 + (5 * this->_entity_stats.endurance) + (this->_entity_stats.endurance >= 10 ? 15 : 0);
+    this->_health = _max_health;
+    this->_max_weight = 45.0 + (5.0 * this->_entity_stats.strength) + (this->_entity_stats.strength >= 10 ? 15 : 0);
+    this->_max_energy = 2 + (this->_entity_stats.agility / 3) + (this->_entity_stats.agility >= 10 ? 1 : 0);
+}
+
+float player::get_weight() {
+    return _weight;
+}
+
+void player::apply_equipment_bonuses() {
+
+}
+
 void player::change_weight(float weight) {
     _weight += weight;
 }

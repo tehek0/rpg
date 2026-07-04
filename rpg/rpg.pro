@@ -17,6 +17,7 @@ SOURCES += \
     game/src/inventory.cpp \
     game/src/item.cpp \
     game/src/item_requirements.cpp \
+    game/src/message.cpp \
     game/src/save.cpp \
     game/src/scenes.cpp \
     game/src/ui.cpp \
@@ -48,6 +49,7 @@ HEADERS += \
     game/header/item.h \
     game/header/item_requirements.h \
     game/header/location.h \
+    game/header/message.h \
     game/header/music.h \
     game/header/quest.h \
     game/header/save.h \

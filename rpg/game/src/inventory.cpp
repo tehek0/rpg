@@ -1,6 +1,7 @@
 #include "../header/inventory.h"
 #include "../header/global.h"
 #include "../header/character.h"
+#include "../header/message.h"
 // Избегаем утечку памяти
 inventory::~inventory() {
     for (size_t i = 0; i < _items.size(); ++i) {
@@ -112,6 +113,7 @@ void inventory::equip_weapon(weapon* weapon_) {
     if (!this->has_item(weapon_))
         return;
     if (!weapon_->get_item_requirements()->match_all(global::player_->get_total_stats())) {
+        new screen_message(QString("> Оружие \"%1\" не экипировано: Требования не удовлетворены").arg(weapon_->get_name()), 300, 100, 20);
         return;
     }
     if (_weapon != nullptr) {
@@ -134,9 +136,16 @@ void inventory::equip_weapon(item* not_suitable) {
 void inventory::equip_ammo(ammo* ammo_) {
     if (!this->has_item(ammo_))
         return;
-    if (_weapon == nullptr)
+    if (_weapon == nullptr) {
+        new screen_message(QString("> Боезапас \"%1\" не экипирован: Нет экипированного оружия").arg(ammo_->get_name()), 300, 100, 20);
         return;
+    }
+    if (_weapon->get_ammo_type() == ammo_type::none) {
+        new screen_message(QString("> Боезапас \"%1\" не экипирован: Экипированному оружию не нужны боеприпасы").arg(ammo_->get_name()), 300, 100, 20);
+        return;
+    }
     if (_weapon->get_ammo_type() != ammo_->get_ammo_type()) {
+        new screen_message(QString("> Боезапас \"%1\" не экипирован: Неподходящий тип боеприпасов").arg(ammo_->get_name()), 300, 100, 20);
         return;
     }
     if (_equipped_ammo != nullptr) {
@@ -175,6 +184,7 @@ void inventory::equip_armor_head(armor* armor_) {
     if (!this->has_item(armor_))
         return;
     if (!armor_->get_item_requirements()->match_all(global::player_->get_total_stats())) {
+        new screen_message(QString("> Шлем \"%1\" не экипирован: Требования не удовлетворены").arg(armor_->get_name()), 300, 100, 20);
         return;
     }
 
@@ -200,6 +210,7 @@ void inventory::equip_armor_body(armor* armor_) {
     if (!this->has_item(armor_))
         return;
     if (!armor_->get_item_requirements()->match_all(global::player_->get_total_stats())) {
+        new screen_message(QString("> Нагрудник \"%1\" не экипирован: Требования не удовлетворены").arg(armor_->get_name()), 300, 100, 20);
         return;
     }
     if (armor_->get_armor_slot() != armor_slot::body)
@@ -224,6 +235,7 @@ void inventory::equip_armor_legs(armor* armor_) {
     if (!this->has_item(armor_))
         return;
     if (!armor_->get_item_requirements()->match_all(global::player_->get_total_stats())) {
+        new screen_message(QString("> Поножи \"%1\" не экипированы: Требования не удовлетворены").arg(armor_->get_name()), 300, 100, 20);
         return;
     }
     if (armor_->get_armor_slot() != armor_slot::legs)

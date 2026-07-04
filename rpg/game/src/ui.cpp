@@ -29,10 +29,6 @@ game_scene* throw_menu_scene() {
     logo->setPixmap(QPixmap("assets:/pictures/logo.png"));
     scene_->add(logo);
 
-    auto btn = new QPushButton();
-    scene_->add(btn);
-    global::w.connect(btn, &QPushButton::clicked, &global::w, [=]() {delete global::w.hub_scene; global::w.hub_scene = nullptr;});
-
     global::w.connect(play_button, &QPushButton::clicked, &global::w, &MainWindow::menu_play);
     global::w.connect(settings_button, &QPushButton::clicked, &global::w, &MainWindow::open_settings);
     global::w.connect(exit_button, &QPushButton::clicked, &global::w, &MainWindow::menu_exit);
@@ -168,7 +164,8 @@ game_scene* throw_hub_scene() {
     scene_->setSceneRect(scene_->rect());
     scene_->set_background("assets:/pictures/testbkg_hub.jpg");
 
-    auto pause_button = new QPushButton;
+    auto pause_button = new QPushButton("Пауза");
+    pause_button->setGeometry(20,20,50,50);
     global::w.connect(pause_button, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(throw_pause_scene());});
     scene_->add(pause_button);
     auto map = new map_widget(QPoint(242, 111), scene_);

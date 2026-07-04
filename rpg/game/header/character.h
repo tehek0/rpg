@@ -278,6 +278,7 @@ protected:
     float _max_weight = 0.f;
     float _weight = 0.f;
     int _max_energy = 0;
+    unsigned int level_up_points = 0;
     trait _trait;
 public:
     player() = default;
@@ -292,6 +293,7 @@ public:
     void set_inventory(inventory* inventory_);
     void set_weight(float weight);
     void set_max_energy(int max_energy);
+    void set_base_stats();
     void apply_equipment_bonuses();
     bool add_item(item* item_);
 };

@@ -16,8 +16,10 @@
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QFileInfo>
+#include <QSlider>
 #include "save.h"
 #include "global.h"
+#include "message.h"
 #include "character.h"
 #include "data/tooltip_types.h"
 #include "data/inventory_contexts.h"
@@ -25,6 +27,14 @@
 #include "enum_translation.h"
 
 #include <qprogressbar.h>
+
+class can_play_sound {
+public:
+    void play_sfx(QSoundEffect* sfx) {
+        sfx->setVolume(global::master_volume * global::sfx_volume);
+        sfx->play();
+    }
+};
 
 //визуальные компоненты игровых объектов
 
@@ -226,12 +236,13 @@ public slots:
         _disp->linked_tooltip->setText(linked_item->get_tooltip_text());
     }
     virtual void clicked() {
-        emit click_send_to_parent(linked_item);
+        emit click_send_to_parent(this);
     }
 signals:
-    void click_send_to_parent(item* linked_item_); // нужно запрашивать контекст инвентаря у списка предметов, чтобы вызывать правильный попап
+    void click_send_to_parent(item_object* obj); // нужно запрашивать контекст инвентаря у списка предметов, чтобы вызывать правильный попап
 public:
     item* linked_item;
+    unclickable_button* equipped_overlay;
     QLabel* stack_label;
     bool is_dummy;
     item_object() {
@@ -240,6 +251,9 @@ public:
     item_object(item* linked_item_, const QPoint& coord = QPoint(0, 0), const QSize& size = QSize(100, 100), bool clickable = true): displayable((linked_item_ == nullptr ? "null" : linked_item_->get_asset()), coord, size, clickable), linked_item(linked_item_)
     {
         is_dummy = false;
+        equipped_overlay = new unclickable_button(_disp);
+        equipped_overlay->resize(_disp->size());
+        equipped_overlay->setStyleSheet("border-image: url(assets:/pictures/null.png);");
         stack_label = new QLabel(_disp);
         stack_label->setGeometry(_disp->geometry());
         stack_label->setAlignment(Qt::AlignRight | Qt::AlignBottom);
@@ -262,6 +276,12 @@ public:
 
         stack_label->clear();
     }
+    void set_equipped() {
+        equipped_overlay->setStyleSheet("border-image: url(assets:/pictures/inventory_item_equipped_overlay.png);");
+    }
+    void set_deequipped() {
+        equipped_overlay->setStyleSheet("border-image: url(assets:/pictures/null.png);");
+    }
     void change_item(item* item_) {
         linked_item = item_;
         if (item_ == nullptr) {
@@ -272,6 +292,7 @@ public:
         this->set_sprite_family(item_->get_asset());
         refresh_stack();
     }
+
 };
 
 class inventory_background : public QWidget {
@@ -303,27 +324,36 @@ class inventory_object : public QWidget {
 
     Q_OBJECT
 signals:
+    void send_click(item_object* object);
     void send_equipped(item* item_);
     void send_deequipped(item* item_);
 public slots:
     void process_item_click(item_object* item_obj) {
-        if (linked_inventory->is_equipped(item_obj->linked_item)) {
-            linked_inventory->deequip(item_obj->linked_item);
-            return;
-        }
-        linked_inventory->equip(item_obj->linked_item);
+        // if (linked_inventory->is_equipped(item_obj->linked_item)) {
+        //     linked_inventory->deequip(item_obj->linked_item);
+        //     return;
+        // }
+        // linked_inventory->equip(item_obj->linked_item);
+
+        emit send_click(item_obj);
     }
     void update(unsigned int slot, inv_update_context context_) {
+        unsigned int lower_boundry = _scrolled_cols * _cols;
+        unsigned int upper_boundry = lower_boundry + (_cols * _displayed_rows) - 1;
         if (context_ == inv_update_context::equipped) {
             emit send_equipped(linked_inventory->get_item(slot));
+            if (slot < lower_boundry || slot > upper_boundry)
+                return;
+            item_objects[slot - lower_boundry]->set_equipped();
             return;
         }
         if (context_ == inv_update_context::deequipped) {
             emit send_deequipped(linked_inventory->get_item(slot));
+            if (slot < lower_boundry || slot > upper_boundry)
+                return;
+            item_objects[slot - lower_boundry]->set_deequipped();
             return;
         }
-        unsigned int lower_boundry = _scrolled_cols * _cols;
-        unsigned int upper_boundry = lower_boundry + (_cols * _displayed_rows) - 1;
         if (context_ == inv_update_context::removed_item) {
             if (slot > upper_boundry)
                 return;
@@ -501,6 +531,9 @@ protected:
         item_object* itm_obj = new item_object(link_item, QPoint(0,0), QSize(_item_size, _item_size));
         itm_obj->_disp->setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
         connect(itm_obj, &item_object::click_send_to_parent, this, [=]() {this->process_item_click(itm_obj);});
+        if (linked_inventory->is_equipped(link_item)) {
+            itm_obj->set_equipped();
+        }
         return itm_obj;
     }
     void append_object(unsigned int index) {
@@ -513,6 +546,9 @@ protected:
         item_object* itm_obj = new item_object(linked_inventory->get_item(index), QPoint(0,0), QSize(_item_size, _item_size));
         itm_obj->_disp->setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Ignored);
         connect(itm_obj, &item_object::click_send_to_parent, this, [=]() {this->process_item_click(itm_obj);});
+        if (linked_inventory->is_equipped(itm_obj->linked_item)) {
+            itm_obj->set_equipped();
+        }
         item_objects.insert(item_objects.begin(), itm_obj);
         layout->addWidget(item_objects[index]->_disp, 0, 0);
     }
@@ -552,11 +588,77 @@ public:
     }
 };
 
-class player_inventory_widget: public QWidget {
+class player_inventory_widget: public QWidget, public can_play_sound {
 
     Q_OBJECT
 
 public slots:
+    void process_click(item_object* obj) {
+        if (obj->linked_item == nullptr) {
+            return;
+        }
+        if (obj->_disp->linked_tooltip != nullptr) {
+            obj->_disp->linked_tooltip->deleteLater();
+        }
+        auto overlay = new tracked_button(&global::w);
+        overlay->setGeometry(0, 0, global::window_width, global::window_height);
+        overlay->setStyleSheet(QString("tracked_button {border-image: url(assets:/pictures/null.png);}"));
+
+        QPoint button_pos = QCursor::pos();
+        QSize button_size = QSize(150, 30);
+        QPoint button_increment = QPoint(0, button_size.height());
+        if (obj->linked_item->is_ammo_type() || obj->linked_item->is_armor_type() || obj->linked_item->is_consumable_type() || obj->linked_item->is_weapon_type()) {
+            if (!player_inventory->linked_inventory->is_equipped(obj->linked_item)) {
+                auto equip_b = new QPushButton("Экипировать", overlay);
+                equip_b->setGeometry(QRect(button_pos, button_size));
+                connect(equip_b, &QPushButton::clicked, this, [=]() {player_inventory->linked_inventory->equip(obj->linked_item); (player_inventory->linked_inventory->is_equipped(obj->linked_item)? this->play_sfx(sfx_equip) : this->play_sfx(sfx_fail)); overlay->deleteLater();});
+            } else {
+                auto deequip_b = new QPushButton("Убрать", overlay);
+                deequip_b->setGeometry(QRect(button_pos, button_size));
+                connect(deequip_b, &QPushButton::clicked, this, [=]() {if (obj->linked_item->is_weapon_type() && player_inventory->linked_inventory->get_equipped_ammo() != nullptr) {player_inventory->linked_inventory->deequip(player_inventory->linked_inventory->get_equipped_ammo());} player_inventory->linked_inventory->deequip(obj->linked_item); this->play_sfx(sfx_deequip); overlay->deleteLater();});
+            }
+            button_pos += button_increment;
+        }
+        if (obj->linked_item->get_stack() == 1) {
+            auto throw_away_b = new QPushButton("Выбросить", overlay);
+            throw_away_b->setGeometry(QRect(button_pos, button_size));
+            connect(throw_away_b, &QPushButton::clicked, this, [=]() {if (obj->linked_item->is_weapon_type() && player_inventory->linked_inventory->get_equipped_ammo() != nullptr) {player_inventory->linked_inventory->deequip(player_inventory->linked_inventory->get_equipped_ammo());} player_inventory->linked_inventory->remove_item(player_inventory->linked_inventory->get_slot(obj->linked_item)); this->play_sfx(sfx_throw); overlay->deleteLater();});
+            button_pos += button_increment;
+        } else if (obj->linked_item->get_stack() > 1) {
+            auto throw_away_b = new QPushButton("Выбросить всё", overlay);
+            throw_away_b->setGeometry(QRect(button_pos, button_size));
+            connect(throw_away_b, &QPushButton::clicked, this, [=]() {if (obj->linked_item->is_weapon_type() && player_inventory->linked_inventory->get_equipped_ammo() != nullptr) {player_inventory->linked_inventory->deequip(player_inventory->linked_inventory->get_equipped_ammo());} player_inventory->linked_inventory->remove_item(player_inventory->linked_inventory->get_slot(obj->linked_item)); this->play_sfx(sfx_throw_all); overlay->deleteLater();});
+            button_pos += button_increment;
+            auto throw_away_some_b = new QPushButton("Выбросить 1 шт.", overlay);
+            throw_away_some_b->setGeometry(QRect(button_pos, button_size));
+            button_pos += button_increment;
+            auto throw_away_some_s_bg = new QPushButton(overlay);
+            throw_away_some_s_bg->setGeometry(QRect(button_pos, button_size));
+            auto throw_away_some_s = new QSlider(Qt::Horizontal, throw_away_some_s_bg);
+            throw_away_some_s->resize(button_size);
+            throw_away_some_s->setStyleSheet(QString("QSlider::groove:horizonal {height: 6px; background: black; border-radius: 3px;}" "QSlider::handle:horizonal {background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #fff, stop:1 #dedede); border: 1px solid #ababab; width: 12px; height: 20px; margin: -12px 0; border-radius: 3px;}"));
+            throw_away_some_s->setMaximum(obj->linked_item->get_stack());
+            throw_away_some_s->setMinimum(1);
+            throw_away_some_s->setValue(1);
+            connect(throw_away_some_s, &QSlider::valueChanged, this, [=](int value) {throw_away_some_b->setText(QString("Выбросить %1 шт.").arg(value));});
+            connect(throw_away_some_b, &QPushButton::clicked, this, [=]() {player_inventory->linked_inventory->remove_item(player_inventory->linked_inventory->get_slot(obj->linked_item), throw_away_some_s->value()); (throw_away_some_s->value() == throw_away_some_s->maximum()? this->play_sfx(sfx_throw_all) : this->play_sfx(sfx_throw_some)); overlay->deleteLater();});
+            button_pos += button_increment;
+        }
+        auto cancel_button = new QPushButton("Отмена", overlay);
+        cancel_button->setGeometry(QRect(button_pos, button_size));
+        connect(cancel_button, &QPushButton::clicked, this, [=]() {overlay->deleteLater();});
+        connect(overlay, &tracked_button::clicked, this, [=]() {overlay->deleteLater();});
+        overlay->show();
+    }
+
+    void update_weight() {
+        weight_display->setText(QString("Вес: %1/%2").arg(global::player_->get_weight()).arg(global::player_->get_max_weight()));
+        if (global::player_->get_weight() > global::player_->get_max_weight()) {
+            weight_display->setStyleSheet("color: rgb(200, 0, 0);");
+        } else {
+            weight_display->setStyleSheet("color: rgb(255, 255, 255);");
+        }
+    }
     void equip_item_in_slot(item* item_) {
         if (item_ == nullptr)
             return;
@@ -636,6 +738,12 @@ protected:
     }
 public:
     QPixmap sprite;
+    QSoundEffect* sfx_equip = nullptr;
+    QSoundEffect* sfx_deequip = nullptr;
+    QSoundEffect* sfx_throw_some = nullptr;
+    QSoundEffect* sfx_throw_all = nullptr;
+    QSoundEffect* sfx_throw = nullptr;
+    QSoundEffect* sfx_fail = nullptr;
     inventory_object* player_inventory = nullptr;
     item_object* armor_head_slot = nullptr;
     item_object* armor_body_slot = nullptr;
@@ -643,7 +751,20 @@ public:
     item_object* weapon_slot = nullptr;
     item_object* ammo_slot = nullptr;
     item_object* consumable_slot = nullptr;
+    QLabel* weight_display = nullptr;
     player_inventory_widget(QWidget* parent = nullptr): QWidget(parent) {
+        sfx_equip = new QSoundEffect(this);
+        sfx_equip->setSource(QUrl::fromLocalFile(QFileInfo(QString("assets:sounds/equip.wav")).absoluteFilePath()));
+        sfx_deequip = new QSoundEffect(this);
+        sfx_deequip->setSource(QUrl::fromLocalFile(QFileInfo(QString("assets:sounds/deequip.wav")).absoluteFilePath()));
+        sfx_throw_some = new QSoundEffect(this);
+        sfx_throw_some->setSource(QUrl::fromLocalFile(QFileInfo(QString("assets:sounds/throw_some.wav")).absoluteFilePath()));
+        sfx_throw_all = new QSoundEffect(this);
+        sfx_throw_all->setSource(QUrl::fromLocalFile(QFileInfo(QString("assets:sounds/throw_all.wav")).absoluteFilePath()));
+        sfx_throw = new QSoundEffect(this);
+        sfx_throw->setSource(QUrl::fromLocalFile(QFileInfo(QString("assets:sounds/throw.wav")).absoluteFilePath()));
+        sfx_fail = new QSoundEffect(this);
+        sfx_fail->setSource(QUrl::fromLocalFile(QFileInfo(QString("assets:sounds/fail.wav")).absoluteFilePath()));
         this->resize(1425, 900);
         sprite.load("assets:/pictures/black.png");
         player_inventory = new inventory_object(global::player_->get_inventory(), inventory_context::player_inventory, 4, 6, 125, QPoint(70,70), this);
@@ -661,6 +782,17 @@ public:
         ammo_slot->_disp->setParent(this);
         consumable_slot = new item_object(player_inventory->linked_inventory->get_equipped_consumable(), QPoint(1075, 450), QSize(125,125));
         consumable_slot->_disp->setParent(this);
+        weight_display = new QLabel(this);
+        weight_display->setGeometry(10,10, 300, 20);
+        update_weight();
+        connect(armor_head_slot, &item_object::click_send_to_parent, this, &player_inventory_widget::process_click);
+        connect(armor_body_slot, &item_object::click_send_to_parent, this, &player_inventory_widget::process_click);
+        connect(armor_legs_slot, &item_object::click_send_to_parent, this, &player_inventory_widget::process_click);
+        connect(weapon_slot, &item_object::click_send_to_parent, this, &player_inventory_widget::process_click);
+        connect(ammo_slot, &item_object::click_send_to_parent, this, &player_inventory_widget::process_click);
+        connect(consumable_slot, &item_object::click_send_to_parent, this, &player_inventory_widget::process_click);
+        connect(player_inventory->linked_inventory, &inventory::change_weight, this, &player_inventory_widget::update_weight);
+        connect(player_inventory, &inventory_object::send_click, this, &player_inventory_widget::process_click);
     }
 };
 
@@ -830,7 +962,7 @@ public:
     }
 };
 
-class map_player_object: public animated_displayable {
+class map_player_object: public animated_displayable, public can_play_sound {
 
     Q_OBJECT
 signals:
@@ -858,6 +990,7 @@ public slots:
         link_line(line);
     }
 public:
+    QSoundEffect* sfx_fail = nullptr;
     unclickable_button* player_marker = nullptr;
     unclickable_button* destination_marker = nullptr;
     QGraphicsLineItem* line = nullptr;
@@ -866,6 +999,10 @@ public:
             delete this;
             return;
         }
+
+        sfx_fail = new QSoundEffect(this);
+        sfx_fail->setSource(QUrl::fromLocalFile(QFileInfo(QString("assets:sounds/fail.wav")).absoluteFilePath()));
+
         this->_disp->setParent(parent);
         connect(this, &map_player_object::began_step, this, &map_player_object::begin_running);
         connect(this, &map_player_object::reached_destination, this, &map_player_object::stop_running);
@@ -882,6 +1019,12 @@ public:
         destination_marker->hide();
     }
     void move_to(QPoint& coord) override {
+        if (global::player_->get_weight() > global::player_->get_max_weight()) {
+            interrupt();
+            new screen_message("> Вы перегружены и не можете идти", 50, 200, 20);
+            play_sfx(sfx_fail);
+            return;
+        }
         bool locked = false;
         emit check_tiles(coord.x(), coord.y(), this->_disp->size().width(), this->_disp->size().height(), locked);
         if (locked == true) {
@@ -1355,6 +1498,7 @@ public slots:
         global::player_->set_entity_stats(stats);
         global::player_->set_name(player_name);
         global::player_->set_inventory(new inventory());
+        global::player_->set_base_stats();
         // auto x = new item_requirements();
         // x->item_requirements_ptrs.emplace_back(new char_requirement(3, char_type::intelligence));
         // armor_bonus p;
