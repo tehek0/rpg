@@ -30,7 +30,7 @@ void dev::create_object(dev::datatype object_type, object_data& values) {
             for (QRegularExpressionMatch elem : cut_id_out_of_line_e.globalMatch(value)) {
                 array.emplace_back(elem.captured().toULongLong());
             }
-            if (array.size() == 1) {
+            if (array.size() == 1 && type != datatype::requirement) {
                 data[key] = array[0];
             }
             else {

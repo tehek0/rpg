@@ -175,17 +175,17 @@ game_scene* throw_hub_scene() {
 
     auto inv_button = new QPushButton("Инвентарь");
     inv_button->resize(instrument_side, instrument_side);
-    inv_button->move(instruments_width, instruments_panel_hight_start + 100);
-    global::w.connect(inv_button, &QPushButton::clicked, &global::w, [=]() {scene_->findChild<map_widget*>("map")->hide(); auto chars = scene_->findChild<QWidget*>("chars"); if (chars != nullptr) {chars->hide();} auto pinv = scene_->findChild<player_inventory_widget*>("inventory"); if (pinv == nullptr) {pinv = new player_inventory_widget(); pinv->move(242,111); pinv->setObjectName("inventory"); scene_->add(pinv);} else {pinv->show();}});
+    inv_button->move(instruments_width, instruments_panel_hight_start + 290);
+    global::w.connect(inv_button, &QPushButton::clicked, &global::w, [=]() {scene_->findChild<map_widget*>("map", Qt::FindDirectChildrenOnly)->hide(); auto chars = scene_->findChild<QWidget*>("chars", Qt::FindDirectChildrenOnly); if (chars != nullptr) {chars->hide();} auto pinv = scene_->findChild<player_inventory_widget*>("inventory", Qt::FindDirectChildrenOnly); if (pinv == nullptr) {pinv = new player_inventory_widget(); pinv->move(242,111); pinv->setObjectName("inventory"); scene_->add(pinv);} else {pinv->show();}});
     scene_->add(inv_button);
 
     auto map_button = new QPushButton("Карта");
     map_button->resize(instrument_side, instrument_side);
-    map_button->move(instruments_width, instruments_panel_hight_start + 200);
-    global::w.connect(map_button, &QPushButton::clicked, &global::w, [=]() {scene_->findChild<map_widget*>("map")->show(); auto pinv = scene_->findChild<player_inventory_widget*>("inventory"); if (pinv != nullptr) {pinv->hide();} auto chars = scene_->findChild<QWidget*>("chars"); if (chars != nullptr) {chars->hide();}});
+    map_button->move(instruments_width, instruments_panel_hight_start + 580);
+    global::w.connect(map_button, &QPushButton::clicked, &global::w, [=]() {scene_->findChild<map_widget*>("map", Qt::FindDirectChildrenOnly)->show(); auto pinv = scene_->findChild<player_inventory_widget*>("inventory", Qt::FindDirectChildrenOnly); if (pinv != nullptr) {pinv->hide();} auto chars = scene_->findChild<QWidget*>("chars", Qt::FindDirectChildrenOnly); if (chars != nullptr) {chars->hide();}});
     scene_->add(map_button);
 
-    auto interact_btn = new QPushButton("Зайти");
+    auto interact_btn = new QPushButton("Персонаж");
     interact_btn->resize(instrument_side,instrument_side);
     interact_btn->move(instruments_width, instruments_panel_hight_start);
     global::w.connect(interact_btn, &QPushButton::clicked, &global::w, [=]() {global::w.switch_to_scene(global::w.battle_scene);});

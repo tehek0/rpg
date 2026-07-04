@@ -233,7 +233,7 @@ public slots:
             _disp->linked_tooltip->setText("Пустой слот экипировки");
             return;
         }
-        _disp->linked_tooltip->setText(linked_item->get_tooltip_text());
+        _disp->linked_tooltip->setText(linked_item->get_tooltip_text() + (is_equipped ? QString("<p><center><font color=\"#0CCC3F\", font size=\"3\">(ЭКИПИРОВАНО)</font></center><\p>") : ""));
     }
     virtual void clicked() {
         emit click_send_to_parent(this);
@@ -245,6 +245,7 @@ public:
     unclickable_button* equipped_overlay;
     QLabel* stack_label;
     bool is_dummy;
+    bool is_equipped = false;
     item_object() {
         is_dummy = true;
     } // это обязательно
@@ -277,9 +278,11 @@ public:
         stack_label->clear();
     }
     void set_equipped() {
+        is_equipped = true;
         equipped_overlay->setStyleSheet("border-image: url(assets:/pictures/inventory_item_equipped_overlay.png);");
     }
     void set_deequipped() {
+        is_equipped = false;
         equipped_overlay->setStyleSheet("border-image: url(assets:/pictures/null.png);");
     }
     void change_item(item* item_) {

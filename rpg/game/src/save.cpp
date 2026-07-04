@@ -11,7 +11,7 @@
 
 void save(int slot_num) {
     save_init(slot_num);
-    save_map(global::w.hub_scene->findChild<map_widget*>("map"), slot_num);
+    save_map(global::w.hub_scene->findChild<map_widget*>("map", Qt::FindDirectChildrenOnly), slot_num);
     save_player(global::player_, slot_num);
     save_meta(slot_num);
 }
@@ -25,7 +25,7 @@ void load(int slot_num) {
         critical_error(QString("Не удалось загрузить сохранение %1, данные игрока повреждены").arg(slot_num));
         return;
     }
-    if (!load_map(global::w.hub_scene->findChild<map_widget*>("map"), slot_num)) {
+    if (!load_map(global::w.hub_scene->findChild<map_widget*>("map", Qt::FindDirectChildrenOnly), slot_num)) {
         critical_error(QString("Не удалось загрузить сохранение %1, данные карты повреждены").arg(slot_num));
         return;
     }

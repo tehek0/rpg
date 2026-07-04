@@ -26,7 +26,7 @@ screen_message::screen_message(const QString& message, unsigned int last_for, in
     this->show();
     this->adjustSize();
     this->resize(global::window_width, this->height());
-    auto prev_message = global::w.findChild<screen_message*>("last_screen_message");
+    auto prev_message = global::w.findChild<screen_message*>("last_screen_message", Qt::FindDirectChildrenOnly);
     if (prev_message != nullptr) {
         prev_message->setObjectName("not_last_screen_message");
         if (!(prev_message->pos().y() + this->height() > global::window_height))
