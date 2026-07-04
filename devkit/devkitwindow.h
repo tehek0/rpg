@@ -22,8 +22,6 @@ private slots:
 
     void on_createItem_pb_clicked();
 
-    void on_createEntity_pb_clicked();
-
     void on_createArmor_bonus_pb_clicked();
 
     void on_createOn_use_pb_clicked();

@@ -54,7 +54,7 @@ dev::object_data templates[dev::datatype::total + 1] = {
         {dev::datatype::use_effect, dev::datatype::integer},
      },
     { //item
-        {"subtype", "name","desc","asset","max_stack_size","base_weight","base_cost","sellablle"},
+        {"subtype", "name","desc","asset","max_stack_size","base_weight","base_cost","sellable"},
         {},
         {dev::datatype::item_subtypes, dev::datatype::qstring, dev::datatype::qstring, dev::datatype::qstring,
         dev::datatype::u_integer, dev::datatype::double_t,dev::datatype::u_integer, dev::datatype::boolean},
@@ -129,7 +129,7 @@ const std::vector<dev::object_data> subtypes_template[dev::datatype::total + 1] 
       {dev::datatype::armor_slot, dev::datatype::u_short, dev::datatype::armor_bonus},
       },
      { //consumable
-     {"on_use", "uses_left", "use_energy_cost"},
+     {"on_use", "uses_left", "energy_cost"},
       {},
       {dev::datatype::on_use, dev::datatype::u_short, dev::datatype::integer},
       },

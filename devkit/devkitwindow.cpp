@@ -33,13 +33,6 @@ void DevkitWindow::on_createItem_pb_clicked()
 
 }
 
-void DevkitWindow::on_createEntity_pb_clicked()
-{
-    dev::object_dialog_window* w = new dev::object_dialog_window(dev::datatype::entity);
-    windows.emplace_back(w);
-}
-
-
 void DevkitWindow::on_createArmor_bonus_pb_clicked()
 {
     dev::object_dialog_window* w = new dev::object_dialog_window(dev::datatype::armor_bonus);

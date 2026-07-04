@@ -43,7 +43,6 @@ public:
     ~map_grid_tile() {delete poi_;}
 
     void change_tile_tint();
-    void change_tile_text();
 signals:
     void clicked_tile(map_grid_tile* tile);
     void clicked_poi(map_grid_tile* tile);
