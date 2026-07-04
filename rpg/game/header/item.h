@@ -275,8 +275,8 @@ public:
 
 // Структура бонуса брони
 struct armor_bonus {
-    equipment_bonus bonus;
-    int value;
+    equipment_bonus bonus = equipment_bonus::none;
+    int value = 0;
     QString text_armor_bonus();
     bool operator==(armor_bonus& other);
     bool operator!=(armor_bonus& other);

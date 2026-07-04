@@ -162,13 +162,19 @@ void dev::object_dialog_window::on_reset_clicked() {
 void dev::object_dialog_window::on_delete_clicked() {
     for (info_field& field : info_fields_) {
         QTreeWidget* table = reinterpret_cast<QTreeWidget*>(field.get_field());
+        QStringList p;
+        std::vector<int> x;
         for (int i = 0; i < table->topLevelItemCount(); ++i) {
             if (table->topLevelItem(i)->background(1) == check_color) {
-                dev::delete_object(field.get_field_type(), dev::read_ids(dev::get_path_to_datatype_folder(field.get_field_type())));
-                table->takeTopLevelItem(i);
+                p.append(table->topLevelItem(i)->text(0));
+                x.push_back(i);
             }
 
         }
+        for (int i = 0; i < x.size(); ++i) {
+            table->takeTopLevelItem(x[i] - i);
+        }
+        dev::delete_object(field.get_field_type(), p);
     }
 }
 

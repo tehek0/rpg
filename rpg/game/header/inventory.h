@@ -85,6 +85,7 @@ public:
     void deequip(item* item_);
     void deequip_armor(armor* armor_);
     void equip(item* item_);
+    void equip_unconditional(item* item_);
     void equip_armor(armor* armor_);
     armor* get_armor_head();
     armor* get_armor_body();

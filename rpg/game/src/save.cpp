@@ -326,7 +326,7 @@ bool load_player(player* player_, int slot) {
         }
         _inventory->add_item(itm);
         if (elem.contains("is_equipped")) {
-            _inventory->equip(itm);
+            _inventory->equip_unconditional(itm);
         }
     }
 
@@ -634,20 +634,22 @@ item* item_from_json(json j) {
         }
         return new weapon(QString::fromStdString(_name), QString::fromStdString(_desc), QString::fromStdString(_asset), _stack, _max_stack_size, _base_weight, _base_cost, _sellable, requirements, _base_dmg, damage_type{_damage_type}, ammo_type{_ammo_type}, _energy_cost);
     } else if (subtype_ == item_types::armor) {
-        if (!j.contains("armor_slot") || !j.contains("armor_points") || !j.contains("armor_bonus"))
+        if (!j.contains("armor_slot") || !j.contains("armor_points"))
             return nullptr;
         if (!j["armor_slot"].is_number_unsigned() || !j["armor_points"].is_number_integer())
             return nullptr;
         armor_bonus _armor_bonus;
-        if (j["armor_bonus"].is_object()) {
-            _armor_bonus = armor_bonus_from_json(j["armor_bonus"]);
-        } else if (j["armor_bonus"].is_number_unsigned()) {
-            unsigned long long id;
-            j["armor_bonus"].get_to(id);
-            _armor_bonus = armor_bonus_from_id(id);
-        } else {
-            return nullptr;
-        };
+        if (j.contains("armor_bonus")) {
+            if (j["armor_bonus"].is_object()) {
+                _armor_bonus = armor_bonus_from_json(j["armor_bonus"]);
+            } else if (j["armor_bonus"].is_number_unsigned()) {
+                unsigned long long id;
+                j["armor_bonus"].get_to(id);
+                _armor_bonus = armor_bonus_from_id(id);
+            } else {
+                return nullptr;
+            };
+        }
         int _armor_slot;
         short _armor_points;
         j["armor_slot"].get_to(_armor_slot);

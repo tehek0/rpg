@@ -278,6 +278,9 @@ protected:
     float _max_weight = 0.f;
     float _weight = 0.f;
     int _max_energy = 0;
+    int _bonus_energy = 0;
+    int _bonus_health = 0;
+    int _bonus_armor = 0;
     unsigned int level_up_points = 0;
     trait _trait;
 public:

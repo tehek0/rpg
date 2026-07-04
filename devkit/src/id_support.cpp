@@ -4,10 +4,8 @@
 #include <QDebug>
 #include <QFileDialog>
 
-std::string path = dev::path_to_rpg_exe.toStdString();
-
 void dev::set_ids_default_state() {
-    std::filesystem::path root = std::filesystem::path(path);
+    std::filesystem::path root = std::filesystem::path(dev::path_to_rpg_exe.toStdString());
     root /= "ids.json";
     std::ofstream default_ids(root.string());
     js default_object = js::object();
@@ -29,7 +27,7 @@ void dev::set_ids_default_state() {
 }
 
 unsigned long long dev::throw_id(datatype type) {
-    std::filesystem::path root = std::filesystem::path(path);
+    std::filesystem::path root = std::filesystem::path(dev::path_to_rpg_exe.toStdString());
     root /= "ids.json";
     std::ifstream in_ids(root.string());
     if (!in_ids.is_open()) {
@@ -60,7 +58,7 @@ unsigned long long dev::throw_id(datatype type) {
         js temp_obj = throw_id;
         id_info[last].swap(temp_obj);
     }
-
+    qInfo() << root.string() << dev::path_to_rpg_exe.toStdString();
     std::ofstream out_ids(root.string());
     out_ids.clear();
     out_ids << id_info.dump(js_indent);
@@ -69,7 +67,7 @@ unsigned long long dev::throw_id(datatype type) {
 }
 
 void dev::remove_id(datatype type, unsigned long long id) {
-    std::filesystem::path root = std::filesystem::path(path);
+    std::filesystem::path root = std::filesystem::path(dev::path_to_rpg_exe.toStdString());
     root /= "ids.json";
     std::ifstream in_ids(root.string());
     js id_info;
@@ -91,6 +89,7 @@ void dev::remove_id(datatype type, unsigned long long id) {
     std::string dangling = q_dangling.toStdString();
     id_info[dangling].emplace_back(id);
 
+    qInfo() << root.string() << dev::path_to_rpg_exe.toStdString();
     std::ofstream out_ids(root.string());
     out_ids.clear();
     out_ids << id_info.dump(js_indent);

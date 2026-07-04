@@ -10,11 +10,11 @@ void screen_message::next_frame() {
     float opacity_coef = smoothstep_algorythm(ticks, ticks_to_go);
     opacity->setOpacity(opacity_coef);
 }
-screen_message::screen_message(const QString& message, unsigned int last_for, int stay_still, unsigned int font_size): QLabel(&global::w) {
+screen_message::screen_message(const QString& message, unsigned int last_for, int stay_still, unsigned int font_size, int color_r, int color_g, int color_b): QLabel(&global::w) {
     ticks = 0 - stay_still;
     this->setGeometry(0,0,global::window_width, global::window_height);
     this->setAlignment(Qt::AlignTop | Qt::AlignRight);
-    this->setStyleSheet(QString("font: %1pt \"Arial\"; color: rgb(255,255,255);").arg(font_size));
+    this->setStyleSheet(QString("font: %1pt \"Arial\"; color: rgb(%2,%3,%4);").arg(font_size).arg(color_r).arg(color_g).arg(color_b));
     this->setAttribute(Qt::WA_TransparentForMouseEvents);
     this->setText(message);
     this->setContentsMargins(QMargins(8, 8, 8, 8));

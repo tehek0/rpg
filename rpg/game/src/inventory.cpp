@@ -311,6 +311,63 @@ void inventory::equip(item *item_) {
     }
 }
 
+void inventory::equip_unconditional(item *item_) {
+    if (!has_item(item_) || is_equipped(item_)) {
+        return;
+    }
+    if (item_->is_weapon_type()) {
+        if (_weapon != nullptr) {
+            emit trigger_update(this->get_slot(_weapon), inv_update_context::deequipped);
+        }
+        _weapon = static_cast<weapon*>(item_);
+        emit trigger_update(this->get_slot(_weapon), inv_update_context::equipped);
+    } else if (item_->is_ammo_type()) {
+        if (_equipped_ammo != nullptr) {
+            emit trigger_update(this->get_slot(_equipped_ammo), inv_update_context::deequipped);
+        }
+        _equipped_ammo = static_cast<ammo*>(item_);
+        emit trigger_update(this->get_slot(_equipped_ammo), inv_update_context::equipped);
+    } else if (item_->is_consumable_type()) {
+        if (_equipped_consumable != nullptr) {
+            emit trigger_update(this->get_slot(_equipped_consumable), inv_update_context::deequipped);
+        }
+        _equipped_consumable = static_cast<consumable*>(item_);
+        emit trigger_update(this->get_slot(_equipped_consumable), inv_update_context::equipped);
+    } else if (item_->is_armor_type()) {
+        switch(static_cast<armor*>(item_)->get_armor_slot()) {
+        case armor_slot::head: {
+            if (_armor.head != nullptr) {
+                emit trigger_update(this->get_slot(_armor.head), inv_update_context::deequipped);
+            }
+            _armor.head = static_cast<armor*>(item_);
+            emit trigger_update(this->get_slot(item_), inv_update_context::equipped);
+            break;
+        }
+        case armor_slot::body: {
+            if (_armor.body != nullptr) {
+                emit trigger_update(this->get_slot(_armor.body), inv_update_context::deequipped);
+            }
+            _armor.body = static_cast<armor*>(item_);
+            emit trigger_update(this->get_slot(item_), inv_update_context::equipped);
+            break;
+        }
+        case armor_slot::legs: {
+            if (_armor.legs != nullptr) {
+                emit trigger_update(this->get_slot(_armor.legs), inv_update_context::deequipped);
+            }
+            _armor.legs = static_cast<armor*>(item_);
+            emit trigger_update(this->get_slot(item_), inv_update_context::equipped);
+            break;
+        }
+        default: {
+            return;
+        }
+        }
+    } else {
+        return;
+    }
+}
+
 void inventory::equip_armor(armor *armor_) {
     switch(armor_->get_armor_slot()) {
     case armor_slot::head: {
