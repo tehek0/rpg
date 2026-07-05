@@ -1,6 +1,6 @@
 #include "../header/character.h"
 #include "../header/global.h"
-
+#include "../header/message.h"
 inventory* entity::get_inventory() {
     return _inventory;
 }
@@ -55,7 +55,7 @@ short entity_stats::get_stat(skill_type type) {
         return big_guns;
     }
     case skill_type::guns: {
-        return intelligence;
+        return guns;
     }
     case skill_type::science: {
         return science;
@@ -68,6 +68,43 @@ short entity_stats::get_stat(skill_type type) {
     }
     case skill_type::unarmed: {
         return unarmed;
+    }
+    default: {
+        qInfo() << "[get_stat] необрабатываемый скилл";
+        exit(-1);
+    }
+    }
+}
+
+void entity_stats::add_stat(skill_type type, short value) {
+    switch(type) {
+    case skill_type::barter: {
+        barter += value;
+        break;
+    }
+    case skill_type::big_guns: {
+        big_guns += value;
+        break;
+    }
+    case skill_type::guns: {
+        guns += value;
+        break;
+    }
+    case skill_type::science: {
+        science += value;
+        break;
+    }
+    case skill_type::speech: {
+        speech += value;
+        break;
+    }
+    case skill_type::survival: {
+        survival += value;
+        break;
+    }
+    case skill_type::unarmed: {
+        unarmed += value;
+        break;
     }
     default: {
         qInfo() << "[get_stat] необрабатываемый скилл";
@@ -111,12 +148,25 @@ int living_entity::get_max_health() {
     return _max_health;
 }
 
+
 int living_entity::get_health() {
     return _health;
 }
 
 int living_entity::get_base_armor() {
     return _base_armor;
+}
+
+int player::get_bonus_armor() {
+    return _bonus_armor;
+}
+
+int player::get_bonus_health() {
+    return _bonus_health;
+}
+
+int player::get_bonus_energy() {
+    return _bonus_energy;
 }
 
 int living_entity::get_money() {
@@ -176,6 +226,26 @@ void player::set_max_energy(int max_energy) {
     _max_energy = max_energy;
 }
 
+void player::set_bonus_armor(int value) {
+    _bonus_armor = value;
+}
+
+void player::set_bonus_health(int value) {
+    _bonus_health = value;
+}
+
+void player::set_bonus_energy(int value) {
+    _bonus_energy = value;
+}
+
+void player::set_level_up_points(int value) {
+    _level_up_points = value;
+}
+
+unsigned int player::get_level_up_points() {
+    return _level_up_points;
+}
+
 void player::set_inventory(inventory* inventory_) {
     delete _inventory;
     _inventory = inventory_;
@@ -199,6 +269,41 @@ void player::apply_equipment_bonuses() {
 
 void player::change_weight(float weight) {
     _weight += weight;
+}
+
+bool player::able_to_level_up() {
+    if (_entity_level.experiecne >= _entity_level.current_needed)
+        return true;
+
+    return false;
+}
+
+void player::level_up() {
+    ++_entity_level.level;
+    new screen_message(QString("> Новый уровень: %1\nДобавлены очки навыков").arg(_entity_level.level), 170, 300, 24, 40, 255, 40);
+    _entity_level.current_needed = _entity_level.current_needed + (_entity_level.scaling * _entity_level.level);
+    _max_weight += 2;
+    _max_health += 5;
+    _health += 5;
+    _level_up_points += 5;
+    if (able_to_level_up())
+        level_up();
+}
+
+void player::set_entity_level(entity_level& entity_level_) {
+    _entity_level = entity_level_;
+    if (able_to_level_up())
+        level_up();
+}
+
+void player::add_exp(int amount) {
+    _entity_level.experiecne += amount;
+    new screen_message(QString("+%1 опыта").arg(amount), 70, 10, 20, 255, 255, 255);
+    if (_entity_level.experiecne < 0)
+        _entity_level.experiecne = 0;
+    if (able_to_level_up()) {
+        level_up();
+    }
 }
 
 // Эта функция возвращает успех выбора данного варианта диалога. Для скилл чеков в этой функции будут проверяться характеристики игрока.
