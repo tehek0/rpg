@@ -4,7 +4,6 @@
 #include "data/trait_types.h"
 #include "data/enemy_trait_types.h"
 #include <QObject>
-#include "visuals.h"
 #include "quest.h"
 #include "location.h"
 #include <mainwindow.h>
@@ -146,20 +145,20 @@ struct interaction_tree {
     unsigned int progress = 0;
     int run_tree();
     template<typename... Args>
-    interaction_tree(Args... args) {
-        static_assert((std::is_constructible_v<interaction_type*, Args> && ...));
+    interaction_tree(Args&&... args) {
+        static_assert((std::is_constructible_v<interaction_type*, Args&&> && ...));
         (interactions.emplace_back(std::forward<Args>(args)), ...);
     }
     ~interaction_tree();
 };
 
 // Собственно класс, который будут наследовать сущности. Этот класс в свою очередь наследует QObject, может быть пригодится для сигналов, если нет - уберём
-class interactable : public QObject {
+class interactable {
 public:
     interactable() = default;
-    std::vector<interaction_tree> interaction_trees;
+    std::vector<interaction_tree*> interaction_trees;
     unsigned int selected_interaction_tree = 0;
-    virtual ~interactable() = default;
+    virtual ~interactable();
     void execute();
     // В реализации execute():
     // interaction_trees[selected_interaction_tree ].run_tree()
@@ -171,65 +170,85 @@ public:
 
 struct entity_stats {
 
-    short strength;
-    short agility;
-    short endurance;
-    short intelligence;
-    short luck;
+    short strength = 0;
+    short agility = 0;
+    short endurance = 0;
+    short intelligence = 0;
+    short luck = 0;
 
-    short guns;
-    short big_guns;
-    short unarmed;
-    short science;
-    short speech;
-    short barter;
-    short survival;
+    short guns = 0;
+    short big_guns = 0;
+    short unarmed = 0;
+    short science = 0;
+    short speech = 0;
+    short barter = 0;
+    short survival = 0;
 
+    entity_stats operator+(entity_stats other);
+    short get_stat(char_type type_);
+    short get_stat(skill_type type_);
+    void add_stat(skill_type type, short value);
 };
 
+enum entity_size_class {
+    tiny,
+    small,
+    medium,
+    big,
+    giant,
+    human,
+    big_human
+} ;
 
 
 struct entity_level {
 
-    unsigned int level;
-    unsigned int experiecne;
-    unsigned int scaling;
+    unsigned int level = 1;
+    unsigned int experiecne = 0;
+    unsigned int current_needed = 100;
+    unsigned int scaling = 100;
 
 };
 
-class entity: public interactable, public displayable {
+class entity: public interactable, public QObject {
 protected:
-    inventory _inventory;
-    // name и sprite family поля придут с displayable
+    QString _name;
+    QString _asset;
+    inventory* _inventory = nullptr;
+
+    entity_size_class _size_class;
 public:
     entity() = default;
-    entity(MainWindow* w, QRect& coord_and_size, QString& sprite_family, QString& name)
-        : displayable(w,true,coord_and_size,sprite_family,name) {
-    };
-    virtual ~entity() = default;
+    entity(const QString& name, const QString& asset, inventory* inventory_ = new inventory()): _name(name), _asset(asset), _inventory(inventory_)
+    {}
+    virtual ~entity() {
+        if (_inventory != nullptr)
+            delete _inventory;
+    }
 
-    inventory get_inventory();
+    inventory* get_inventory();
     QString get_name();
-    QString get_sprite_family();
-    void set_inventory(inventory& inventory_);
-    void set_name(QString& name);
-    void set_sprite_family(QString& sprite_family);
+    QString get_asset();
+    entity_size_class get_size_class() {return _size_class;}
+    void set_size_class(entity_size_class size_class_) {_size_class = size_class_;};
+    virtual void set_inventory(inventory* inventory_);
+    void set_name(const QString& name);
+    void set_asset(const QString& asset);
 };
 
 class living_entity: public entity {
 protected:
     entity_stats _entity_stats;
     entity_level _entity_level;
-    int _max_health;
-    int _health;
-    int _base_armor;
+    int _max_health = 0;
+    int _health = 0;
+    int _base_armor = 0;
     int _total_armor;
-    int _money;
+    int _money = 0;
 public:
     virtual ~living_entity() = default;
+    living_entity() : entity() {;}
     entity_stats get_entity_stats();
-    short get_entity_stat(char_type type_);
-    short get_entity_stat(skill_type type_);
     entity_level get_entity_level();
     int get_max_health();
     int get_health();
@@ -237,38 +256,65 @@ public:
     int get_total_armor();
     int get_money();
     void set_entity_stats(entity_stats& entity_stats_);
-    void set_entity_level(entity_level& entity_level_);
+    virtual void set_entity_level(entity_level& entity_level_);
+
     void set_max_health(int max_health);
     void set_health(int health);
+    void attacked();
+
     void set_base_armor(int base_armor);
     void set_total_armor(int total_armor);
     void regen_health(int amount);
-    void damage_health(int amount);
     void set_money(int money);
     void add_money(int amount);
     bool transaction(living_entity* other, int amount);
 };
 
+class character_view_widget;
 
 class player: public living_entity {
+    Q_OBJECT
+public slots:
+    void change_weight(float weight);
 protected:
-    float _max_weight;
-    float _weight;
-    int _max_energy;
+    entity_stats _bonus_stats;
+    float _max_weight = 0.f;
+    float _weight = 0.f;
+    int _max_energy = 0;
+    int _bonus_energy = 0;
+    int _bonus_health = 0;
+    int _bonus_armor = 0;
+    unsigned int _level_up_points = 0;
     trait _trait;
 public:
+    player() = default;
     std::vector<quest> quests;
     location* current_location;
     float get_max_weight();
     float get_weight();
     int get_max_energy();
-    trait get_trait();
+    entity_stats get_bonus_stats();
+    int get_bonus_armor();
+    int get_bonus_health();
+    int get_bonus_energy();
+    entity_stats get_total_stats();
+    unsigned int get_level_up_points();
     void set_max_weight(float max_weight);
+    void set_inventory(inventory* inventory_);
     void set_weight(float weight);
     void set_max_energy(int max_energy);
-    void set_trait(trait trait_);
+    void set_base_stats();
+    void set_bonus_armor(int value);
+    void set_bonus_health(int value);
+    void set_bonus_energy(int value);
     void apply_equipment_bonuses();
+    void set_level_up_points(int value);
+    void set_entity_level(entity_level& entity_level_);
+    void add_exp(int amount);
+    bool able_to_level_up();
+    void level_up();
     bool add_item(item* item_);
+    friend class character_view_widget;
 };
 
 struct enemy_traits {
@@ -284,12 +330,14 @@ protected:
     int _base_dmg;
     bool _delete_after_battle = true;
 public:
+    enemy() : living_entity() {};
     enemy_traits get_enemy_traits();
     int get_base_dmg();
     bool get_delete_after_battle();
     void set_enemy_traits(enemy_traits enemy_traits_);
     void set_base_dmg(int base_dmg);
     void set_delete_after_battle(bool delete_after_battle);
+
 };
 
 struct offer {

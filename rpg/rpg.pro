@@ -1,18 +1,26 @@
-QT       += core gui
+QT += core gui
+QT += multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
-
+CONFIG += static
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    game/src/battle.cpp \
     game/src/character.cpp \
+    game/src/config.cpp \
+    game/src/enum_translation.cpp \
     game/src/inventory.cpp \
     game/src/item.cpp \
     game/src/item_requirements.cpp \
+    game/src/message.cpp \
+    game/src/save.cpp \
+    game/src/scenes.cpp \
+    game/src/ui.cpp \
     game/src/visuals.cpp \
     main.cpp \
     mainwindow.cpp
@@ -20,25 +28,35 @@ SOURCES += \
 HEADERS += \
     game/header/battle.h \
     game/header/character.h \
+    game/header/config.h \
     game/header/data/ammo_types.h \
     game/header/data/armor_slots.h \
+    game/header/data/biomes.h \
     game/header/data/char_types.h \
     game/header/data/damage_types.h \
     game/header/data/enemy_trait_types.h \
     game/header/data/equipment_bonuses.h \
     game/header/data/interaction_return_value_types.h \
+    game/header/data/inventory_contexts.h \
     game/header/data/quest_triggers.h \
     game/header/data/skill_types.h \
+    game/header/data/tooltip_types.h \
     game/header/data/trait_types.h \
     game/header/data/use_effects.h \
+    game/header/enum_translation.h \
     game/header/global.h \
     game/header/inventory.h \
     game/header/item.h \
     game/header/item_requirements.h \
     game/header/location.h \
+    game/header/message.h \
+    game/header/music.h \
     game/header/quest.h \
     game/header/save.h \
+    game/header/scenes.h \
+    game/header/ui.h \
     game/header/visuals.h \
+    game/inc/alias.h \
     game/inc/json.hpp \
     mainwindow.h
 
@@ -50,11 +68,12 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-RESOURCES += \
-    game/assets/pictures/res.qrc
+RESOURCES +=
 
 DISTFILES += \
     assets/pictures/backg_map.jpg.kra \
     assets/pictures/map.jpg \
-    game/assets/pictures/backg_map.jpg.kra \
-    game/assets/pictures/map.jpg
+    game/assets/pictures/backg_map.jpg.kra
+
+QMAKE_CXXFLAGS += -clazy-disable=qstring-arg
+DEFINES += QT_MEDIA_BACKEND=\\\"ffmpeg\\\"

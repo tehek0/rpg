@@ -1,21 +1,20 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "game/header/character.h"
+#include "game/header/visuals.h"
+#include "game/header/config.h"
+#include "game/header/ui.h"
 #include <QPushButton>
+#include <QGraphicsProxyWidget>
+
+#include "game/header/character.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    global::timer->start(global::tick_timeout);
 
-
-    QRect v(1000,100,100,100);
-    QString s = "icon_inv_collect_shrimp";
-    QString n = "test";
-    displayable* ent = new displayable(this,true,v,s,n);
-    connect(ent->_disp, &QPushButton::clicked, this, [this]{OnEntClicked();});
-    on_screen.emplace_back(ent->_disp);
 }
 
 MainWindow::~MainWindow()
@@ -23,36 +22,79 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-int ii = 30;
-void MainWindow::on_pushButton_clicked()
-{
-    QRect v(100+ii,100,100,100);
-    QString s = "icon_inv_collect_shrimp";
-    QString n = "test";
-    ii += 10;
-    displayable* ent = new displayable(this,true,v,s,n);
-    connect(ent->_disp, &QPushButton::clicked, this, [this]{OnEntClicked();});
-    on_screen.emplace_back(ent->_disp);
+
+
+void MainWindow::menu_play() {
+
+    // std::vector<enemy*> test_enemies;
+    // enemy* one = new enemy();
+    // enemy* two = new enemy();
+    // enemy* three = new enemy();
+    // one->set_size_class(entity_size_class::small);
+    // two->set_size_class(entity_size_class::tiny);
+    // three->set_size_class(entity_size_class::medium);
+    // one->set_max_health(40);
+    // two->set_max_health(10);
+    // three->set_max_health(40);
+    // one->set_health(20);
+    // two->set_health(4);
+    // three->set_health(40);
+    // test_enemies.emplace_back(one);
+    // test_enemies.emplace_back(two);
+    // test_enemies.emplace_back(three);
+    // qInfo() << one->get_health();
+    // qInfo() << two->get_health();
+    // qInfo() << three->get_health();
+
+    // if (hub_scene == nullptr) {
+    //     hub_scene = throw_hub_scene();
+    // }
+    // if (battle_scene == nullptr) {
+    //     battle_scene = throw_battle_scene(global::player_, test_enemies);
+    // }
+    // switch_to_scene(hub_scene);
+
+    auto scene = throw_play_scene();
+    switch_to_scene(scene);
 }
 
-void MainWindow::OnEntClicked() {
-    qInfo() << "Кнопка нажимается";
-}
-
-void MainWindow::on_map_b_clicked()
-{
-    centralWidget()->setStyleSheet("background: url(:/map.jpg); background-position: center;");
-    for(size_t i = 0; i < on_screen.size(); ++i) {
-        on_screen[i]->show();
+void MainWindow::new_game() {
+    if (hub_scene == nullptr) {
+        hub_scene = throw_hub_scene();
     }
-
-}
-
-void MainWindow::on_inventory_b_clicked()
-{
-    centralWidget()->setStyleSheet("background: url(:/testbkg.jpg); background-position: center;");
-    for(size_t i = 0; i < on_screen.size(); ++i) {
-        on_screen[i]->hide();
+    bool is_map_loaded = load_map(hub_scene->findChild<map_widget*>("map"), 0);
+    if (!is_map_loaded) {
+        critical_error("Не удалось загрузить стандартную карту.");
+        return;
     }
+    switch_to_scene(hub_scene);
+    global::music->set_music("ambience");
 }
 
+void MainWindow::open_settings() {
+    game_scene* scene_ = throw_settings_scene();
+    switch_to_scene(scene_);
+}
+
+void MainWindow::change_volume(double* source, float value) {
+    *source = value / 100;
+    change_cfg(global::master_volume, global::sfx_volume, global::music_volume);
+    global::music->change_volume(global::master_volume * global::music_volume);
+}
+
+void MainWindow::menu_exit() {
+    this->close();
+}
+
+void MainWindow::switch_to_scene(game_scene *scene_) {
+    current_scene->hide();
+    current_scene = scene_;
+    current_scene->show();
+}
+
+void MainWindow::draw_destination_line(QGraphicsLineItem*& line, game_scene* map_) {
+    line = new QGraphicsLineItem();
+    line->setPen(QPen(QBrush(QColor(Qt::red)), 4, Qt::DashLine, Qt::RoundCap));
+    line->setZValue(1);
+    map_->scene()->addItem(line);
+}

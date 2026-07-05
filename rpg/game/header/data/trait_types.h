@@ -1,5 +1,5 @@
 #pragma once
-
+// Под вопросом
 enum class trait {
     sociopath,
     spender,

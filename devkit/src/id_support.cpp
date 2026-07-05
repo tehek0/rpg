@@ -1,0 +1,97 @@
+#include "../header/id_support.hpp"
+#include "../header/data/general.hpp"
+#include "fstream"
+#include <QDebug>
+#include <QFileDialog>
+
+void dev::set_ids_default_state() {
+    std::filesystem::path root = std::filesystem::path(dev::path_to_rpg_exe.toStdString());
+    root /= "ids.json";
+    std::ofstream default_ids(root.string());
+    js default_object = js::object();
+    short index = 0;
+    for (const auto& str : datatypes_to_string) {
+        if (index >= dev::datatype::map){
+            QString q_last = QString(q_last_ptrn).arg(str);
+            std::string last = q_last.toStdString();
+            default_object[last] = 0;
+
+            QString q_dangling = QString(q_dangling_ptrn).arg(str);
+            std::string dangling = q_dangling.toStdString();
+            default_object[dangling] = js::array();
+        }
+
+        ++index;
+    }
+    default_ids << default_object.dump(js_indent);
+}
+
+unsigned long long dev::throw_id(datatype type) {
+    std::filesystem::path root = std::filesystem::path(dev::path_to_rpg_exe.toStdString());
+    root /= "ids.json";
+    std::ifstream in_ids(root.string());
+    if (!in_ids.is_open()) {
+        in_ids.close();
+        set_ids_default_state();
+        in_ids.open(root.string());
+    }
+    js id_info;
+    try {
+        id_info = js::parse(in_ids);
+    } catch (...) {
+        qInfo() << root.string();
+        qInfo() << "[FATAL][dev::throw_id] ids.json is unparsable";
+        exit(-1);
+    }
+
+    unsigned long long throw_id;
+    QString q_dangling = QString(q_dangling_ptrn).arg(datatypes_to_string[type]);
+    std::string dangling = q_dangling.toStdString();
+    QString q_last = QString(q_last_ptrn).arg(datatypes_to_string[type]);
+    std::string last = q_last.toStdString();
+
+    if (!id_info[dangling].empty()) {
+        throw_id = id_info[dangling][0];
+        id_info[dangling].erase(id_info[dangling].begin());
+    } else {
+        throw_id = id_info[last].get<unsigned long long>() + 1;
+        js temp_obj = throw_id;
+        id_info[last].swap(temp_obj);
+    }
+    qInfo() << root.string() << dev::path_to_rpg_exe.toStdString();
+    std::ofstream out_ids(root.string());
+    out_ids.clear();
+    out_ids << id_info.dump(js_indent);
+
+    return throw_id;
+}
+
+void dev::remove_id(datatype type, unsigned long long id) {
+    std::filesystem::path root = std::filesystem::path(dev::path_to_rpg_exe.toStdString());
+    root /= "ids.json";
+    std::ifstream in_ids(root.string());
+    js id_info;
+    try {
+        id_info = js::parse(in_ids);
+    } catch (...) {
+        qInfo() << "[FATAL][dev::remove_id] ids.json is unparsable";
+        exit(-1);
+    }
+    QString q_last = QString(q_last_ptrn).arg(datatypes_to_string[type]);
+    std::string last = q_last.toStdString();
+
+    if (id_info[last].get<unsigned long long>() < id) {
+        ui::inform->setText(QString("[WARN][dev::remove_id] Предмет с id %1 не существует. Возможно был использован [set_ids_default_state()], который стёр его упоминание.").arg(id));
+        return;
+    }
+
+    QString q_dangling = QString(q_dangling_ptrn).arg(datatypes_to_string[type]);
+    std::string dangling = q_dangling.toStdString();
+    id_info[dangling].emplace_back(id);
+
+    qInfo() << root.string() << dev::path_to_rpg_exe.toStdString();
+    std::ofstream out_ids(root.string());
+    out_ids.clear();
+    out_ids << id_info.dump(js_indent);
+}
+

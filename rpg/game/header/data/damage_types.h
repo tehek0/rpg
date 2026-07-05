@@ -5,5 +5,8 @@ enum class damage_type {
     energy,
     melee,
     unarmed,
-    explosive
+    explosive,
+    non_specified
 };
+
+

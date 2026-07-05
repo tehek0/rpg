@@ -1,0 +1,46 @@
+#pragma once
+#include <QLineEdit>
+#include "QPoint"
+#include <QPushButton>
+#include "../header/data/datatypes.hpp"
+#include "info_fields.hpp"
+#include "custom_window.h"
+
+namespace dev {
+//Окно создание предмета для заданного типа. В общем то заложена универсальная сборочная программа для полей ввода разного типа
+class object_dialog_window : public custom_window {
+    Q_OBJECT
+protected:
+    std::vector<info_field> info_fields_;
+    std::vector<info_field> info_subfields_;
+    dev::datatype object_type_;
+    QPushButton* save_ = nullptr;
+    QPushButton* reset_ = nullptr;
+    QPushButton* delete_ = nullptr;
+    int last_y_pos;
+
+    void add_save_button();
+    void add_delete_button();
+public:
+    object_dialog_window(); //не задуман к использованию
+    explicit object_dialog_window(dev::datatype object_type);
+    virtual ~object_dialog_window();
+
+    std::vector<info_field> get_info_fields() {return info_fields_;}
+
+    void resize_dependent_on_fields();
+
+    void delete_subfields();
+    void add_subfields(short object_sybtype);
+    void change_subfields(short object_sybtype);
+public slots:
+    void on_save_clicked();
+    void on_reset_clicked();
+    void on_delete_clicked();
+
+    void type_chosen();
+    void table_cell_clicked(QTreeWidgetItem* item, int column);
+};
+
+}
+

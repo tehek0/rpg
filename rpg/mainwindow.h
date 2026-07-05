@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #include <QMainWindow>
-
+#include "game/header/scenes.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -17,16 +17,22 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    std::vector<QWidget*> on_screen;
+    game_scene* menu_scene;
+    game_scene* hub_scene = nullptr;
+    game_scene* dialog_scene = nullptr;
+    game_scene* location_scene = nullptr;
+    battle_scene* battle_scene = nullptr;
+    game_scene* current_scene = nullptr;
 
     Ui::MainWindow *ui;
 public slots:
-    void on_pushButton_clicked();
-    void OnEntClicked();
-private slots:
-    void on_inventory_b_clicked();
-    void on_map_b_clicked();
-
+    void menu_play();
+    void new_game();
+    void open_settings();
+    void change_volume(double* source, float value);
+    void menu_exit();
+    void switch_to_scene(game_scene* scene_);
+    void draw_destination_line(QGraphicsLineItem*& line, game_scene* map_);
 private:
 
 };
