@@ -29,7 +29,7 @@ void dev::info_field::fill_combo_box_data(QComboBox* field, dev::datatype type) 
             field->addItems({"char_type", "skill_type"});
             break;
         case dev::datatype::trade_subtypes:
-            field->addItems({"barter", "sell", "buy"});
+            field->addItems({"barter", "sell", "buy", "gift"});
             break;
         case dev::datatype::location_subtypes:
             field->addItems({"none", "city"});
@@ -72,7 +72,6 @@ void dev::info_field::fill_combo_box_data(QComboBox* field, dev::datatype type) 
 
 void dev::info_field::fill_qtable_data(QTreeWidget* field, dev::datatype type, dev::datatype object_type) {
     QString path = get_path_to_datatype_folder(type);
-
     if (is_directory_empty(path)) {
         label_->hide();
         field->hide();

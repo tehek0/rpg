@@ -21,9 +21,9 @@ dev::object_data templates[dev::datatype::total + 1] = {
         {},{},{},}
     ,
     { //trade
-        {"what_trade_is_that"},
+        {"what_trade_is_that", "exp"},
         {},
-        {dev::datatype::trade_subtypes},
+        {dev::datatype::trade_subtypes, dev::datatype::integer},
 },
     { //npc
         {},{},{},
@@ -91,6 +91,9 @@ const std::vector<dev::object_data> subtypes_template[dev::datatype::total + 1] 
     },
      { //buy
         {"recieve", "offer"}, {}, {dev::datatype::item, dev::datatype::integer},
+    },
+    { //gift
+        {"recieve"}, {}, {dev::datatype::item},
     },
 },
 

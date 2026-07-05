@@ -15,14 +15,7 @@ QString dev::get_path_to_datatype_folder(dev::datatype type) {
     if (is_type_component(type)) {
         root /= "components";
     }
-    switch(type) {
-    case dev::datatype::item_requirement: root /= "item_requirement"; break;
-    case dev::datatype::requirement: root /= "requirement"; break;
-    case dev::datatype::armor_bonus: root /= "armor_bonus"; break;
-    case dev::datatype::item: root /= "item"; break;
-    case dev::datatype::on_use: root /= "on_use"; break;
-    default: break;
-    }
+    root /= datatypes_to_string[type];
     return QString::fromStdString(root.string());
 }
 
@@ -47,7 +40,6 @@ bool dev::is_that_true(const std::string& path, std::string json_parameter_key) 
     bool check;
 
     file_j[json_parameter_key].get_to(check);
-    qInfo() << check;
     return check;
 }
 
