@@ -23,9 +23,9 @@ dev::object_data templates[dev::datatype::total + 1] = {
         {},{},{},}
     ,
     { //trade
-        {"recieve", "offer"},
+        {"what_trade_is_that"},
         {},
-        {dev::datatype::item, dev::datatype::item},
+        {dev::datatype::trade_subtypes},
 },
     { //npc
         {},{},{},
@@ -78,7 +78,7 @@ const std::vector<dev::object_data> subtypes_template[dev::datatype::total + 1] 
     { //sublocation's
      {{},{},{},},
 },
-    { //etc
+    { //
     {
      {},
      {},
@@ -88,9 +88,18 @@ const std::vector<dev::object_data> subtypes_template[dev::datatype::total + 1] 
     {
      {{},{},{},},
 },
-    {
-     {{},{},{},},
+    { //trade
+     { //barter
+        {"recieve", "offer"}, {}, {dev::datatype::item, dev::datatype::item},
+    },
+      { //sell
+        {"recieve", "offer"}, {}, {dev::datatype::integer, dev::datatype::item},
+    },
+     { //buy
+        {"recieve", "offer"}, {}, {dev::datatype::item, dev::datatype::integer},
+    },
 },
+
     {
      {{},{},{},},
 },

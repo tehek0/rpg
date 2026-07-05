@@ -144,7 +144,7 @@
      <string notr="true">color: rgb(8, 94, 255);</string>
     </property>
     <property name="text">
-     <string>Информационная строка</string>
+     <string>Информационная строка. Меню помощи - - - &gt;</string>
     </property>
    </widget>
    <widget class="QPushButton" name="help">

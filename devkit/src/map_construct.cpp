@@ -164,7 +164,7 @@ void dev::map_construct_window::add_brushes() {
 }
 dev::map_construct_window::map_construct_window() {
     grid_ = new map_grid(19, 12, 50, this);
-    this->setGeometry(50,50, 1200,600);
+    this->setGeometry(150,150, 1200,600);
     connect(grid_, &map_grid::clicked_child_tile, this, &map_construct_window::clicked_tile);
     connect(grid_, &map_grid::clicked_child_poi, this, &map_construct_window::clicked_poi);
 

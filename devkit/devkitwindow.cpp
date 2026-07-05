@@ -84,5 +84,6 @@ void DevkitWindow::on_createTrade_pb_clicked()
 {
     dev::object_dialog_window* w = new dev::object_dialog_window(dev::datatype::trade);
     windows.emplace_back(w);
+    w->change_subfields(0);
 }
 

@@ -38,6 +38,7 @@ enum datatype {
     armor_slot,
     use_effect,
     requirement_subtypes, //ПОДТИПЫ
+    trade_subtypes,
     item_subtypes,
     total, // Категория вне
     TODO,

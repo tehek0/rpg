@@ -17,7 +17,7 @@ void dev::object_dialog_window::resize_dependent_on_fields() {
             additional += field.calculate_table_hight();
         }
     }
-    resize(label_w + field_w + button_side + gap*3, button_side + (info_fields_.size() + info_subfields_.size()) * (any_line_hight + gap) + additional + gap);
+    resize(label_w + field_w + button_side + gap*3, button_side + (info_fields_.size() + info_subfields_.size()) * (any_line_hight + gap) + additional + 2*gap);
 };
 
 void dev::object_dialog_window::delete_subfields() {
@@ -99,6 +99,9 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : cus
     connect(reset_, SIGNAL(clicked()), this, SLOT(on_reset_clicked()));
     ypos = button_side + gap*2;
     reset_->show();
+    QLabel* check = new QLabel("Если поля нет, у вас нет ни одного объекта требуемого класса", this);
+    check->setGeometry(gap*6 + label_w/2 + button_side, gap, field_w, any_line_hight);
+    check->show();
 
     short amount_of_fields;
     try {
@@ -126,6 +129,7 @@ dev::object_dialog_window::object_dialog_window(dev::datatype object_type) : cus
     last_y_pos = ypos;
 
     resize_dependent_on_fields();
+    move(200,300);
     show();
 }
 

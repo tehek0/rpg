@@ -28,6 +28,9 @@ void dev::info_field::fill_combo_box_data(QComboBox* field, dev::datatype type) 
         case dev::datatype::requirement_subtypes:
             field->addItems({"char_type", "skill_type"});
             break;
+        case dev::datatype::trade_subtypes:
+            field->addItems({"barter", "sell", "buy"});
+            break;
         default: break;
         }
         connect(field, SIGNAL(currentIndexChanged(int)), field->parent(), SLOT(type_chosen()));
