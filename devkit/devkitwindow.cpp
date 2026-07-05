@@ -87,3 +87,11 @@ void DevkitWindow::on_createTrade_pb_clicked()
     w->change_subfields(0);
 }
 
+
+void DevkitWindow::on_createLocation_pb_clicked()
+{
+    dev::object_dialog_window* w = new dev::object_dialog_window(dev::datatype::location);
+    windows.emplace_back(w);
+    w->change_subfields(0);
+}
+

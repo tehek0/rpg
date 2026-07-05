@@ -44,7 +44,7 @@ void dev::object_dialog_window::add_subfields(short object_sybtype) {
         dev::datatype current_type = subtypes_template[object_type_][object_sybtype].types_[i];
 
 
-        dev::info_field whole_field = {current_key, current_type, QPoint(gap, this->ypos), this};
+        dev::info_field whole_field = {current_key, current_type, QPoint(gap, this->ypos), this, object_type_};
         info_subfields_.emplace_back(whole_field);
 
         if (is_type_struct(current_type)) {

@@ -31,6 +31,9 @@ void dev::info_field::fill_combo_box_data(QComboBox* field, dev::datatype type) 
         case dev::datatype::trade_subtypes:
             field->addItems({"barter", "sell", "buy"});
             break;
+        case dev::datatype::location_subtypes:
+            field->addItems({"none", "city"});
+            break;
         default: break;
         }
         connect(field, SIGNAL(currentIndexChanged(int)), field->parent(), SLOT(type_chosen()));
@@ -67,7 +70,7 @@ void dev::info_field::fill_combo_box_data(QComboBox* field, dev::datatype type) 
     }
 };
 
-void dev::info_field::fill_qtable_data(QTreeWidget* field, dev::datatype type) {
+void dev::info_field::fill_qtable_data(QTreeWidget* field, dev::datatype type, dev::datatype object_type) {
     QString path = get_path_to_datatype_folder(type);
 
     if (is_directory_empty(path)) {
@@ -83,6 +86,11 @@ void dev::info_field::fill_qtable_data(QTreeWidget* field, dev::datatype type) {
         auto lines = dev::lines_present(path);
         auto ids = dev::read_ids(path);
         for (size_t i = 0; i < ids.length(); ++i) {
+            if (object_type == dev::datatype::trade) {
+                if (!dev::is_that_true(path.toStdString() + "/" + datatypes_to_string[type] + "_" + ids[i].toStdString() + ".json", "sellable")) {
+                    continue;
+                }
+            }
             QStringList field_line = {ids[i],lines[i]};
             QTreeWidgetItem* item = new QTreeWidgetItem(field_line);
             field->addTopLevelItem(item);
@@ -101,7 +109,7 @@ const QRegularExpression double_e("[0-9][0-9]{0,}[ \. ][0-9]{1,}");
 const QValidator* num_val = new QRegularExpressionValidator(num_e);
 const QValidator* unum_val = new QRegularExpressionValidator(unum_e);
 const QValidator* double_val = new QRegularExpressionValidator(double_e);
-dev::info_field::info_field(QString key, dev::datatype field_type, QPoint location, QWidget* parent) : field_type_(field_type) {
+dev::info_field::info_field(QString key, dev::datatype field_type, QPoint location, QWidget* parent, dev::datatype object_type) : field_type_(field_type) {
     this->setParent(parent);
     label_ = new QLabel(parent);
     label_->setText(key);
@@ -128,7 +136,7 @@ dev::info_field::info_field(QString key, dev::datatype field_type, QPoint locati
     }
     else if (dev::is_type_struct(field_type)) {
         QTreeWidget* field = new QTreeWidget(parent);
-        fill_qtable_data(field,field_type);
+        fill_qtable_data(field, field_type, object_type);
         field_ = field;
         field_->move(location.x()+ label_w + gap, location.y());
     }

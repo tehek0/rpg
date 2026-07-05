@@ -4,6 +4,9 @@
 #include <QRegularExpressionMatch>
 #include "../../header/id_support.hpp"
 #include "header/data/general.hpp"
+#include "../header/inc/json.hpp"
+#include "fstream"
+using js = nlohmann::ordered_json;
 
 QString dev::get_path_to_datatype_folder(dev::datatype type) {
     QString path = dev::path_to_rpg_exe;
@@ -23,12 +26,29 @@ QString dev::get_path_to_datatype_folder(dev::datatype type) {
     return QString::fromStdString(root.string());
 }
 
-bool dev::is_directory_empty(QString path) {
+bool dev::is_directory_empty(const QString& path) {
     QDir dir(path);
     if (dir.isEmpty()) {
         return true;
     }
     return false;
+}
+
+bool dev::is_that_true(const std::string& path, std::string json_parameter_key) {
+    std::ifstream file(path);
+    js file_j;
+    try {
+        file_j = js::parse(file);
+    }
+    catch(...) {
+        qInfo() << "[FATAL][is_that_true] cannot parse";
+    }
+
+    bool check;
+
+    file_j[json_parameter_key].get_to(check);
+    qInfo() << check;
+    return check;
 }
 
 QStringList dev::lines_present(const QString& path){

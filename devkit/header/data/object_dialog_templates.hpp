@@ -2,20 +2,18 @@
 #include "../create_object.hpp"
 
 dev::object_data templates[dev::datatype::total + 1] = {
-    {   {"item", "item_requirement", "requirement", "armor_bonus", "on_use"},
+    {   {"item", "item_requirement", "requirement", "armor_bonus", "on_use", "trade", "location"},
         {},
-        {dev::datatype::item, dev::datatype::item_requirement, dev::datatype::requirement, dev::datatype::armor_bonus, dev::datatype::on_use}
+        {dev::datatype::item, dev::datatype::item_requirement, dev::datatype::requirement, dev::datatype::armor_bonus, dev::datatype::on_use,
+      dev::datatype::trade, dev::datatype::location}
     },
     {}, {}, {}, {}, {}, {}, {}, {}, {},//bool- linear типы
-    { //location
-        {"subtype", "name", "asset"},
-        {},
-        {dev::datatype::TODO, dev::datatype::qstring, dev::datatype::qstring},
-    },
     {}, //map
-    { //sublocation
-        {},{},{},}
-    ,
+    { //location
+      {"subtype", "name", "background"},
+      {},
+      {dev::datatype::location_subtypes, dev::datatype::qstring, dev::datatype::qstring},
+      },
     { //quest
         {},{},{},}
     ,
@@ -66,28 +64,24 @@ dev::object_data templates[dev::datatype::total + 1] = {
 const std::vector<dev::object_data> subtypes_template[dev::datatype::total + 1] = {
     {},
     {}, {}, {}, {}, {}, {}, {}, {}, {}, //bool - linear типы
-    { //location's
-        {}, //none
-     {
-        {},
-        {},
-        {},
-        },
-},
     {}, //map
-    { //sublocation's
+    { //location's
+      {}, //none
+      { //city
+        {"trades"},
+        {},
+        {dev::datatype::trade},
+        },
+      // { //enemy_camp
+      //   {"enemies"},
+      //   {},
+      //   {dev::datatype::enemy},
+      //   },
+      },
+    {
      {{},{},{},},
 },
-    { //
-    {
-     {},
-     {},
-     {},
-     },
-},
-    {
-     {{},{},{},},
-},
+    {},
     { //trade
      { //barter
         {"recieve", "offer"}, {}, {dev::datatype::item, dev::datatype::item},

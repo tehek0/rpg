@@ -7,6 +7,7 @@
 #include <QTreeWidget>
 #include "../header/data/datatypes.hpp"
 #include "create_object.hpp"
+class object_dialog_window;
 
 namespace dev {
 const inline QColor check_color = QColor(96, 230, 156);
@@ -16,12 +17,13 @@ const inline QColor check_color = QColor(96, 230, 156);
 class info_field : public QObject {
     Q_OBJECT
 
+    object_dialog_window* parent_;
     QLabel* label_;
     QWidget* field_;
     dev::datatype field_type_;
 
 public:
-    info_field(QString key, dev::datatype field_type, QPoint location, QWidget* parent = nullptr);
+    info_field(QString key, dev::datatype field_type, QPoint location, QWidget* parent = nullptr, dev::datatype object_type = dev::datatype::total);
     info_field(const info_field& other);
     ~info_field();
 
@@ -36,7 +38,7 @@ public:
     //Проверяет типы данных и заполняет combo box соответствующими ему значениями
     void fill_combo_box_data(QComboBox* field, dev::datatype type);
     //Аналогично для treewidget
-    void fill_qtable_data(QTreeWidget* field, dev::datatype type);
+    void fill_qtable_data(QTreeWidget* field, dev::datatype type, dev::datatype object_type = dev::datatype::total);
 };
 
 //Считывает данные с info_field и записывает в шаблонном виде object_data(из create_object) (для экспорта в json). В процессе конвертаций поэтапно обрабатываются массивы id

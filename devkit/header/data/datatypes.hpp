@@ -19,7 +19,6 @@ enum datatype {
     u_long_long,
     map, //тут сидит
     location, // СТРУКТУРЫ
-    sublocation,
     quest,
     enemy,
     trade,
@@ -39,6 +38,7 @@ enum datatype {
     use_effect,
     requirement_subtypes, //ПОДТИПЫ
     trade_subtypes,
+    location_subtypes,
     item_subtypes,
     total, // Категория вне
     TODO,
@@ -57,7 +57,6 @@ const std::string datatypes_to_string[datatype::total] = {
     "u_long_long",
     "map",
     "location",
-    "sublocation",
     "quest",
     "enemy",
     "trade",

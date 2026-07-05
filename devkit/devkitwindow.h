@@ -40,6 +40,8 @@ private slots:
 
     void on_createTrade_pb_clicked();
 
+    void on_createLocation_pb_clicked();
+
 private:
     std::vector<dev::custom_window*> windows;
         Ui::DevkitWindow *ui;
