@@ -23,7 +23,9 @@ dev::object_data templates[dev::datatype::total + 1] = {
         {},{},{},}
     ,
     { //trade
-        {},{},{},
+        {"recieve", "offer"},
+        {},
+        {dev::datatype::item, dev::datatype::item},
 },
     { //npc
         {},{},{},

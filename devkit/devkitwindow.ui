@@ -214,6 +214,19 @@ color: rgb(0, 0, 0);</string>
      <string>Сбросить все id</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="createTrade_pb">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>270</y>
+      <width>131</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Создать сделку</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

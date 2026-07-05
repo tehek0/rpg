@@ -38,6 +38,8 @@ private slots:
 
     void on_rebootIds_clicked();
 
+    void on_createTrade_pb_clicked();
+
 private:
     std::vector<dev::custom_window*> windows;
         Ui::DevkitWindow *ui;

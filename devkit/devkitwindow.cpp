@@ -79,3 +79,10 @@ void DevkitWindow::on_rebootIds_clicked()
     dev::call_reset_id_button_dialog();
 }
 
+
+void DevkitWindow::on_createTrade_pb_clicked()
+{
+    dev::object_dialog_window* w = new dev::object_dialog_window(dev::datatype::trade);
+    windows.emplace_back(w);
+}
+

@@ -92,9 +92,9 @@ void dev::info_field::fill_qtable_data(QTreeWidget* field, dev::datatype type) {
 
 }
 
-const QRegularExpression num_e("-{0,1}\\d{0,}");
-const QRegularExpression unum_e("[1-9]\\d{0,}");
-const QRegularExpression double_e("[0-9]\\d{0,}.\\d{1,}");
+const QRegularExpression num_e("-{0,1}[0-9]{0,}");
+const QRegularExpression unum_e("[1-9][0-9]{0,}");
+const QRegularExpression double_e("[0-9][0-9]{0,}[ \. ][0-9]{1,}");
 const QValidator* num_val = new QRegularExpressionValidator(num_e);
 const QValidator* unum_val = new QRegularExpressionValidator(unum_e);
 const QValidator* double_val = new QRegularExpressionValidator(double_e);
