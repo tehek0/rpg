@@ -49,7 +49,14 @@ item* inventory::get_item(unsigned int slot) {
     }
     return _items[slot];
 }
-
+item* inventory::get_equal_item(item *item_) {
+    for (auto const itm: _items) {
+        if (*(itm) == item_) {
+            return itm;
+        }
+    }
+    return nullptr;
+}
 size_t inventory::get_items_size() {
     return _items.size();
 }

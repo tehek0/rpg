@@ -74,9 +74,15 @@ bool skill_requirement::operator!=(skill_requirement* other) {
     return false;
 }
 bool skill_requirement::operator==(base_requirement* other) {
+    if (other->is_skill_requirement()) {
+        return *this == static_cast<skill_requirement*>(other);
+    }
     return false;
 }
 bool skill_requirement::operator!=(base_requirement* other){
+    if (other->is_skill_requirement()) {
+        return *this == static_cast<skill_requirement*>(other);
+    }
     return true;
 }
 
@@ -106,9 +112,15 @@ bool char_requirement::operator!=(char_requirement* other) {
     return false;
 }
 bool char_requirement::operator==(base_requirement* other) {
+    if (other->is_char_requirement()) {
+        return *this == static_cast<char_requirement*>(other);
+    }
     return false;
 }
 bool char_requirement::operator!=(base_requirement* other){
+    if (other->is_char_requirement()) {
+        return *this != static_cast<char_requirement*>(other);
+    }
     return true;
 }
 

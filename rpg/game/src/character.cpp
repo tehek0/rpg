@@ -172,6 +172,9 @@ int player::get_bonus_energy() {
 int living_entity::get_money() {
     return _money;
 }
+void living_entity::add_money(int amount) {
+    _money += amount;
+}
 
 void living_entity::set_entity_level(entity_level &entity_level_) {
     _entity_level = entity_level_;

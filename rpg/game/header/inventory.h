@@ -64,6 +64,7 @@ public:
     std::vector<item*> get_items();
     void add_item(item* item_);
     item* get_item(unsigned int slot);
+    item* get_equal_item(item* item_);
     size_t get_items_size();
     bool has_item(item* item_);
     unsigned int get_slot(item* item_);

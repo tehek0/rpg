@@ -1,5 +1,7 @@
 #include "../header/item.h"
 #include "../header/enum_translation.h"
+#include <QDebug>
+#include <QString>
 // Проверка возможности объединить предметы в один.
 bool item::can_add(item* other) {
     if (*this != other || _stack + other->_stack > _max_stack_size)
@@ -310,14 +312,14 @@ bool weapon::operator!=(item* other) {
 }
 
 bool weapon::operator==(weapon* other) {
-    if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || this->_requirements != other->_requirements || this->_base_dmg != other->_base_dmg || this->_ammo_type != other->_ammo_type || this->_damage_type != other->_damage_type || this->_energy_cost != other->_energy_cost)
+    if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || *this->_requirements != *other->_requirements || this->_base_dmg != other->_base_dmg || this->_ammo_type != other->_ammo_type || this->_damage_type != other->_damage_type || this->_energy_cost != other->_energy_cost)
         return false;
 
     return true;
 }
 
 bool weapon::operator!=(weapon* other) {
-    if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || this->_requirements != other->_requirements || this->_base_dmg != other->_base_dmg || this->_ammo_type != other->_ammo_type || this->_damage_type != other->_damage_type || this->_energy_cost != other->_energy_cost)
+    if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || *this->_requirements != *other->_requirements || this->_base_dmg != other->_base_dmg || this->_ammo_type != other->_ammo_type || this->_damage_type != other->_damage_type || this->_energy_cost != other->_energy_cost)
         return true;
 
     return false;
@@ -443,14 +445,15 @@ bool armor::operator!=(item* other) {
 }
 
 bool armor::operator==(armor* other) {
-    if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || this->_requirements != other->_requirements || this->_armor_slot != other->_armor_slot || this->_armor_points != other->_armor_points || this->_armor_bonus != other->_armor_bonus)
+    if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || *this->_requirements != *other->_requirements || this->_armor_slot != other->_armor_slot || this->_armor_points != other->_armor_points || this->_armor_bonus != other->_armor_bonus) {
         return false;
+    }
 
     return true;
 }
 
 bool armor::operator!=(armor* other) {
-    if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || this->_requirements != other->_requirements || this->_armor_slot != other->_armor_slot || this->_armor_points != other->_armor_points || this->_armor_bonus != other->_armor_bonus)
+    if (this->_name != other->_name || this->_desc != other->_desc || this->_asset != other->_asset || this->_max_stack_size != other->_max_stack_size || this->_base_weight != other->_base_weight || this->_base_cost != other->_base_cost || this->_sellable != other->_sellable || *this->_requirements != *other->_requirements || this->_armor_slot != other->_armor_slot || this->_armor_points != other->_armor_points || this->_armor_bonus != other->_armor_bonus)
         return true;
 
     return false;

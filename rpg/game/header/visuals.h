@@ -30,6 +30,7 @@
 #include "enum_translation.h"
 
 #include <qprogressbar.h>
+#include <fstream>
 
 class can_play_sound {
 public:
@@ -1192,12 +1193,12 @@ protected:
     unsigned short _height = 12;
     unsigned short _tile_size = 50;
 signals:
-    void clicked_child_tile(map_grid_tile* tile);
+    void clicked_child_tile(map_grid_tile* tile, QPoint p);
     void clicked_child_poi(map_grid_tile* tile);
     void clicked_child_locked_tile(map_grid_tile* tile);
 public slots:
     void process_clicked_tile(map_grid_tile* tile) {
-        emit clicked_child_tile(tile);
+        emit clicked_child_tile(tile, QPoint());
     }
     void process_clicked_poi(map_grid_tile* tile) {
         emit clicked_child_poi(tile);
@@ -1242,14 +1243,26 @@ public:
     }
 };
 
-class map_widget: public game_scene {
+class map_widget: public game_scene, public can_play_sound {
 
     Q_OBJECT
 
 public slots:
-    void clicked_tile(map_grid_tile* tile) {
+    void clicked_tile(map_grid_tile* tile, QPoint clicked_at) {
         QPoint start = player_object->_disp->pos();
-        QPoint end = this->mapFromGlobal(QCursor::pos()) - QPoint(player_object->_disp->width() / 2, player_object->_disp->height() / 2);
+        QPoint end;
+        if (clicked_at.isNull()) {
+            end = this->mapFromGlobal(QCursor::pos()) - QPoint(player_object->_disp->width() / 2, player_object->_disp->height() / 2);
+        } else {
+            end = clicked_at - QPoint(player_object->_disp->width() / 2, player_object->_disp->height() / 2);
+            if (start == end) {
+                enter_poi_intent = tile;
+                try_trade();
+                return;
+            }
+        }
+        enter_poi_intent = nullptr;
+
         if (start == end)
             return;
 
@@ -1267,9 +1280,12 @@ public slots:
     }
     void clicked_locked_tile(map_grid_tile* tile) {
         // tile->unlock();
-        clicked_tile(tile);
+        clicked_tile(tile, QPoint());
     }
-    void clicked_poi(map_grid_tile* tile) {}
+    void clicked_poi(map_grid_tile* tile) {
+        clicked_tile(tile, tile->geometry().center());
+        enter_poi_intent = tile;
+    }
     void allow_tiles(int x, int y, short width, short height, bool& locked) {
         map_grid_tile* tile1 = grid->get_tile_at(QPoint(x, y));
         map_grid_tile* tile2 = grid->get_tile_at(QPoint(x + width, y));
@@ -1293,10 +1309,218 @@ public slots:
         }
         // locked = (tile1->get_locked() || tile2->get_locked() || tile3->get_locked() || tile4->get_locked());
     }
+
+    void try_trade() {
+        if (enter_poi_intent == nullptr) {
+            qInfo() << "no trade";
+            return;
+        } else {
+            auto loc_path = global::root_path;
+            loc_path /= "objects";
+            auto trade_path = loc_path;
+            loc_path /= "location";
+            trade_path /= "trade";
+            loc_path /= QString("location_%1.json").arg(enter_poi_intent->get_poi()->get_location_id()).toStdString();
+            json j;
+            std::ifstream file(loc_path.string());
+            try {
+                j = json::parse(file);
+            } catch (...) {
+                critical_error(QString("Не удалось загрузить локацию location_%1").arg(enter_poi_intent->get_poi()->get_location_id()));
+                return;
+            }
+            if (j.contains("trades")) {
+                if (j["trades"].is_number_unsigned()) {
+                    trade_path /= QString("trade_%1.json").arg(j["trades"].get<unsigned long long>()).toStdString();
+                    std::ifstream trade_file(trade_path.string());
+                    json trade_j;
+                    try {
+                        trade_j = json::parse(trade_file);
+                    } catch (...) {
+                        critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                        return;
+                    }
+                    if (!trade_j.contains("what_trade_is_that") || !trade_j.contains("recieve")) {
+                        critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                        return;
+                    }
+                    if (!trade_j["what_trade_is_that"].is_number_unsigned() || !trade_j["recieve"].is_number_unsigned()) {
+                        critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                        return;
+                    }
+                    switch (trade_j["what_trade_is_that"].get<int>()) {
+                    case 0: {
+                        item* item_ = item_from_id(trade_j["recieve"].get<int>());
+                        if (item_ == nullptr) {
+                            critical_error(QString("Не удалось загрузить предмет item_%1").arg(trade_j["recieve"].get<int>()));
+                            return;
+                        }
+                        if (!trade_j.contains("offer")) {
+                            critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                            return;
+                        }
+                        if (!trade_j["offer"].is_number_unsigned()) {
+                            critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                            return;
+                        }
+                        item* item_of = item_from_id(trade_j["offer"].get<int>());
+                        if (item_of == nullptr) {
+                            critical_error(QString("Не удалось загрузить предмет item_%1").arg(trade_j["offer"].get<int>()));
+                            return;
+                        }
+                        auto item_to_edit = global::player_->get_inventory()->get_equal_item(item_of);
+                        if (item_to_edit == nullptr) {
+                            new screen_message(QString("> У вас нет предмета: %1").arg(item_of->get_name()), 50, 100, 16);
+                            play_sfx(sfx_fail);
+                            delete item_;
+                            return;
+                        }
+                        global::player_->get_inventory()->remove_item(global::player_->get_inventory()->get_slot(item_to_edit), 1);
+                        global::player_->get_inventory()->add_item(item_);
+                        new screen_message(QString("> Вы обменяли %1 на %2").arg(item_of->get_name()).arg(item_->get_name()), 60, 30, 16);
+                        play_sfx(sfx_trade_success);
+                        delete item_of;
+                        if (trade_j.contains("exp")) {
+                            if (trade_j["exp"].is_number_unsigned()) {
+                                if (trade_j["exp"].get<int>() > 0) {
+                                    global::player_->add_exp(trade_j["exp"].get<int>());
+                                }
+                            } else {
+                                critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                                return;
+                            }
+                        }
+                        break;
+                    }
+                    case 1: {
+                        int get_money = trade_j["recieve"].get<int>();
+                        if (!trade_j.contains("offer")) {
+                            critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                            return;
+                        }
+                        if (!trade_j["offer"].is_number_unsigned()) {
+                            critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                            return;
+                        }
+                        item* item_ = item_from_id(trade_j["offer"].get<int>());
+                        if (item_ == nullptr) {
+                            critical_error(QString("Не удалось загрузить предмет item_%1").arg(trade_j["offer"].get<int>()));
+                            return;
+                        }
+                        auto item_to_edit = global::player_->get_inventory()->get_equal_item(item_);
+                        if (item_to_edit == nullptr) {
+                            new screen_message(QString("> У вас нет предмета: %1").arg(item_->get_name()), 50, 100, 16);
+                            play_sfx(sfx_fail);
+                            delete item_;
+                            return;
+                        }
+                        global::player_->get_inventory()->remove_item(global::player_->get_inventory()->get_slot(item_to_edit), 1);
+                        double stat = (double)global::player_->get_entity_stats().get_stat(skill_type::barter);
+                        double coef = (stat - 5) / stat;
+                        int money = (item_->get_base_cost() + get_money) * coef;
+                        global::player_->add_money(money);
+                        new screen_message(QString("> Вы продали %1 за %2").arg(item_->get_name()).arg(money), 50, 100, 16);
+                        play_sfx(sfx_trade_success);
+                        if (trade_j.contains("exp")) {
+                            if (trade_j["exp"].is_number_unsigned()) {
+                                if (trade_j["exp"].get<int>() > 0) {
+                                    global::player_->add_exp(trade_j["exp"].get<int>());
+                                }
+                            } else {
+                                critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                                return;
+                            }
+                        }
+                        break;
+                    }
+                    case 2: {
+                        item* item_ = item_from_id(trade_j["recieve"].get<int>());
+                        if (item_ == nullptr) {
+                            critical_error(QString("Не удалось загрузить предмет item_%1").arg(trade_j["recieve"].get<int>()));
+                            return;
+                        }
+                        if (!trade_j.contains("offer")) {
+                            critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                            return;
+                        }
+                        if (!trade_j["offer"].is_number_unsigned()) {
+                            critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                            return;
+                        }
+                        int cost = trade_j["offer"].get<int>() + item_->get_base_cost();
+                        double stat = (double)global::player_->get_entity_stats().get_stat(skill_type::barter);
+                        double coef = 60.0 / stat;
+                        cost *= coef;
+                        if (global::player_->get_money() < cost) {
+                            new screen_message(QString("> Вы не смогли преобрести %1 за %2").arg(item_->get_name()).arg(cost), 50, 100, 16);
+                            play_sfx(sfx_fail);
+                            delete item_;
+                            return;
+                        }
+                        global::player_->set_money(global::player_->get_money() - cost);
+                        global::player_->get_inventory()->add_item(item_);
+                        new screen_message(QString("> Вы преобрели %1 за %2").arg(item_->get_name()).arg(cost), 60, 30, 16);
+                        play_sfx(sfx_trade_success);
+                        if (trade_j.contains("exp")) {
+                            if (trade_j["exp"].is_number_unsigned()) {
+                                if (trade_j["exp"].get<int>() > 0) {
+                                    global::player_->add_exp(trade_j["exp"].get<int>());
+                                }
+                            } else {
+                                critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                                return;
+                            }
+                        }
+                        break;
+                    }
+                    case 3: {
+                        try {
+                        item* item_ = item_from_id(trade_j["recieve"].get<int>());
+                        if (item_ == nullptr) {
+                            critical_error(QString("Не удалось загрузить предмет item_%1").arg(trade_j["recieve"].get<int>()));
+                            return;
+                        }
+                        new screen_message(QString("> Вы получили: %1").arg(item_->get_name()), 60, 30, 16);
+                        play_sfx(sfx_trade_success);
+                        global::player_->get_inventory()->add_item(item_);
+                        if (trade_j.contains("exp")) {
+                            if (trade_j["exp"].is_number_unsigned()) {
+                                if (trade_j["exp"].get<int>() > 0) {
+                                    global::player_->add_exp(trade_j["exp"].get<int>());
+                                }
+                            } else {
+                                critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                                return;
+                            }
+                        }
+                        break;
+                        } catch (std::exception& e) {
+                            qInfo() << e.what();
+                            critical_error(QString("Не удалось загрузить сделку trade_%1").arg(j["trades"].get<unsigned long long>()));
+                            return;
+                        }
+                    }
+                    }
+                } else {
+                    critical_error(QString("Не удалось загрузить локацию location_%1").arg(enter_poi_intent->get_poi()->get_location_id()));
+                    return;
+                }
+            }
+        }
+    }
 public:
+    QSoundEffect* sfx_fail = nullptr;
+    QSoundEffect* sfx_trade_success = nullptr;
+    map_grid_tile* enter_poi_intent = nullptr;
     map_grid* grid = nullptr;
     map_player_object* player_object = nullptr;
     map_widget(QPoint pos, QWidget* parent = nullptr): game_scene(new QGraphicsScene(), parent) {
+        sfx_fail = new QSoundEffect(this);
+        sfx_fail->setSource(QUrl::fromLocalFile(QFileInfo(QString("assets:sounds/fail.wav")).absoluteFilePath()));
+
+        sfx_trade_success = new QSoundEffect(this);
+        sfx_trade_success->setSource(QUrl::fromLocalFile(QFileInfo(QString("assets:sounds/trade_success.wav")).absoluteFilePath()));
+
         grid = new map_grid(19, 12, 75, this);
         connect(grid, &map_grid::clicked_child_tile, this, &map_widget::clicked_tile);
         connect(grid, &map_grid::clicked_child_locked_tile, this, &map_widget::clicked_locked_tile);
@@ -1309,6 +1533,7 @@ public:
         player_object->player_marker->setParent(this->parentWidget());
         player_object->destination_marker->setParent(this->parentWidget());
         connect(player_object, &map_player_object::check_tiles, this, &map_widget::allow_tiles);
+        connect(player_object, &map_player_object::reached_destination, this, &map_widget::try_trade);
     }
 };
 
