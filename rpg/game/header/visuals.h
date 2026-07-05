@@ -1248,6 +1248,10 @@ class map_widget: public game_scene, public can_play_sound {
     Q_OBJECT
 
 public slots:
+    void hideEvent(QHideEvent *event) override {
+        enter_poi_intent = nullptr;
+        QWidget::hideEvent(event);
+    }
     void clicked_tile(map_grid_tile* tile, QPoint clicked_at) {
         QPoint start = player_object->_disp->pos();
         QPoint end;
