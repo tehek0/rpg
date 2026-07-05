@@ -1301,22 +1301,25 @@ public slots:
         }
         if (tile1->get_locked()) {
             tile1->unlock();
+            global::player_->add_exp(5);
         }
         if (tile2->get_locked()) {
             tile2->unlock();
+            global::player_->add_exp(5);
         }
         if (tile3->get_locked()) {
             tile3->unlock();
+            global::player_->add_exp(5);
         }
         if (tile4->get_locked()) {
             tile4->unlock();
+            global::player_->add_exp(5);
         }
         // locked = (tile1->get_locked() || tile2->get_locked() || tile3->get_locked() || tile4->get_locked());
     }
 
     void try_trade() {
         if (enter_poi_intent == nullptr) {
-            qInfo() << "no trade";
             return;
         } else {
             auto loc_path = global::root_path;
