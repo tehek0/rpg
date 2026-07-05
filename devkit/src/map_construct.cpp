@@ -8,25 +8,23 @@
 using js = nlohmann::ordered_json;
 
 void dev::map_grid_tile::change_tile_tint() {
+    QString style;
     if (is_locked_ == true) {
-        this->setStyleSheet(QString("background: rgba(17, 9, 52, 100);"));
+        style += ("background: rgba(17, 9, 52, 100);");
     } else {
-        this->setStyleSheet(QString("background: rgba(17, 9, 52, 0);"));
+        style += ("background: rgba(17, 9, 52, 0);");
     }
-}
-
-void dev::map_grid_tile::change_tile_text() {
     switch(biome_) {
-    case biome::none: setText("-"); setStyleSheet("color: rgb(0,0,0)"); break;
-    case biome::desert: setText("desert"); setStyleSheet("color: rgb(235, 136, 38)"); break;
-    case biome::city: setText("city"); setStyleSheet("color: rgb(90, 105, 110)"); break;
-    case biome::swamp: setText("swamp"); setStyleSheet("color: rgb(10, 15, 51)"); break;
-    case biome::plateau: setText("plateau"); setStyleSheet("color: rgb(117, 46, 7)"); break;
-    case biome::forest: setText("forest"); setStyleSheet("color: rgb(34, 153, 26)"); break;
-    case biome::mutant_forest: setText("mutant_forest"); setStyleSheet("color: rgb(108, 21, 148)"); break;
-    case biome::crater: setText("crater"); setStyleSheet("color: rgb(148, 143, 40)"); break;
-
+    case biome::none: setText("-"); style += ("color: rgb(0,0,0)"); break;
+    case biome::desert: setText("desert"); style += ("color: rgb(153, 74, 0)"); break;
+    case biome::city: setText("city"); style += ("color: rgb(90, 105, 110)"); break;
+    case biome::swamp: setText("swamp"); style += ("color: rgb(10, 40, 101)"); break;
+    case biome::plateau: setText("plateau"); style += ("color: rgb(117, 46, 7)"); break;
+    case biome::forest: setText("forest"); style += ("color: rgb(0, 61, 32)"); break;
+    case biome::mutant_forest: setText("mutant_forest"); style += ("color: rgb(108, 21, 148)"); break;
+    case biome::crater: setText("crater"); style += ("color: rgb(133, 3, 50)"); break;
     }
+    setStyleSheet(style);
 }
 
 dev::map_poi::map_poi(QString sprite_family, unsigned long long location_id,QString location_name)
@@ -183,12 +181,12 @@ void dev::map_construct_window::clicked_poi(map_grid_tile* tile) {
 }
 void dev::map_construct_window::clicked_tile(map_grid_tile* tile) {
     switch (brush_) {
-    case dev::map_brush::none : break;
-    case dev::map_brush::locker :
+    case dev::map_brush::none: break;
+    case dev::map_brush::locker:
         tile->is_locked_ = !tile->is_locked_;
         tile->change_tile_tint();
         break;
-    case dev::map_brush::player :
+    case dev::map_brush::player:
         labels_[0]->move(tile->pos().x() + 25, tile->pos().y() + 25);
         break;
     case dev::map_brush::poi :
@@ -202,9 +200,10 @@ void dev::map_construct_window::clicked_tile(map_grid_tile* tile) {
         tile->poi_->sprite_family_ = edits_[2]->text();
         tile->poi_->disp_->setStyleSheet("background: rgb(130,130,0);");
         break;
-    case dev::map_brush::biome :
+    case dev::map_brush::biome:
         tile->biome_ = static_cast<dev::biome>(boxes_[0]->currentIndex());
-        tile->change_tile_text();
+        tile->change_tile_tint();
+        break;
     }
 }
 

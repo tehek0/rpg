@@ -122,7 +122,6 @@ dev::info_field::info_field(QString key, dev::datatype field_type, QPoint locati
 
         label_->show();
         field_->show();
-
     }
     else if (dev::is_type_struct(field_type)) {
         QTreeWidget* field = new QTreeWidget(parent);
@@ -139,7 +138,6 @@ dev::info_field::info_field(QString key, dev::datatype field_type, QPoint locati
         label_->show();
         field_->show();
     }
-
 };
 
 dev::info_field::info_field(const info_field& other) {

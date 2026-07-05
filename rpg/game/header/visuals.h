@@ -121,7 +121,8 @@ struct anim {
     bool restart_after_pause = false;
     anim(QString name_, unsigned int ticks_to_move_, unsigned int last_frame_): name(name_), ticks_to_move(ticks_to_move_), last_frame(last_frame_)
     {}
-    anim(QString name_, unsigned int ticks_to_move_, unsigned int last_frame_, bool is_looping_, bool restart_after_pause_): name(name_), ticks_to_move(ticks_to_move_), last_frame(last_frame_), is_looping(is_looping_), restart_after_pause(restart_after_pause_)
+    anim(QString name_, unsigned int ticks_to_move_, unsigned int last_frame_, bool is_looping_, bool restart_after_pause_):
+        name(name_), ticks_to_move(ticks_to_move_), last_frame(last_frame_), is_looping(is_looping_), restart_after_pause(restart_after_pause_)
     {}
 };
 
@@ -159,9 +160,15 @@ struct transpos {
     bool has_reached_destination = true;
     void finish();
     transpos() = default;
-    transpos(QPoint& start_destination_, QPoint& final_destination_, unsigned int required_steps_): start_destination(start_destination_), final_destination(final_destination_), required_steps(required_steps_)
+    transpos(QPoint& start_destination_, QPoint& final_destination_,
+             unsigned int required_steps_):
+        final_destination(final_destination_), start_destination(start_destination_),
+        required_steps(required_steps_)
     {}
-    transpos(QPoint& start_destination_, QPoint& final_destination_, unsigned int required_steps_, transpos_algs algorithm_): start_destination(start_destination_), final_destination(final_destination_), required_steps(required_steps_), algorithm(algorithm_)
+    transpos(QPoint& start_destination_, QPoint& final_destination_,
+             unsigned int required_steps_, transpos_algs algorithm_):
+        algorithm(algorithm_), final_destination(final_destination_),
+        start_destination(start_destination_), required_steps(required_steps_)
     {}
 };
 

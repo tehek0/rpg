@@ -27,19 +27,6 @@
      <string>Создать предмет</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="createEntity_pb">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>260</y>
-      <width>131</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Создать сущность</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="createItemRequirements_pb">
     <property name="geometry">
      <rect>
