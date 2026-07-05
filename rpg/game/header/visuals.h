@@ -17,6 +17,9 @@
 #include <QCheckBox>
 #include <QFileInfo>
 #include <QSlider>
+#include <QDirListing>
+#include <QList>
+#include <algorithm>
 #include "save.h"
 #include "global.h"
 #include "message.h"
@@ -1505,6 +1508,7 @@ public slots:
         }
 
         global::player_ = new player();
+        global::player_->set_asset(player_asset);
         global::player_->set_entity_stats(stats);
         global::player_->set_name(player_name);
         global::player_->set_inventory(new inventory());
@@ -1566,9 +1570,30 @@ public slots:
 
         skill_points = 3;
         update_skill_hint();
+
+        selected = 0;
+        player_asset = "default_player.png";
+        apply_asset();
     }
 
+    void next_asset() {
+        ++selected;
+        if (selected >= skins.size())
+            selected = 0;
+        player_asset = skins[selected];
+        apply_asset();
+    }
+    void prev_asset() {
+        --selected;
+        if (selected < 0)
+            selected = skins.size() - 1;
+        player_asset = skins[selected];
+        apply_asset();
+    }
 public:
+    void apply_asset() {
+        player_asset_show->setStyleSheet(QString("border-image: url(assets:/pictures/player_skins/%1);").arg(player_asset));
+    }
     void paintEvent(QPaintEvent *event) {
         QPainter paint(this);
         if (background.isNull())
@@ -1584,6 +1609,13 @@ public:
     QLabel* name_hint = nullptr;
     QLabel* char_hint = nullptr;
     QLabel* skill_hint = nullptr;
+
+    QString player_asset = "default_player.png";
+    QStringList skins;
+    int selected = 0;
+    unclickable_button* player_asset_show = nullptr;
+    QPushButton* next_player_asset = nullptr;
+    QPushButton* prev_player_asset = nullptr;
 
     QLineEdit* name = nullptr;
 
@@ -1727,5 +1759,227 @@ public:
         cancel_button->setText("Назад");
         auto current = global::w.current_scene;
         this->connect(cancel_button, &tracked_button::clicked, this, [=]() {global::w.switch_to_scene(current);});
+
+        player_asset_show = new unclickable_button(this);
+        player_asset_show->setGeometry(260, 325, 100, 200);
+        player_asset_show->setStyleSheet(QString("border-image: url(assets:/pictures/player_skins/%1);").arg(player_asset));
+
+        auto player_skins_path = global::root_path;
+        player_skins_path /= "assets";
+        player_skins_path /= "pictures";
+        player_skins_path /= "player_skins";
+        auto listing = QDirListing(QString::fromStdString(player_skins_path.string()), QDirListing::IteratorFlag::FilesOnly);
+        for (const auto& elem : listing) {
+            if (elem.fileName() == "default_player.png") {
+                skins.insert(skins.begin(), elem.fileName());
+                continue;
+            }
+            skins.append(elem.fileName());
+        }
+        if (skins.size() > 1) {
+            next_player_asset = new QPushButton("След.",this);
+            next_player_asset->setGeometry(370, 425, 80, 30);
+            connect(next_player_asset, &QPushButton::clicked, this, &character_creation_widget::next_asset);
+            prev_player_asset = new QPushButton("Пред.",this);
+            prev_player_asset->setGeometry(170, 425, 80, 30);
+            connect(prev_player_asset, &QPushButton::clicked, this, &character_creation_widget::prev_asset);
+        }
     }
+};
+class skill_increaser: public skill_selector {
+
+    Q_OBJECT
+public slots:
+    void try_increase() {
+        emit increase(this, type, 1);
+    }
+signals:
+    void increase(skill_increaser* obj, skill_type type_, short value);
+public:
+    void set_value(short value_) {
+        value = value_;
+        update_display();
+    }
+    tracked_button* increase_button = nullptr;
+    QLabel* name = nullptr;
+    skill_increaser(skill_type type_, QWidget* parent = nullptr): skill_selector(type_, parent) {
+        this->select_button->deleteLater();
+        increase_button = new tracked_button(this);
+        increase_button->setGeometry(0, 0, 30, 30);
+        increase_button->setStyleSheet(QString("border-image: url(assets:/pictures/char_increase.png);"));
+        name = new QLabel(this);
+        name->setText(skill_type_to_str(type));
+        name->setGeometry(35, 0, 200, 30);
+        name->setStyleSheet("color: rgb(255,255,255);");
+        display->setStyleSheet(name->styleSheet());
+        connect(increase_button, &tracked_button::clicked, this, &skill_increaser::try_increase);
+    }
+
+};
+
+class character_view_widget: public QWidget, public can_play_sound {
+
+    Q_OBJECT
+public slots:
+    void add_skill_point(skill_increaser* obj, skill_type type_, short value) {
+        if (points <= 0) {
+            new screen_message("> Отсутствуют очки навыков", 30, 60, 18);
+            play_sfx(sfx_fail);
+            return;
+        }
+        play_sfx(sfx_typing);
+        --global::player_->_level_up_points;
+        points = global::player_->_level_up_points;
+        global::player_->_entity_stats.add_stat(type_, value);
+        obj->set_value(global::player_->_entity_stats.get_stat(type_));
+        update_points_hint();
+    }
+public:
+    void paintEvent(QPaintEvent *event) {
+        QPainter paint(this);
+        if (background.isNull())
+            return;
+
+        paint.drawPixmap(this->rect(), background);
+    }
+    void update_points_hint() {
+        if (points == 0) {
+            points_hint->setText(QString("Очки навыков распределены."));
+            return;
+        }
+        points_hint->setText(QString("Осталось очков навыков: %1").arg(points));
+    }
+    QPixmap background;
+
+    QSoundEffect* sfx_fail = nullptr;
+    QSoundEffect* sfx_typing = nullptr;
+
+    QLabel* player_name = nullptr;
+    QLabel* player_level = nullptr;
+
+    QLabel* player_health = nullptr;
+    QLabel* player_armor = nullptr;
+    QLabel* player_money = nullptr;
+    QLabel* player_weight = nullptr;
+    QLabel* player_energy = nullptr;
+
+    QLabel* strength = nullptr;
+    QLabel* agility = nullptr;
+    QLabel* endurance = nullptr;
+    QLabel* intelligence = nullptr;
+    QLabel* luck = nullptr;
+
+    unclickable_button* player_show = nullptr;
+
+    short points = 0;
+    QLabel* points_hint = nullptr;
+
+    skill_increaser* guns = nullptr;
+    skill_increaser* big_guns = nullptr;
+    skill_increaser* unarmed = nullptr;
+    skill_increaser* science = nullptr;
+    skill_increaser* speech = nullptr;
+    skill_increaser* barter = nullptr;
+    skill_increaser* survival = nullptr;
+
+    void connect_increaser(skill_increaser* obj) {
+        connect(obj, &skill_increaser::increase, this, &character_view_widget::add_skill_point);
+        obj->set_value(global::player_->_entity_stats.get_stat(obj->type));
+    }
+
+    character_view_widget(QWidget* parent = nullptr): QWidget(parent) {
+
+        player_show = new unclickable_button(this);
+        player_show->setStyleSheet(QString("border-image: url(assets:/pictures/player_skins/%1);").arg(global::player_->_asset));
+        player_show->setGeometry(712 - 152, 120, 305, 610);
+
+        this->resize(1425, 900);
+        points = global::player_->get_level_up_points();
+
+        sfx_fail = new QSoundEffect(this);
+        sfx_fail->setSource(QUrl::fromLocalFile(QFileInfo(QString("assets:sounds/fail.wav")).absoluteFilePath()));
+
+        sfx_typing = new QSoundEffect(this);
+        sfx_typing->setSource(QUrl::fromLocalFile(QFileInfo(QString("assets:sounds/typing.wav")).absoluteFilePath()));
+
+        background.load("assets:/pictures/black.png");
+        player_name = new QLabel(global::player_->get_name(), this);
+        player_name->setGeometry(10,10, 1415, 70);
+        player_name->setStyleSheet("color: rgb(255,255,255); font: 24pt \"Arial\";");
+        player_name->setAlignment(Qt::AlignCenter);
+
+        player_level = new QLabel(this);
+        player_level->setGeometry(10, 90, 1415, 40);
+        player_level->setAlignment(player_name->alignment());
+        player_level->setStyleSheet("color: rgb(255,255,255); font: 16pt \"Arial\";");
+        player_level->setText(QString("Уровень %1, Опыт: %2/%3").arg(global::player_->get_entity_level().level).arg(global::player_->get_entity_level().experiecne).arg(global::player_->get_entity_level().current_needed));
+
+        player_health = new QLabel(QString("Здоровье: %1/%2").arg(global::player_->get_health()).arg(global::player_->get_max_health() + global::player_->get_bonus_health()), this);
+        player_health->setGeometry(10, 150, 300, 20);
+        player_health->setStyleSheet("color: rgb(255,0,0);");
+
+        player_armor = new QLabel(QString("Броня: %1").arg(global::player_->get_inventory()->get_total_armor() + global::player_->get_base_armor() + global::player_->get_bonus_armor()), this);
+        player_armor->setGeometry(10, 180, 300, 20);
+        player_armor->setStyleSheet("color: rgb(90,130,180);");
+
+        player_weight = new QLabel(QString("Вес инвентаря: %1/%2").arg(global::player_->get_weight()).arg(global::player_->get_max_weight()),this);
+        player_weight->setGeometry(10, 210, 300, 20);
+        player_weight->setStyleSheet("color: rgb(180,180,180);");
+
+        player_energy = new QLabel(QString("Энергия: %1").arg(global::player_->get_max_energy() + global::player_->get_bonus_energy()),this);
+        player_energy->setGeometry(10, 240, 300, 20);
+        player_energy->setStyleSheet("color: rgb(80,255,80);");
+
+        player_money = new QLabel(QString("Деньги: %1").arg(global::player_->get_money()),this);
+        player_money->setGeometry(10, 270, 300, 20);
+        player_money->setStyleSheet("color: rgb(255,255,80);");
+
+        strength = new QLabel(QString("Сила: %1").arg(global::player_->get_total_stats().strength),this);
+        strength->setGeometry(210, 150, 300, 20);
+        strength->setStyleSheet("color: rgb(255,255,255);");
+
+        agility = new QLabel(QString("Ловкость: %1").arg(global::player_->get_total_stats().agility),this);
+        agility->setGeometry(210, 180, 300, 20);
+        agility->setStyleSheet("color: rgb(255,255,255);");
+
+        endurance = new QLabel(QString("Стойкость: %1").arg(global::player_->get_total_stats().endurance),this);
+        endurance->setGeometry(210, 210, 300, 20);
+        endurance->setStyleSheet("color: rgb(255,255,255);");
+
+        intelligence = new QLabel(QString("Интеллект: %1").arg(global::player_->get_total_stats().intelligence),this);
+        intelligence->setGeometry(210, 240, 300, 20);
+        intelligence->setStyleSheet("color: rgb(255,255,255);");
+
+        luck = new QLabel(QString("Удача: %1").arg(global::player_->get_total_stats().luck),this);
+        luck->setGeometry(210, 270, 300, 20);
+        luck->setStyleSheet("color: rgb(255,255,255);");
+
+        points_hint = new QLabel(this);
+        points_hint->setGeometry(10, 350, 400, 20);
+        points_hint->setStyleSheet("color: rgb(255,255,255);");
+        update_points_hint();
+
+        guns = new skill_increaser(skill_type::guns, this);
+        connect_increaser(guns);
+        guns->move(10, 380);
+        big_guns = new skill_increaser(skill_type::big_guns, this);
+        connect_increaser(big_guns);
+        big_guns->move(10, 415);
+        unarmed = new skill_increaser(skill_type::unarmed, this);
+        connect_increaser(unarmed);
+        unarmed->move(10, 450);
+        science = new skill_increaser(skill_type::science, this);
+        connect_increaser(science);
+        science->move(10, 485);
+        speech = new skill_increaser(skill_type::speech, this);
+        connect_increaser(speech);
+        speech->move(10, 520);
+        barter = new skill_increaser(skill_type::barter, this);
+        connect_increaser(barter);
+        barter->move(10, 555);
+        survival = new skill_increaser(skill_type::survival, this);
+        connect_increaser(survival);
+        survival->move(10, 590);
+    }
+
 };

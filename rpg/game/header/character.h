@@ -187,6 +187,7 @@ struct entity_stats {
     entity_stats operator+(entity_stats other);
     short get_stat(char_type type_);
     short get_stat(skill_type type_);
+    void add_stat(skill_type type, short value);
 };
 
 enum entity_size_class {
@@ -204,6 +205,7 @@ struct entity_level {
 
     unsigned int level = 1;
     unsigned int experiecne = 0;
+    unsigned int current_needed = 100;
     unsigned int scaling = 100;
 
 };
@@ -254,7 +256,7 @@ public:
     int get_total_armor();
     int get_money();
     void set_entity_stats(entity_stats& entity_stats_);
-    void set_entity_level(entity_level& entity_level_);
+    virtual void set_entity_level(entity_level& entity_level_);
 
     void set_max_health(int max_health);
     void set_health(int health);
@@ -268,6 +270,7 @@ public:
     bool transaction(living_entity* other, int amount);
 };
 
+class character_view_widget;
 
 class player: public living_entity {
     Q_OBJECT
@@ -281,7 +284,7 @@ protected:
     int _bonus_energy = 0;
     int _bonus_health = 0;
     int _bonus_armor = 0;
-    unsigned int level_up_points = 0;
+    unsigned int _level_up_points = 0;
     trait _trait;
 public:
     player() = default;
@@ -291,14 +294,27 @@ public:
     float get_weight();
     int get_max_energy();
     entity_stats get_bonus_stats();
+    int get_bonus_armor();
+    int get_bonus_health();
+    int get_bonus_energy();
     entity_stats get_total_stats();
+    unsigned int get_level_up_points();
     void set_max_weight(float max_weight);
     void set_inventory(inventory* inventory_);
     void set_weight(float weight);
     void set_max_energy(int max_energy);
     void set_base_stats();
+    void set_bonus_armor(int value);
+    void set_bonus_health(int value);
+    void set_bonus_energy(int value);
     void apply_equipment_bonuses();
+    void set_level_up_points(int value);
+    void set_entity_level(entity_level& entity_level_);
+    void add_exp(int amount);
+    bool able_to_level_up();
+    void level_up();
     bool add_item(item* item_);
+    friend class character_view_widget;
 };
 
 struct enemy_traits {

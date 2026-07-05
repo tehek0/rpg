@@ -241,6 +241,7 @@ void save_player(player* player_, int slot) {
     j["money"] = player_->get_money();
     j["max_weight"] = player_->get_max_weight();
     j["max_energy"] = player_->get_max_energy();
+    j["level_up_points"] = player_->get_level_up_points();
     json inv = json::array();
     for (auto elem : player_->get_inventory()->get_items()) {
         json item_ = json_from_item(elem);
@@ -283,6 +284,12 @@ bool load_player(player* player_, int slot) {
     int _money;
     float _max_weight;
     int _max_energy;
+    unsigned int _level_up_points = 0;
+    if (j.contains("level_up_points")) {
+        if (j["level_up_points"].is_number_unsigned()) {
+            j["level_up_points"].get_to(_level_up_points);
+        }
+    }
     inventory* _inventory;
     j["name"].get_to(_name);
     j["asset"].get_to(_asset);
@@ -299,13 +306,14 @@ bool load_player(player* player_, int slot) {
     player_->set_name(QString::fromStdString(_name));
     player_->set_asset(QString::fromStdString(_asset));
     player_->set_entity_stats(_entity_stats);
-    player_->set_entity_level(_entity_level);
     player_->set_max_health(_max_health);
     player_->set_health(_health);
     player_->set_base_armor(_base_armor);
     player_->set_money(_money);
     player_->set_max_weight(_max_weight);
     player_->set_max_energy(_max_energy);
+    player_->set_entity_level(_entity_level);
+    player_->set_level_up_points(_level_up_points);
     _inventory = new inventory();
     player_->set_inventory(_inventory);
     for (auto elem : j["inventory"]) {
@@ -422,22 +430,24 @@ json json_from_entity_level(entity_level _entity_level) {
     json level = json::object();
     level["level"] = _entity_level.level;
     level["experience"] = _entity_level.experiecne;
+    level["current_needed"] = _entity_level.current_needed;
     level["scaling"] = _entity_level.scaling;
 
     return level;
 }
 entity_level entity_level_from_json(json j) {
-    if (!j.contains("level") || !j.contains("experience") || !j.contains("scaling")) {
+    if (!j.contains("level") || !j.contains("experience") || !j.contains("scaling") || !j.contains("current_needed")) {
         critical_error("Не удалось загрузить entity_level.");
         return entity_level();
     }
-    if (!j["level"].is_number_unsigned() || !j["experience"].is_number_unsigned() || !j["scaling"].is_number_unsigned()) {
+    if (!j["level"].is_number_unsigned() || !j["experience"].is_number_unsigned() || !j["scaling"].is_number_unsigned() || !j["current_needed"].is_number_unsigned()) {
         critical_error("Не удалось загрузить entity_level.");
         return entity_level();
     }
     entity_level _level;
     j["level"].get_to(_level.level);
     j["experience"].get_to(_level.experiecne);
+    j["current_needed"].get_to(_level.current_needed);
     j["scaling"].get_to(_level.scaling);
     return _level;
 }

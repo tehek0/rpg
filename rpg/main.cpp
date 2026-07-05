@@ -41,7 +41,6 @@ int main(int argc, char** argv)
     global::music->set_music("menu");
 
 
-
     // inter.selected_interaction_tree = 0;
     // inter.execute();
     // inter.execute();

@@ -413,6 +413,18 @@ consumable* inventory::get_equipped_consumable() {
 }
 
 short inventory::get_total_armor() {
-    return _armor.head->get_armor_points() + _armor.body->get_armor_points() + _armor.legs->get_armor_points();
+    short head = 0;
+    if (_armor.head != nullptr) {
+        head = _armor.head->get_armor_points();
+    }
+    short body = 0;
+    if (_armor.body != nullptr) {
+        body = _armor.body->get_armor_points();
+    }
+    short legs = 0;
+    if (_armor.legs != nullptr) {
+        legs = _armor.legs->get_armor_points();
+    }
+    return head + body + legs;
 }
 
