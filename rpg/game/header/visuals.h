@@ -430,8 +430,14 @@ public slots:
                 return;
             }
             if (slot >= lower_boundry && slot <= upper_boundry) {
+                if (item_objects.size() == 0) {
+                    append_object(slot);
+                    this->shrink_widget_to_contents(lower_boundry);
+                    return;
+                }
                 size_t final_object = item_objects.size() - 1;
-                for (size_t i = final_object - 1; i >= slot; --i) {
+                for (size_t i = final_object; i >= slot; --i) {
+                    qInfo() << i << i + 1 << i + 2;
                     layout->removeWidget(item_objects[i]->_disp);
                     layout->replaceWidget(item_objects[final_object]->_disp, item_objects[i]->_disp);
                     layout->addWidget(item_objects[final_object]->_disp, i / _cols, i % _cols);
@@ -984,6 +990,7 @@ signals:
     void link_line(QGraphicsLineItem*& line);
     void cant_move_there(QPoint& coord);
     void call_parent(QWidget*& marker_parent);
+    void ditch_intent();
 public slots:
     void stop_running() {
         this->set_current_anim(0);
@@ -1034,6 +1041,7 @@ public:
     }
     void move_to(QPoint& coord) override {
         if (global::player_->get_weight() > global::player_->get_max_weight()) {
+            emit ditch_intent();
             interrupt();
             new screen_message("> Вы перегружены и не можете идти", 50, 200, 20);
             play_sfx(sfx_fail);
@@ -1541,6 +1549,7 @@ public:
         player_object->destination_marker->setParent(this->parentWidget());
         connect(player_object, &map_player_object::check_tiles, this, &map_widget::allow_tiles);
         connect(player_object, &map_player_object::reached_destination, this, &map_widget::try_trade);
+        connect(player_object, &map_player_object::ditch_intent, this, [=]() {this->enter_poi_intent = nullptr;});
     }
 };
 
